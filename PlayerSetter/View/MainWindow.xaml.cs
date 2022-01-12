@@ -3,9 +3,9 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
-using static PlayerSetter.win32;
+using static PlayerSetter.View.win32;
 
-namespace PlayerSetter
+namespace PlayerSetter.View
 {
 	static class win32
 	{
@@ -48,6 +48,7 @@ namespace PlayerSetter
 		private void Rectangle_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			captureRectangle.CaptureMouse();
+			this.Cursor = Cursors.Hand;
 		}
 
 		private void captureRectangle_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -63,6 +64,8 @@ namespace PlayerSetter
 			win32.SendMessage(hWnd, WM_PASTE, wp, lp );
 
 			captureRectangle.ReleaseMouseCapture();
+			this.Cursor = Cursors.Arrow;
+
 			MessageBox.Show($"hwnd:[{hWnd}]");
 		}
 	}
