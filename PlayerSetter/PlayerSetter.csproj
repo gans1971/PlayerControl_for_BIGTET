@@ -23,10 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ViewModel\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="ReactiveProperty.WPF" Version="8.0.3" />
   </ItemGroup>
 

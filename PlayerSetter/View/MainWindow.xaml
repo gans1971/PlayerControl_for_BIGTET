@@ -4,11 +4,15 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:v="clr-namespace:PlayerSetter.View"
+	xmlns:vm="clr-namespace:PlayerSetter.ViewModel"
 	Title="MainWindow"
 	Width="800"
 	Height="450"
 	mc:Ignorable="d">
+	<Window.DataContext>
+		<vm:MainWindowViewModel />
+	</Window.DataContext>
+	
 	<Grid x:Name="LayoutRoot">
 		<Grid>
 			<Grid.RowDefinitions>
@@ -16,6 +20,7 @@
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
@@ -32,8 +37,9 @@
 				Height="50"
 				HorizontalAlignment="Center"
 				VerticalAlignment="Center"
-				
-				IsHitTestVisible="False" Source="/Resources/capturecursor.png" />
+				IsHitTestVisible="False"
+				Source="/Resources/capturecursor.png" />
+			<TextBox Grid.Column="1" MinWidth="100" Height="Auto" />
 		</Grid>
 	</Grid>
 </Window>
