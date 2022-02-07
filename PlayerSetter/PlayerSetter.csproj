@@ -7,10 +7,23 @@
     <UseWPF>true</UseWPF>
 	 <UseWindowsForms>true</UseWindowsForms>
 	 <ApplicationIcon>Resources\app.ico</ApplicationIcon>
+	 <StartupObject>PlayerSetter.App</StartupObject>
+	 <NeutralLanguage>ja</NeutralLanguage>
+	 <AssemblyVersion>0.1.0.0</AssemblyVersion>
+	 <FileVersion>0.1.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ViewModel\NativeMethod.cs" />
+    <Compile Remove="View\GetWindowHandle.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Resources\capturecursor.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="View\GetWindowHandle.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,7 +37,32 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="27.2.1" />
+    <PackageReference Include="MahApps.Metro" Version="2.4.9" />
+    <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.0" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+    <PackageReference Include="Prism.Core" Version="8.1.97" />
     <PackageReference Include="ReactiveProperty.WPF" Version="8.0.3" />
+    <PackageReference Include="System.Management" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Servicies\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

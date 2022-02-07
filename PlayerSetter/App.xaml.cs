@@ -13,5 +13,18 @@ namespace PlayerSetter
 	/// </summary>
 	public partial class App : Application
 	{
+		private void Application_Startup(object sender, StartupEventArgs e)
+		{
+			AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+		}
+		private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+		{
+			MessageBox.Show(
+				"CurrentDomain_UnhandledException() error\n" +
+				sender.ToString() + "→" + e.ExceptionObject.ToString(),
+				"APP 例外キャッチ",
+				  MessageBoxButton.OK,
+				MessageBoxImage.Error);
+		}
 	}
 }
