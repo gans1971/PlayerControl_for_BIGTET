@@ -2,7 +2,7 @@
 using System;
 using System.Reactive.Disposables;
 
-namespace PlayerSetter.ViewModels
+namespace PlayerControl.ViewModels
 {
 	public class BindableViewModel : BindableBase, IDisposable
 	{

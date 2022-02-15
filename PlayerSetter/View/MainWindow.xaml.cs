@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 
-namespace PlayerSetter.View
+namespace PlayerControl.View
 {
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
