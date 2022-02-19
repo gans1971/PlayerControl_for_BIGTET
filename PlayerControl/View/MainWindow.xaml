@@ -1,6 +1,5 @@
 ﻿<mah:MetroWindow
 	x:Class="PlayerControl.View.MainWindow"
-	ShowTitleBar="False"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
@@ -21,6 +20,7 @@
 	SaveWindowPosition="True"
 	ShowMaxRestoreButton="False"
 	ShowMinButton="False"
+	ShowTitleBar="False"
 	TitleCharacterCasing="Normal"
 	mc:Ignorable="d">
 	<!--  Icon="/Resources/capturecursor.png"  -->
@@ -102,12 +102,20 @@
 								<ColumnDefinition Width="35" />
 							</Grid.ColumnDefinitions>
 							<Grid.Resources>
-
+								<!--  プレイヤー名スタイル  -->
 								<Style TargetType="{x:Type TextBlock}">
 									<Setter Property="VerticalAlignment" Value="Center" />
 									<Setter Property="HorizontalAlignment" Value="Center" />
 									<Setter Property="Margin" Value="0,5" />
 									<Setter Property="FontSize" Value="15" />
+									<Setter Property="FontWeight" Value="Bold" />
+								</Style>
+								<!--  プレイヤーチェンジボタンスタイル  -->
+								<Style BasedOn="{StaticResource MaterialDesignFloatingActionMiniSecondaryLightButton}" TargetType="{x:Type Button}">
+									<Setter Property="Width" Value="25" />
+									<Setter Property="Height" Value="25" />
+									<Setter Property="Margin" Value="0,5" />
+									<Setter Property="FontSize" Value="13" />
 									<Setter Property="FontWeight" Value="Bold" />
 								</Style>
 							</Grid.Resources>
@@ -119,24 +127,14 @@
 								FontWeight="Bold" />
 							<TextBlock Grid.Column="1" Text="{Binding PersonalBest.Value}" />
 							<TextBlock Grid.Column="2" Text="{Binding TodayBest.Value}" />
-							<Button
-								Grid.Column="3"
-								Width="25"
-								Height="25"
-								Margin="0,5"
-								Content="1P"
-								FontSize="13"
-								FontWeight="Bold"
-								Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryLightButton}" />
-							<Button
-								Grid.Column="4"
-								Width="25"
-								Height="25"
-								Margin="0,5"
-								Content="2P"
-								FontSize="13"
-								FontWeight="Bold"
-								Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" />
+							<Button Grid.Column="3" Content="1P">
+								<i:Interaction.Triggers>
+									<i:EventTrigger EventName="Click">
+										<ri:EventToReactiveCommand Command="{Binding DataContext.Player1ChangeCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+									</i:EventTrigger>
+								</i:Interaction.Triggers>
+							</Button>
+							<Button Grid.Column="4" Content="2P" />
 						</Grid>
 					</DataTemplate>
 				</ItemsControl.Resources>

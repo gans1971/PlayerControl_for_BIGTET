@@ -1,7 +1,10 @@
 ﻿using MahApps.Metro.Controls.Dialogs;
 using PlayerControl.Model;
 using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
 using System;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace PlayerControl.ViewModels
 {
@@ -16,8 +19,8 @@ namespace PlayerControl.ViewModels
 		#endregion
 
 		#region ReactiveCommand
+		public ReactiveCommand Player1ChangeCommand { get; }
 		public ReactiveCommand AboutBoxCommand { get; }
-
 		public ReactiveCommand LoadedCommand { get; }
 		#endregion
 
@@ -26,11 +29,26 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public MainWindowViewModel()
 		{
+			Player1ChangeCommand = new ReactiveCommand();
+			Player1ChangeCommand.Subscribe(async x =>
+			{
+				if (x is RoutedEventArgs args)
+				{
+					if (args.Source is Button btn)
+					{
+						if (btn.DataContext is PlayerModel player)
+						{
+							await MahAppsDialogCoordinator.ShowMessageAsync(this, "click", $"{player.Name}");
+						}
+					}
+				}
+			}).AddTo(Disposable);
+
 			LoadedCommand = new ReactiveCommand();
 			LoadedCommand.Subscribe(_ =>
 			{
 				InitPlayers();
-			});
+			}).AddTo(Disposable);
 
 			// ReactiveCommand Subscribe
 			AboutBoxCommand = new ReactiveCommand();
