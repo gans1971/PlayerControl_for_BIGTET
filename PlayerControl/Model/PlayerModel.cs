@@ -1,9 +1,14 @@
-﻿using Prism.Mvvm;
+﻿using Newtonsoft.Json;
+using Prism.Mvvm;
 using Reactive.Bindings;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace PlayerControl.Model
@@ -26,5 +31,21 @@ namespace PlayerControl.Model
             TodayBest.Value = todaybest;
             LastAccess.Value = DateTime.Now;
         }
-    }
+	}
+
+	public class StreamControlParam
+	{
+		public StreamControlParam()
+		{
+			timestamp = DateTimeOffset.Now.ToUnixTimeSeconds().ToString();
+		}
+		public String pCountry1 { get; set; } = String.Empty;
+		public String pCountry2 { get; set; } = String.Empty;
+		public String pName1 { get; set; } = String.Empty;
+		public String pName2 { get; set; } = String.Empty;
+		public String pScore1 { get; set; } = String.Empty;
+		public String pScore2 { get; set; } = String.Empty;
+		public String stage { get; set; } = String.Empty;
+		public String timestamp { get; set; } = "0";
+	}
 }
