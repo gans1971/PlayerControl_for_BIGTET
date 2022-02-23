@@ -11,7 +11,6 @@ namespace PlayerControl.View
 	/// </summary>
 	public partial class MainWindow : MetroWindow
 	{
-
 		public MainWindow()
 		{
 			InitializeComponent();

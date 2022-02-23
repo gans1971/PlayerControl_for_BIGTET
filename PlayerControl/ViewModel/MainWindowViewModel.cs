@@ -6,7 +6,6 @@ using Reactive.Bindings.Extensions;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Reactive;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,6 +14,8 @@ namespace PlayerControl.ViewModels
 {
 	public class MainWindowViewModel : BindableViewModel
 	{
+		private static String _htmlSourceFile = "scoreboard.html";
+
 		public IDialogCoordinator MahAppsDialogCoordinator { get; set; } = new DialogCoordinator();
 
 		#region ReactiveProperty
@@ -28,29 +29,56 @@ namespace PlayerControl.ViewModels
 
 		#region ReactiveCommand
 		public ReactiveCommand Player1ChangeCommand { get; }
+		public ReactiveCommand Player2ChangeCommand { get; }
 		public ReactiveCommand AboutBoxCommand { get; }
 		public ReactiveCommand LoadedCommand { get; }
 		#endregion
+
+
+		private bool SaveStremControlJson(RoutedEventArgs args, String jsonFolder, bool isPlayer1)
+		{
+			if (args.Source is FrameworkElement fe)
+			{
+				if (fe.DataContext is PlayerModel player)
+				{
+					if(isPlayer1)
+					{
+						CurrnetPlayer1.Value = player;
+					}
+					else
+					{
+						CurrnetPlayer2.Value = player;
+					}
+					return SaveStreamControlJson(jsonFolder);
+				}
+			}
+			return false;
+		}
 
 		/// <summary>
 		/// コンストラクタ
 		/// </summary>
 		public MainWindowViewModel()
 		{
+			var jsonPath = GetStreamControlPath();
+
+			// プレイヤー1切り替えコマンド
 			Player1ChangeCommand = new ReactiveCommand();
-			Player1ChangeCommand.Subscribe( x =>
+			Player1ChangeCommand.Subscribe(x =>
+			{
+			   if (x is RoutedEventArgs args)
+			   {
+					SaveStremControlJson(args, jsonPath, true);
+			   }
+			}).AddTo(Disposable);
+
+			// プレイヤー2切り替えコマンド
+			Player2ChangeCommand = new ReactiveCommand();
+			Player2ChangeCommand.Subscribe(x =>
 			{
 				if (x is RoutedEventArgs args)
 				{
-					if (args.Source is Button btn)
-					{
-						if (btn.DataContext is PlayerModel player)
-						{
-//							await MahAppsDialogCoordinator.ShowMessageAsync(this, "click", $"{player.Name}");
-							CurrnetPlayer1.Value = player;
-							SaveStreamControlJson(@"C:\Users\nimta\Documents\GitHub\grafficia-nim\PlayerSetter\StreamControl-for-UMBR-feature-use_number_score");
-						}
-					}
+					SaveStremControlJson(args, jsonPath, false);
 				}
 			}).AddTo(Disposable);
 
@@ -80,6 +108,41 @@ namespace PlayerControl.ViewModels
 		}
 
 		/// <summary>
+		/// ソースHTMLファイルが存在するパスを取得
+		/// 実行ファイルの親フォルダをたどる
+		/// </summary>
+		/// <returns></returns>
+		private String GetStreamControlPath()
+		{
+			// 実行ファイルのパスを取得
+			var appPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+			var di = new DirectoryInfo(appPath);
+			while (true)
+			{
+				if (di == null)
+				{
+					break;
+				}
+				var parent = di.Parent;
+				if (parent == null)
+				{
+					break;
+				}
+
+				var checkPath = Path.Combine(parent.FullName, _htmlSourceFile);
+
+				if (System.IO.File.Exists(checkPath))
+				{
+					// ソースHTMLが存在するパスがみつかった
+					return parent.FullName;
+				}
+				// 親をたどる
+				di = di.Parent;
+			}
+			return String.Empty;
+		}
+
+		/// <summary>
 		/// StreamControl互換JSONを保存する
 		/// </summary>
 		/// <param name="jsonpath"></param>
@@ -88,16 +151,17 @@ namespace PlayerControl.ViewModels
 		{
 			try
 			{
+				// ファイルパスチェック
 				if (!Directory.Exists(jsonpath))
 				{
 					return false;
 				}
-				var savepath = Path.Combine(jsonpath, "streamcontrol.json");
+				var savepath = System.IO.Path.Combine(jsonpath, "streamcontrol.json");
 
 				// Jsonクラスに値をセット
 
 				var StreamControlData = new StreamControlParam();
-				if(CurrnetPlayer1.Value != null)
+				if (CurrnetPlayer1.Value != null)
 				{
 					StreamControlData.pName1 = CurrnetPlayer1.Value.Name.Value;
 					StreamControlData.pScore1 = CurrnetPlayer1.Value.TodayBest.Value.ToString();
@@ -131,6 +195,7 @@ namespace PlayerControl.ViewModels
 			Players.Add(new PlayerModel("GAF", 942, 656));
 			Players.Add(new PlayerModel("まつのゆ", 580, 530));
 			Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
+			Players.Add(new PlayerModel("チャーハンライス", 999, 702));
 		}
 	}
 }

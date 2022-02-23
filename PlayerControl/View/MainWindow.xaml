@@ -11,11 +11,12 @@
 	xmlns:ri="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
 	xmlns:vm="clr-namespace:PlayerControl.ViewModels"
 	Title="PlayerControl"
-	Width="400"
-	Height="450"
+	Width="460"
+	Height="480"
+	MinWidth="460"
+	MinHeight="480"
 	Dialog:DialogParticipation.Register="{Binding}"
-	BorderThickness="0"
-	Topmost="True"
+	BorderThickness="1"
 	GlowBrush="{DynamicResource AccentColorBrush}"
 	IsWindowDraggable="True"
 	SaveWindowPosition="True"
@@ -23,8 +24,8 @@
 	ShowMinButton="False"
 	ShowTitleBar="False"
 	TitleCharacterCasing="Normal"
+	Topmost="True"
 	mc:Ignorable="d">
-	<!--  Icon="/Resources/capturecursor.png"  -->
 	<mah:MetroWindow.DataContext>
 		<vm:MainWindowViewModel>
 			<vm:MainWindowViewModel.MahAppsDialogCoordinator>
@@ -32,18 +33,6 @@
 			</vm:MainWindowViewModel.MahAppsDialogCoordinator>
 		</vm:MainWindowViewModel>
 	</mah:MetroWindow.DataContext>
-
-	<mah:MetroWindow.RightWindowCommands>
-		<mah:WindowCommands>
-			<Button Content="About">
-				<i:Interaction.Triggers>
-					<i:EventTrigger EventName="Click">
-						<ri:EventToReactiveCommand Command="{Binding AboutBoxCommand}" />
-					</i:EventTrigger>
-				</i:Interaction.Triggers>
-			</Button>
-		</mah:WindowCommands>
-	</mah:MetroWindow.RightWindowCommands>
 
 	<!--#region Windowのイベントトリガ-->
 	<i:Interaction.Triggers>
@@ -53,7 +42,7 @@
 	</i:Interaction.Triggers>
 	<!--#endregion-->
 
-	<Grid x:Name="LayoutRoot" Margin="5">
+	<Grid x:Name="LayoutRoot">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="*" />
 			<RowDefinition Height="Auto" />
@@ -62,83 +51,169 @@
 		<Grid x:Name="PlayersGrid">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
-			<Grid x:Name="HeaderGrid">
+
+			<Grid x:Name="EvetTitleGrid">
+				<Border
+					Margin="0,0,0,10"
+					Background="White"
+					IsHitTestVisible="False">
+					<Border.Effect>
+						<DropShadowEffect ShadowDepth="3" Opacity="0.5" BlurRadius="10" Color="#FFD5D5D5" />
+					</Border.Effect>
+					<Label
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Center"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						Content="水曜日フリプ"
+						FontSize="15"
+						FontWeight="Bold"
+						Foreground="DarkBlue" />
+				</Border>
+			</Grid>
+			<Grid
+				x:Name="HeaderGrid"
+				Grid.Row="1"
+				IsHitTestVisible="False">
 				<Grid.Resources>
 					<Style TargetType="{x:Type Label}">
 						<Setter Property="VerticalAlignment" Value="Center" />
 						<Setter Property="HorizontalAlignment" Value="Center" />
-						<Setter Property="FontSize" Value="12" />
+						<Setter Property="FontSize" Value="14" />
 						<Setter Property="FontWeight" Value="Bold" />
-						<Setter Property="Background" Value="{StaticResource MaterialDesignLightBackground}" />
-						<Setter Property="Foreground" Value="{StaticResource MaterialDesignLightForeground}" />
+						<Setter Property="Foreground" Value="#FF818181" />
 					</Style>
 				</Grid.Resources>
 				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="160" />
+					<ColumnDefinition Width="80" />
+					<ColumnDefinition Width="80" />
 					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="80" />
-					<ColumnDefinition Width="80" />
-					<ColumnDefinition Width="70" />
 				</Grid.ColumnDefinitions>
-				<Label Grid.Column="1" Content="自己ベスト" />
-				<Label Grid.Column="2" Content="本日ベスト" />
+				<Border >
+					<Label Content="本日のプレイヤー" />
+				</Border>
+				<Border Grid.Column="1" >
+					<Label Content="自己ベスト" />
+				</Border>
+				<Border Grid.Column="2" Background="#FFFFEBEB">
+					<Label Content="本日ベスト" />
+				</Border>
 			</Grid>
 			<ItemsControl
-				x:Name="PlayerListBox"
-				Grid.Row="1"
-				Margin="5,5,5,5"
+				x:Name="PlayersControl"
+				Grid.Row="2"
 				HorizontalContentAlignment="Stretch"
 				VerticalContentAlignment="Center"
-				ItemTemplate="{DynamicResource PlayerItemTemplate}"
+				AlternationCount="2"
 				ItemsSource="{Binding Players}">
-				<ItemsControl.Resources>
-					<DataTemplate x:Key="PlayerItemTemplate">
-						<Grid Grid.Row="1">
+
+				<!--  アイテムテンプレート  -->
+				<ItemsControl.ItemContainerStyle>
+					<Style TargetType="ContentPresenter">
+						<Setter Property="ClipToBounds" Value="False" />
+					</Style>
+				</ItemsControl.ItemContainerStyle>
+
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Grid x:Name="ItemGrid">
 							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" MinWidth="160" />
+								<ColumnDefinition Width="160" />
 								<ColumnDefinition Width="*" />
-								<ColumnDefinition Width="80" />
-								<ColumnDefinition Width="80" />
-								<ColumnDefinition Width="35" />
-								<ColumnDefinition Width="35" />
 							</Grid.ColumnDefinitions>
 							<Grid.Resources>
-								<!--  プレイヤー名スタイル  -->
+								<!--  スコア文字スタイル  -->
 								<Style TargetType="{x:Type TextBlock}">
 									<Setter Property="VerticalAlignment" Value="Center" />
 									<Setter Property="HorizontalAlignment" Value="Center" />
 									<Setter Property="Margin" Value="0,5" />
-									<Setter Property="FontSize" Value="15" />
-									<Setter Property="FontWeight" Value="Bold" />
-								</Style>
-								<!--  プレイヤーチェンジボタンスタイル  -->
-								<Style BasedOn="{StaticResource MaterialDesignFloatingActionMiniSecondaryLightButton}" TargetType="{x:Type Button}">
-									<Setter Property="Width" Value="25" />
-									<Setter Property="Height" Value="25" />
-									<Setter Property="Margin" Value="0,5" />
-									<Setter Property="FontSize" Value="13" />
+									<Setter Property="FontSize" Value="18" />
 									<Setter Property="FontWeight" Value="Bold" />
 								</Style>
 							</Grid.Resources>
+							<Grid.Style>
+								<Style TargetType="Grid">
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}, Path=(ItemsControl.AlternationIndex)}" Value="0">
+											<Setter Property="Background" Value="WhiteSmoke" />
+										</DataTrigger>
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}, Path=(ItemsControl.AlternationIndex)}" Value="1">
+											<Setter Property="Background" Value="#FFFFFF" />
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</Grid.Style>
+
+							<!--  プレイヤー名  -->
 							<Label
 								x:Name="PlayerNameLabel"
 								VerticalContentAlignment="Center"
 								Content="{Binding Name.Value}"
-								FontSize="15"
+								FontSize="18"
 								FontWeight="Bold" />
-							<TextBlock Grid.Column="1" Text="{Binding PersonalBest.Value}" />
-							<TextBlock Grid.Column="2" Text="{Binding TodayBest.Value}" />
-							<Button Grid.Column="3" Content="1P">
-								<i:Interaction.Triggers>
-									<i:EventTrigger EventName="Click">
-										<ri:EventToReactiveCommand Command="{Binding DataContext.Player1ChangeCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
-									</i:EventTrigger>
-								</i:Interaction.Triggers>
-							</Button>
-							<Button Grid.Column="4" Content="2P" />
+
+							<!--  ベストスコア  -->
+							<Grid x:Name="BestScorePanel" Grid.Column="1">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="*" />
+								</Grid.ColumnDefinitions>
+								<Border>
+									<TextBlock Text="{Binding PersonalBest.Value}" />
+								</Border>
+								<Border Grid.Column="1">
+									<TextBlock Text="{Binding TodayBest.Value}" />
+								</Border>
+							</Grid>
+
+							<!--  プレイヤー別のコントロール  -->
+							<StackPanel
+								x:Name="ChangeButtonPanel"
+								Grid.Column="2"
+								Orientation="Horizontal">
+								<StackPanel.Resources>
+									<!--  プレイヤーチェンジボタンスタイル  -->
+									<Style BasedOn="{StaticResource MaterialDesignFloatingActionMiniSecondaryLightButton}" TargetType="{x:Type Button}">
+										<Setter Property="Margin" Value="5,0" />
+										<Setter Property="Padding" Value="0" />
+										<Setter Property="Width" Value="32" />
+										<Setter Property="Height" Value="32" />
+										<Setter Property="FontSize" Value="16" />
+										<Setter Property="FontWeight" Value="Bold" />
+									</Style>
+								</StackPanel.Resources>
+
+								<Button x:Name="Player1ChangeButton" Content="1P">
+									<i:Interaction.Triggers>
+										<i:EventTrigger EventName="Click">
+											<ri:EventToReactiveCommand Command="{Binding DataContext.Player1ChangeCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+										</i:EventTrigger>
+									</i:Interaction.Triggers>
+								</Button>
+								<Button x:Name="Player2ChangeButton" Content="2P">
+									<i:Interaction.Triggers>
+										<i:EventTrigger EventName="Click">
+											<ri:EventToReactiveCommand Command="{Binding DataContext.Player2ChangeCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+										</i:EventTrigger>
+									</i:Interaction.Triggers>
+								</Button>
+							</StackPanel>
 						</Grid>
+
+						<DataTemplate.Triggers>
+							<!--  マウスオーバートリガーの動作  -->
+							<Trigger Property="IsMouseOver" Value="false">
+								<Setter TargetName="ChangeButtonPanel" Property="Opacity" Value="0" />
+							</Trigger>
+						</DataTemplate.Triggers>
+
 					</DataTemplate>
-				</ItemsControl.Resources>
+				</ItemsControl.ItemTemplate>
 			</ItemsControl>
 		</Grid>
 
@@ -147,32 +222,15 @@
 			Grid.Row="1"
 			Margin="5">
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
-			<Image
-				Width="20"
-				Height="20"
-				Margin="10,5"
-				HorizontalAlignment="Center"
-				VerticalAlignment="Center"
-				IsHitTestVisible="False"
-				Source="/Resources/capturecursor.png" />
-			<TextBox
-				Grid.Column="1"
-				Height="Auto"
-				MinWidth="500"
-				Margin="10,5"
-				HorizontalAlignment="Stretch"
-				VerticalAlignment="Center"
-				Cursor="IBeam"
-				Text="{Binding Players.Count, Mode=OneWay}" />
 			<Button
-				Grid.Column="2"
+				Grid.Column="1"
 				VerticalAlignment="Center"
 				Content="保存"
 				Cursor="Hand"
+				RenderTransformOrigin="0.5,0.5"
 				Style="{StaticResource MaterialDesignRaisedDarkButton}" />
 		</Grid>
 
