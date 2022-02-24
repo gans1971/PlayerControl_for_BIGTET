@@ -459,172 +459,6 @@ namespace Converters
 	}
 	#endregion
 
-	#region ColorクラスをHEX値に変換するコンバーター
-	public class ColorToHexTextConverter : DependencyObject, IValueConverter
-	{
-		public static readonly DependencyProperty AlphaValueProperty =
-		DependencyProperty.Register("AlphaValue", typeof(byte), typeof(ColorToHexTextConverter), new PropertyMetadata((byte)0xff));
-
-		public byte AlphaValue
-		{
-			get { return (byte)GetValue(AlphaValueProperty); }
-			set { SetValue(AlphaValueProperty, value); }
-		}
-
-
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-
-			string clrtext = value.ToString();
-			if (clrtext != null && clrtext.Length == 9 && clrtext[0] == '#')
-			{
-				return clrtext.Substring(3, 6);
-			}
-			return String.Empty;
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			String clrString = value as String;
-			if (clrString != null && clrString.Length == 6)
-			{
-				Color destClr = (Color)ColorConverter.ConvertFromString("#" + clrString);
-				return new Color()
-				{
-					A = AlphaValue,
-					R = destClr.R,
-					G = destClr.G,
-					B = destClr.B,
-				};
-			}
-			return Colors.White;
-		}
-	}
-	public class SolidColorBrushToHexTextConverter : DependencyObject, IValueConverter
-	{
-		public static readonly DependencyProperty BrushAlphaValueProperty =
-		DependencyProperty.Register("BrushAlphaValue", typeof(byte), typeof(ColorToHexTextConverter), new PropertyMetadata((byte)0xff));
-
-		public byte BrushAlphaValue
-		{
-			get { return (byte)GetValue(BrushAlphaValueProperty); }
-			set { SetValue(BrushAlphaValueProperty, value); }
-		}
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			SolidColorBrush brs = value as SolidColorBrush;
-			if (brs != null)
-			{
-				string clrtext = brs.Color.ToString();
-				if (clrtext != null && clrtext.Length == 9 && clrtext[0] == '#')
-				{
-					return clrtext.Substring(3, 6);
-				}
-			}
-			return String.Empty;
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			String clrString = value as String;
-			if (clrString != null && clrString.Length == 6)
-			{
-				// 数字が16進かどうかチェック
-				foreach (char c in clrString)
-				{
-					if (!Uri.IsHexDigit(c))
-					{
-						return new SolidColorBrush(Colors.White);
-					}
-				}
-
-				try
-				{
-					Color destClr = (Color)ColorConverter.ConvertFromString("#" + clrString);
-					Color destClrAlpha =
-					new Color()
-					{
-						A = BrushAlphaValue,
-						R = destClr.R,
-						G = destClr.G,
-						B = destClr.B,
-					};
-					return new SolidColorBrush(destClrAlpha);
-				}
-				catch
-				{
-
-				}
-			}
-			return new SolidColorBrush(Colors.White);
-		}
-	}
-
-	// 空コード文字列（#AARRGGBB）からSolidColorBrushを返すコンバーター
-	public class ColorcodeToSolidColorBrushConverter : DependencyObject, IValueConverter
-	{
-		public static readonly DependencyProperty BrushAlphaValueProperty =
-		DependencyProperty.Register("BrushAlphaValue", typeof(byte), typeof(ColorcodeToSolidColorBrushConverter), new PropertyMetadata((byte)0xff));
-
-		public byte BrushAlphaValue
-		{
-			get { return (byte)GetValue(BrushAlphaValueProperty); }
-			set { SetValue(BrushAlphaValueProperty, value); }
-		}
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			String clrString = value as String;
-			if (clrString != null && clrString.Length == 9 && clrString[0] == '#')
-			{
-				// 数字が16進かどうかチェック
-				bool isFirst = true;
-				bool isIillegalStr = false;
-				foreach (char c in clrString)
-				{
-					if (isFirst && clrString[0] == '#')
-					{
-						isFirst = false;
-						continue;
-					}
-					// 文字が16進値かどうかチェック
-					if (!Uri.IsHexDigit(c))
-					{
-						isIillegalStr = true;
-					}
-				}
-
-				// カラーコード文字列チェックOK
-				if (!isIillegalStr)
-				{
-					try
-					{
-						Color destClr = (Color)ColorConverter.ConvertFromString(clrString);
-						Color destClrAlpha =
-						new Color()
-						{
-							A = BrushAlphaValue,
-							R = destClr.R,
-							G = destClr.G,
-							B = destClr.B,
-						};
-						return new SolidColorBrush(destClrAlpha);
-					}
-					catch (Exception ex)
-					{
-						Console.WriteLine($"HexTextToSolidColorBrushConverter:{ex.Message}");
-					}
-				}
-			}
-			// 処理できなかった場合
-			return new SolidColorBrush(Colors.White);
-		}
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			throw new NotImplementedException("ColorcodeToSolidColorBrushConverter：ConvertBack Not Supported");
-		}
-
-	}
-	#endregion
 	#endregion
 
 	#region ### 文字列 ###
@@ -639,10 +473,12 @@ namespace Converters
 				IsInvert = true;
 			}
 
-			String sourceName = value as String;
-			if (String.IsNullOrEmpty(sourceName))
+			if (value is String sourceName)
 			{
-				return (IsInvert) ? Visibility.Visible : Visibility.Collapsed;
+				if (String.IsNullOrEmpty(sourceName))
+				{
+					return (IsInvert) ? Visibility.Visible : Visibility.Collapsed;
+				}
 			}
 			return (IsInvert) ? Visibility.Collapsed : Visibility.Visible;
 		}
@@ -664,10 +500,12 @@ namespace Converters
 				IsInvert = true;
 			}
 
-			String sourceName = value as String;
-			if (String.IsNullOrEmpty(sourceName))
+			if (value is String sourceName)
 			{
-				return (IsInvert) ? true : false;
+				if (String.IsNullOrEmpty(sourceName))
+				{
+					return (IsInvert) ? true : false;
+				}
 			}
 			return (IsInvert) ? false : true;
 		}
@@ -683,10 +521,12 @@ namespace Converters
 	{
 		public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture)
 		{
-			String path = value as String;
-			if (String.IsNullOrEmpty(path) == false)
+			if (value is String path)
 			{
-				return Path.GetFileName(path);
+				if (String.IsNullOrEmpty(path) == false)
+				{
+					return Path.GetFileName(path);
+				}
 			}
 			return String.Empty;
 		}
@@ -990,8 +830,7 @@ namespace Converters
 				throw new ArgumentNullException("value");
 			}
 
-			string ParameterString = parameter as string;
-			if (ParameterString != null)
+			if( parameter is string ParameterString)
 			{
 				object paramvalue = Enum.Parse(value.GetType(), ParameterString);
 				if (paramvalue.ToString() == value.ToString())
@@ -1024,7 +863,7 @@ namespace Converters
 		public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture)
 		{
 			// チェックするコンテンツタイプ文字列を取得
-			String className = String.Empty;
+			var className = String.Empty;
 			if (parameter != null)
 			{
 				className = parameter.ToString();
