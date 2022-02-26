@@ -1,6 +1,8 @@
 ﻿using MahApps.Metro.Controls.Dialogs;
+using MaterialDesignThemes.Wpf;
 using Newtonsoft.Json;
 using PlayerControl.Model;
+using PlayerControl.View;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System;
@@ -8,9 +10,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Media.Animation;
 
 namespace PlayerControl.ViewModels
 {
@@ -25,8 +24,8 @@ namespace PlayerControl.ViewModels
 		public ReactivePropertySlim<PlayerModel> SelectedPlayer { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrnetPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrnetPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
+		public ReactivePropertySlim<GameEventSettingViewModel> EventSetting { get; } = new ReactivePropertySlim<GameEventSettingViewModel>();
 		public ReactiveCollection<PlayerModel> Players { get; } = new ReactiveCollection<PlayerModel>();
-
 		#endregion
 
 		#region ReactiveCommand
@@ -34,6 +33,10 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand Player2ChangeCommand { get; }
 		public ReactiveCommand AboutBoxCommand { get; }
 		public ReactiveCommand LoadedCommand { get; }
+		public ReactiveCommand OpenGameEventSettingCommand { get; }
+		public ReactiveCommand SetTodayBestCommand { get; }
+
+
 		#endregion
 
 
@@ -50,7 +53,7 @@ namespace PlayerControl.ViewModels
 			{
 				if (fe.DataContext is PlayerModel player)
 				{
-					if(isPlayer1)
+					if (isPlayer1)
 					{
 						CurrnetPlayer1.Value = player;
 					}
@@ -69,16 +72,61 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public MainWindowViewModel()
 		{
+			// StreamControlのHTMLテンプレートパスを初期化
 			var jsonPath = GetStreamControlPath();
+			//TODO:パスが取得できなかった場合
+
+			// アプリ開始イベント
+			LoadedCommand = new ReactiveCommand();
+			LoadedCommand.Subscribe(_ =>
+			{
+				InitPlayers();
+			}).AddTo(Disposable);
+
+			// イベント設定画面を表示するコマンド
+			OpenGameEventSettingCommand = new ReactiveCommand();
+			OpenGameEventSettingCommand.Subscribe(async _ =>
+			{
+				var view = new GameEventSettingView()
+				{
+					DataContext = EventSetting.Value
+				};
+				// ダイアログ外をクリックして閉じた場合はnullが返ってくる
+				var result = await DialogHost.Show(view, "MainWindowDialog");
+				if (result is bool settingResult)
+				{
+				}
+			}).AddTo(Disposable);
+
+			// 本日ベスト変更コマンド
+			SetTodayBestCommand = new ReactiveCommand();
+			SetTodayBestCommand.Subscribe(async x =>
+			{
+				// イベント発火元コントロールのDataContextからVMを取得して更新
+				if (x is RoutedEventArgs args &&
+					args.Source is FrameworkElement fe &&
+					fe.DataContext is PlayerModel player)
+				{
+					var view = new TodayBestSettingView()
+					{
+						DataContext = player
+					};
+					var result = await DialogHost.Show(view, "MainWindowDialog");
+
+					//await this.MahAppsDialogCoordinator.ShowMessageAsync(this,
+					//	$"{player.Name}",
+					//	$"今日べ：{player.TodayBest}");
+				}
+			}).AddTo(Disposable);
 
 			// プレイヤー1切り替えコマンド
 			Player1ChangeCommand = new ReactiveCommand();
 			Player1ChangeCommand.Subscribe(x =>
 			{
-			   if (x is RoutedEventArgs args)
-			   {
+				if (x is RoutedEventArgs args)
+				{
 					SaveStremControlJson(args, jsonPath, true);
-			   }
+				}
 			}).AddTo(Disposable);
 
 			// プレイヤー2切り替えコマンド
@@ -91,13 +139,8 @@ namespace PlayerControl.ViewModels
 				}
 			}).AddTo(Disposable);
 
-			LoadedCommand = new ReactiveCommand();
-			LoadedCommand.Subscribe(_ =>
-			{
-				InitPlayers();
-			}).AddTo(Disposable);
 
-			// ReactiveCommand Subscribe
+			// このアプリについて表示する
 			AboutBoxCommand = new ReactiveCommand();
 			AboutBoxCommand.Subscribe(async _ =>
 			{

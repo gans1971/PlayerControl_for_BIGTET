@@ -13,7 +13,7 @@
 	Title="PlayerControl"
 	Width="460"
 	Height="480"
-	MinWidth="460"
+	MinWidth="400"
 	MinHeight="480"
 	Dialog:DialogParticipation.Register="{Binding}"
 	BorderThickness="1"
@@ -26,6 +26,7 @@
 	TitleCharacterCasing="Normal"
 	Topmost="True"
 	mc:Ignorable="d">
+
 	<mah:MetroWindow.DataContext>
 		<vm:MainWindowViewModel>
 			<vm:MainWindowViewModel.MahAppsDialogCoordinator>
@@ -44,48 +45,44 @@
 
 	<Grid x:Name="LayoutRoot">
 		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 
-		<Grid x:Name="PlayersGrid">
+		<!--  イベントタイトル  -->
+		<Grid x:Name="EvetTitleGrid">
+			<Border
+				Margin="0,0,0,10"
+				Background="White"
+				IsHitTestVisible="False">
+				<Border.Effect>
+					<DropShadowEffect
+						BlurRadius="10"
+						Opacity="0.5"
+						ShadowDepth="3"
+						Color="#FFD5D5D5" />
+				</Border.Effect>
+				<Label
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"
+					Content="水曜日フリプ"
+					FontSize="15"
+					FontWeight="Bold"
+					Foreground="{StaticResource MaterialDesignLightForeground}" />
+			</Border>
+		</Grid>
+
+		<Grid x:Name="PlayersControlGrid" Grid.Row="1">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
-				<RowDefinition Height="Auto" />
 				<RowDefinition Height="*" />
-				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
-			<!--  イベントタイトル  -->
-			<Grid x:Name="EvetTitleGrid">
-				<Border
-					Margin="0,0,0,10"
-					Background="White"
-					IsHitTestVisible="False">
-					<Border.Effect>
-						<DropShadowEffect
-							BlurRadius="10"
-							Opacity="0.5"
-							ShadowDepth="3"
-							Color="#FFD5D5D5" />
-					</Border.Effect>
-					<Label
-						HorizontalAlignment="Stretch"
-						VerticalAlignment="Center"
-						HorizontalContentAlignment="Center"
-						VerticalContentAlignment="Center"
-						Content="水曜日フリプ"
-						FontSize="15"
-						FontWeight="Bold"
-						Foreground="DarkBlue" />
-				</Border>
-			</Grid>
-
-			<!--  プレイヤーヘッダ  -->
-			<Grid
-				x:Name="PlayerGrid_ItemsControl"
-				Grid.Row="1"
-				IsHitTestVisible="False">
+			<!--  プレイヤー一覧 ラベル行  -->
+			<Grid x:Name="PlayerGrid_ItemsControl">
 				<Grid.Resources>
 					<Style TargetType="{x:Type Label}">
 						<Setter Property="VerticalAlignment" Value="Center" />
@@ -96,32 +93,45 @@
 					</Style>
 				</Grid.Resources>
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="160" />
+					<ColumnDefinition Width="Auto" MinWidth="160" />
+					<ColumnDefinition Width="2" />
 					<ColumnDefinition Width="80" />
 					<ColumnDefinition Width="80" />
 					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
-				<Border>
+				<Border x:Name="PlayersLabel" IsHitTestVisible="False">
 					<Label Content="本日のプレイヤー" />
 				</Border>
-				<Border Grid.Column="1">
+				<GridSplitter
+					Grid.Column="1"
+					HorizontalAlignment="Stretch"
+					Background="#FFE9E9E9"
+					IsHitTestVisible="True" />
+				<Border
+					x:Name="PersonalBestLabel"
+					Grid.Column="2"
+					IsHitTestVisible="False">
 					<Label Content="自己ベスト" />
 				</Border>
-				<Border Grid.Column="2" Background="#FFFFEBEB">
-					<Label Content="本日ベスト" />
+				<Border
+					x:Name="TodayBestLabel"
+					Grid.Column="3"
+					IsHitTestVisible="False">
+					<Label Content="本日ベスト" Foreground="OrangeRed" />
 				</Border>
 			</Grid>
 
 			<!--  プレイヤー一覧（ItemsControl版）  -->
+			<!--  ※覚書： https://mvrck.jp/documents/dotnet/wpf/itemscontrol-template/  -->
 			<ItemsControl
 				x:Name="PlayersControl"
-				Grid.Row="2"
+				Grid.Row="1"
 				HorizontalContentAlignment="Stretch"
 				VerticalContentAlignment="Center"
 				AlternationCount="2"
 				ItemsSource="{Binding Players}">
 
-
+				<!--  コントロールテンプレート  -->
 				<ItemsControl.Template>
 					<ControlTemplate TargetType="ItemsControl">
 						<ScrollViewer Focusable="False">
@@ -136,7 +146,8 @@
 						<Grid x:Name="ItemGrid">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto" MinWidth="160" />
-								<ColumnDefinition Width="160" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
 								<ColumnDefinition Width="*" />
 							</Grid.ColumnDefinitions>
 							<Grid.Resources>
@@ -166,11 +177,14 @@
 							<!--  プレイヤー名  -->
 							<Label
 								x:Name="PlayerNameLabel"
+								Width="{Binding ActualWidth, ElementName=PlayersLabel, Mode=OneWay}"
 								VerticalContentAlignment="Center"
 								Content="{Binding Name.Value}"
 								FontSize="18"
 								FontWeight="Bold" />
-							<Popup PlacementTarget="{Binding ElementName=PlayerNameLabel}" >
+
+							<!--  TODO:1p/2pボタンをポップアップで表示する  -->
+							<Popup PlacementTarget="{Binding ElementName=PlayerNameLabel}">
 								<Border
 									Background="White"
 									BorderBrush="Red"
@@ -179,24 +193,25 @@
 								</Border>
 							</Popup>
 
-							<!--  ベストスコア  -->
-							<Grid x:Name="BestScorePanel" Grid.Column="1">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="*" />
-									<ColumnDefinition Width="*" />
-								</Grid.ColumnDefinitions>
-								<Border>
-									<TextBlock Text="{Binding PersonalBest.Value}" />
-								</Border>
-								<Border Grid.Column="1">
-									<TextBlock Text="{Binding TodayBest.Value}" />
-								</Border>
-							</Grid>
+							<!--  自己ベスト  -->
+							<Border Grid.Column="1" Width="{Binding ActualWidth, ElementName=PersonalBestLabel, Mode=OneWay}">
+								<TextBlock Text="{Binding PersonalBest.Value}" />
+							</Border>
+							<!--  本日ベスト  -->
+							<Border Grid.Column="2" Width="{Binding ActualWidth, ElementName=TodayBestLabel, Mode=OneWay}">
+								<i:Interaction.Triggers>
+									<i:EventTrigger EventName="MouseDown">
+										<ri:EventToReactiveCommand Command="{Binding DataContext.SetTodayBestCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+									</i:EventTrigger>
+								</i:Interaction.Triggers>
+
+								<TextBlock Text="{Binding TodayBest.Value}" />
+							</Border>
 
 							<!--  プレイヤー別のコントロール  -->
 							<StackPanel
 								x:Name="ChangeButtonPanel"
-								Grid.Column="2"
+								Grid.Column="3"
 								Orientation="Horizontal">
 								<StackPanel.Resources>
 									<!--  プレイヤーチェンジボタンスタイル  -->
@@ -237,99 +252,38 @@
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
-
-			<!--  プレイヤー一覧 ※ ListView版 使いにくいので一旦保留  -->
-			<ListView
-				x:Name="PlayersListView"
-				Grid.Row="3"
-				MinHeight="20"
-				HorizontalContentAlignment="Stretch"
-				VerticalContentAlignment="Center"
-				ItemsSource="{Binding Players, Mode=OneWay}"
-				ScrollViewer.VerticalScrollBarVisibility="Auto"
-				SelectionMode="Single"
-				Visibility="Collapsed">
-				<ListView.Resources>
-					<Style BasedOn="{StaticResource {x:Type DataGridColumnHeader}}" TargetType="DataGridColumnHeader">
-						<Setter Property="mah:ControlsHelper.ContentCharacterCasing" Value="Normal" />
-					</Style>
-				</ListView.Resources>
-
-				<ListView.View>
-					<GridView>
-						<GridViewColumn Width="Auto">
-							<GridViewColumnHeader HorizontalContentAlignment="Center" Content="本日のプレイヤー" />
-							<GridViewColumn.CellTemplate>
-								<DataTemplate>
-									<Label
-										x:Name="PlayerNameLabel"
-										VerticalContentAlignment="Center"
-										Content="{Binding Name.Value}"
-										FontWeight="Bold" />
-								</DataTemplate>
-							</GridViewColumn.CellTemplate>
-						</GridViewColumn>
-
-						<GridViewColumn Width="Auto">
-							<GridViewColumnHeader HorizontalContentAlignment="Center" Content="自己ベスト" />
-							<GridViewColumn.CellTemplate>
-								<DataTemplate>
-									<Border Grid.Column="1">
-										<TextBlock Text="{Binding PersonalBest.Value}" />
-									</Border>
-								</DataTemplate>
-							</GridViewColumn.CellTemplate>
-						</GridViewColumn>
-						<GridViewColumn Width="Auto">
-							<GridViewColumnHeader HorizontalContentAlignment="Center" Content="本日ベスト" />
-							<GridViewColumn.CellTemplate>
-								<DataTemplate>
-									<Border Grid.Column="1">
-										<TextBlock Text="{Binding TodayBest.Value}" />
-									</Border>
-								</DataTemplate>
-							</GridViewColumn.CellTemplate>
-						</GridViewColumn>
-						<GridViewColumn Width="Auto">
-							<GridViewColumnHeader HorizontalContentAlignment="Center" Content="操作" />
-							<GridViewColumn.CellTemplate>
-								<DataTemplate>
-									<Button
-										Margin="0,5"
-										Padding="5,0"
-										HorizontalAlignment="Center"
-										VerticalAlignment="Center"
-										Content="1P" />
-								</DataTemplate>
-							</GridViewColumn.CellTemplate>
-						</GridViewColumn>
-					</GridView>
-				</ListView.View>
-			</ListView>
-
-
 		</Grid>
 
 
 		<!--#region ツールグリッド TODO:機能実装-->
 		<Grid
 			x:Name="ToolGrid"
-			Grid.Row="1"
+			Grid.Row="3"
 			Margin="5">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
 			<Button
 				Grid.Column="1"
-				VerticalAlignment="Center"
-				Content="保存"
-				Cursor="Hand"
-				RenderTransformOrigin="0.5,0.5"
-				Style="{StaticResource MaterialDesignRaisedDarkButton}" />
+				Command="{Binding OpenGameEventSettingCommand}"
+				Content="イベント設定" />
+			<Button
+				Grid.Column="2"
+				Margin="5,0,0,0"
+				Command="{Binding AboutBoxCommand}"
+				Content="About"
+				Cursor="Hand" />
 		</Grid>
 		<!--#endregion-->
 
-		<materialDesign:DialogHost Identifier="MessageDialogHost" />
+		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->
+		<!--  参考：http://nineworks2.blog.fc2.com/blog-entry-117.html  -->
+		<materialDesign:DialogHost
+			Grid.Row="1"
+			d:IsHidden="True"
+			CloseOnClickAway="False"
+			Identifier="MainWindowDialog" />
 	</Grid>
 </mah:MetroWindow>
