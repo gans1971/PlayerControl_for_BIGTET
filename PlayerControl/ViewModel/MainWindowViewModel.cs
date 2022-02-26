@@ -9,6 +9,8 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Media.Animation;
 
 namespace PlayerControl.ViewModels
 {
@@ -35,6 +37,13 @@ namespace PlayerControl.ViewModels
 		#endregion
 
 
+		/// <summary>
+		/// StreamControl互換のJSONファイルをテンプレートフォルダに出力する
+		/// </summary>
+		/// <param name="args"></param>
+		/// <param name="jsonFolder"></param>
+		/// <param name="isPlayer1"></param>
+		/// <returns></returns>
 		private bool SaveStremControlJson(RoutedEventArgs args, String jsonFolder, bool isPlayer1)
 		{
 			if (args.Source is FrameworkElement fe)
@@ -191,6 +200,24 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public void InitPlayers()
 		{
+			Players.Add(new PlayerModel("ガンズ", 664, 425));
+			Players.Add(new PlayerModel("GAF", 942, 656));
+			Players.Add(new PlayerModel("まつのゆ", 580, 530));
+			Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
+			Players.Add(new PlayerModel("チャーハンライス", 999, 702));
+
+			Players.Add(new PlayerModel("ガンズ", 664, 425));
+			Players.Add(new PlayerModel("GAF", 942, 656));
+			Players.Add(new PlayerModel("まつのゆ", 580, 530));
+			Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
+			Players.Add(new PlayerModel("チャーハンライス", 999, 702));
+
+			Players.Add(new PlayerModel("ガンズ", 664, 425));
+			Players.Add(new PlayerModel("GAF", 942, 656));
+			Players.Add(new PlayerModel("まつのゆ", 580, 530));
+			Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
+			Players.Add(new PlayerModel("チャーハンライス", 999, 702));
+
 			Players.Add(new PlayerModel("ガンズ", 664, 425));
 			Players.Add(new PlayerModel("GAF", 942, 656));
 			Players.Add(new PlayerModel("まつのゆ", 580, 530));

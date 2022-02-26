@@ -53,15 +53,21 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
+			<!--  イベントタイトル  -->
 			<Grid x:Name="EvetTitleGrid">
 				<Border
 					Margin="0,0,0,10"
 					Background="White"
 					IsHitTestVisible="False">
 					<Border.Effect>
-						<DropShadowEffect ShadowDepth="3" Opacity="0.5" BlurRadius="10" Color="#FFD5D5D5" />
+						<DropShadowEffect
+							BlurRadius="10"
+							Opacity="0.5"
+							ShadowDepth="3"
+							Color="#FFD5D5D5" />
 					</Border.Effect>
 					<Label
 						HorizontalAlignment="Stretch"
@@ -74,8 +80,10 @@
 						Foreground="DarkBlue" />
 				</Border>
 			</Grid>
+
+			<!--  プレイヤーヘッダ  -->
 			<Grid
-				x:Name="HeaderGrid"
+				x:Name="PlayerGrid_ItemsControl"
 				Grid.Row="1"
 				IsHitTestVisible="False">
 				<Grid.Resources>
@@ -93,16 +101,18 @@
 					<ColumnDefinition Width="80" />
 					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
-				<Border >
+				<Border>
 					<Label Content="本日のプレイヤー" />
 				</Border>
-				<Border Grid.Column="1" >
+				<Border Grid.Column="1">
 					<Label Content="自己ベスト" />
 				</Border>
 				<Border Grid.Column="2" Background="#FFFFEBEB">
 					<Label Content="本日ベスト" />
 				</Border>
 			</Grid>
+
+			<!--  プレイヤー一覧（ItemsControl版）  -->
 			<ItemsControl
 				x:Name="PlayersControl"
 				Grid.Row="2"
@@ -111,13 +121,16 @@
 				AlternationCount="2"
 				ItemsSource="{Binding Players}">
 
-				<!--  アイテムテンプレート  -->
-				<ItemsControl.ItemContainerStyle>
-					<Style TargetType="ContentPresenter">
-						<Setter Property="ClipToBounds" Value="False" />
-					</Style>
-				</ItemsControl.ItemContainerStyle>
 
+				<ItemsControl.Template>
+					<ControlTemplate TargetType="ItemsControl">
+						<ScrollViewer Focusable="False">
+							<ItemsPresenter />
+						</ScrollViewer>
+					</ControlTemplate>
+				</ItemsControl.Template>
+
+				<!--  アイテムテンプレート  -->
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
 						<Grid x:Name="ItemGrid">
@@ -136,6 +149,7 @@
 									<Setter Property="FontWeight" Value="Bold" />
 								</Style>
 							</Grid.Resources>
+							<!--  行ごとに背景色を切り替える  -->
 							<Grid.Style>
 								<Style TargetType="Grid">
 									<Style.Triggers>
@@ -156,6 +170,14 @@
 								Content="{Binding Name.Value}"
 								FontSize="18"
 								FontWeight="Bold" />
+							<Popup PlacementTarget="{Binding ElementName=PlayerNameLabel}" >
+								<Border
+									Background="White"
+									BorderBrush="Red"
+									BorderThickness="1">
+									<TextBlock Margin="10" Text="1P 2P" />
+								</Border>
+							</Popup>
 
 							<!--  ベストスコア  -->
 							<Grid x:Name="BestScorePanel" Grid.Column="1">
@@ -215,8 +237,81 @@
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
+
+			<!--  プレイヤー一覧 ※ ListView版 使いにくいので一旦保留  -->
+			<ListView
+				x:Name="PlayersListView"
+				Grid.Row="3"
+				MinHeight="20"
+				HorizontalContentAlignment="Stretch"
+				VerticalContentAlignment="Center"
+				ItemsSource="{Binding Players, Mode=OneWay}"
+				ScrollViewer.VerticalScrollBarVisibility="Auto"
+				SelectionMode="Single"
+				Visibility="Collapsed">
+				<ListView.Resources>
+					<Style BasedOn="{StaticResource {x:Type DataGridColumnHeader}}" TargetType="DataGridColumnHeader">
+						<Setter Property="mah:ControlsHelper.ContentCharacterCasing" Value="Normal" />
+					</Style>
+				</ListView.Resources>
+
+				<ListView.View>
+					<GridView>
+						<GridViewColumn Width="Auto">
+							<GridViewColumnHeader HorizontalContentAlignment="Center" Content="本日のプレイヤー" />
+							<GridViewColumn.CellTemplate>
+								<DataTemplate>
+									<Label
+										x:Name="PlayerNameLabel"
+										VerticalContentAlignment="Center"
+										Content="{Binding Name.Value}"
+										FontWeight="Bold" />
+								</DataTemplate>
+							</GridViewColumn.CellTemplate>
+						</GridViewColumn>
+
+						<GridViewColumn Width="Auto">
+							<GridViewColumnHeader HorizontalContentAlignment="Center" Content="自己ベスト" />
+							<GridViewColumn.CellTemplate>
+								<DataTemplate>
+									<Border Grid.Column="1">
+										<TextBlock Text="{Binding PersonalBest.Value}" />
+									</Border>
+								</DataTemplate>
+							</GridViewColumn.CellTemplate>
+						</GridViewColumn>
+						<GridViewColumn Width="Auto">
+							<GridViewColumnHeader HorizontalContentAlignment="Center" Content="本日ベスト" />
+							<GridViewColumn.CellTemplate>
+								<DataTemplate>
+									<Border Grid.Column="1">
+										<TextBlock Text="{Binding TodayBest.Value}" />
+									</Border>
+								</DataTemplate>
+							</GridViewColumn.CellTemplate>
+						</GridViewColumn>
+						<GridViewColumn Width="Auto">
+							<GridViewColumnHeader HorizontalContentAlignment="Center" Content="操作" />
+							<GridViewColumn.CellTemplate>
+								<DataTemplate>
+									<Button
+										Margin="0,5"
+										Padding="5,0"
+										HorizontalAlignment="Center"
+										VerticalAlignment="Center"
+										Content="1P" />
+								</DataTemplate>
+							</GridViewColumn.CellTemplate>
+						</GridViewColumn>
+					</GridView>
+				</ListView.View>
+			</ListView>
+
+
 		</Grid>
 
+
+		<!--#region ツールグリッド TODO:機能実装-->
 		<Grid
 			x:Name="ToolGrid"
 			Grid.Row="1"
@@ -233,6 +328,7 @@
 				RenderTransformOrigin="0.5,0.5"
 				Style="{StaticResource MaterialDesignRaisedDarkButton}" />
 		</Grid>
+		<!--#endregion-->
 
 		<materialDesign:DialogHost Identifier="MessageDialogHost" />
 	</Grid>
