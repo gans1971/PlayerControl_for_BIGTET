@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace PlayerControl.View
 {
@@ -23,6 +13,36 @@ namespace PlayerControl.View
 		public TodayBestSettingView()
 		{
 			InitializeComponent();
+		}
+
+		private void NumericUpDown_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+		{
+			InputMethod.Current.ImeState = InputMethodState.Off;
+		}
+
+		private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+		{
+			// 0-9のみ
+			e.Handled = !new Regex("[0-9]").IsMatch(e.Text);
+		}
+
+		private void TextBox_PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
+		{
+			// 貼り付けを許可しない
+			if (e.Command == ApplicationCommands.Paste)
+			{
+				e.Handled = true;
+			}
+		}
+	}
+
+	public class NotEmptyValidationRule : ValidationRule
+	{
+		public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+		{
+			return string.IsNullOrWhiteSpace((value ?? "").ToString())
+				? new ValidationResult(false, "スコアを入力してください")
+				: ValidationResult.ValidResult;
 		}
 	}
 }

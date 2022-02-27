@@ -2,12 +2,11 @@
 	x:Class="PlayerControl.App"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:local="clr-namespace:PlayerControl"
+	xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
 	StartupUri="view/MainWindow.xaml">
 	<Application.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
-
 				<!--  MahApps  -->
 				<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
@@ -19,10 +18,11 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.BlueGrey.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Indigo.xaml" />
 
-
 				<!--  Material Design: MahApps Compatibility  -->
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Fonts.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Flyout.xaml" />
+
+				<ResourceDictionary Source="/PlayerControl;component/Styles/ScoreUpDown.xaml" />
 
 			</ResourceDictionary.MergedDictionaries>
 
@@ -46,6 +46,12 @@
 				x:Key="MahApps.Brushes.IdealForegroundDisabled"
 				Opacity="0.4"
 				Color="{DynamicResource Primary500}" />
+
+
+			<Style BasedOn="{StaticResource {x:Type mah:NumericUpDown}}" TargetType="{x:Type mah:NumericUpDown}">
+				<Setter Property="Template" Value="{DynamicResource ScoreUpDownControlTemplate}" />
+			</Style>
+
 		</ResourceDictionary>
 	</Application.Resources>
 </Application>

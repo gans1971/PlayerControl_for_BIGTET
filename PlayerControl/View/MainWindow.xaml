@@ -94,7 +94,7 @@
 				</Grid.Resources>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" MinWidth="160" />
-					<ColumnDefinition Width="2" />
+					<ColumnDefinition Width="3" />
 					<ColumnDefinition Width="80" />
 					<ColumnDefinition Width="80" />
 					<ColumnDefinition Width="*" />
@@ -175,13 +175,15 @@
 							</Grid.Style>
 
 							<!--  プレイヤー名  -->
-							<Label
-								x:Name="PlayerNameLabel"
-								Width="{Binding ActualWidth, ElementName=PlayersLabel, Mode=OneWay}"
-								VerticalContentAlignment="Center"
-								Content="{Binding Name.Value}"
-								FontSize="18"
-								FontWeight="Bold" />
+							<Viewbox Width="{Binding ActualWidth, ElementName=PlayersLabel, Mode=OneWay}" StretchDirection="DownOnly">
+
+								<Label
+									x:Name="PlayerNameLabel"
+									VerticalContentAlignment="Center"
+									Content="{Binding Name.Value}"
+									FontSize="18"
+									FontWeight="Bold" />
+							</Viewbox>
 
 							<!--  TODO:1p/2pボタンをポップアップで表示する  -->
 							<Popup PlacementTarget="{Binding ElementName=PlayerNameLabel}">
@@ -195,7 +197,7 @@
 
 							<!--  自己ベスト  -->
 							<Border Grid.Column="1" Width="{Binding ActualWidth, ElementName=PersonalBestLabel, Mode=OneWay}">
-								<TextBlock Text="{Binding PersonalBest.Value}" />
+								<TextBlock Foreground="DarkGray" Text="{Binding PersonalBest.Value}" />
 							</Border>
 							<!--  本日ベスト  -->
 							<Border Grid.Column="2" Width="{Binding ActualWidth, ElementName=TodayBestLabel, Mode=OneWay}">
@@ -281,7 +283,7 @@
 		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->
 		<!--  参考：http://nineworks2.blog.fc2.com/blog-entry-117.html  -->
 		<materialDesign:DialogHost
-			Grid.Row="1"
+			Grid.RowSpan="5"
 			d:IsHidden="True"
 			CloseOnClickAway="False"
 			Identifier="MainWindowDialog" />

@@ -102,20 +102,23 @@ namespace PlayerControl.ViewModels
 			SetTodayBestCommand = new ReactiveCommand();
 			SetTodayBestCommand.Subscribe(async x =>
 			{
-				// イベント発火元コントロールのDataContextからVMを取得して更新
-				if (x is RoutedEventArgs args &&
-					args.Source is FrameworkElement fe &&
-					fe.DataContext is PlayerModel player)
+				try
 				{
-					var view = new TodayBestSettingView()
-					{
-						DataContext = player
-					};
-					var result = await DialogHost.Show(view, "MainWindowDialog");
 
-					//await this.MahAppsDialogCoordinator.ShowMessageAsync(this,
-					//	$"{player.Name}",
-					//	$"今日べ：{player.TodayBest}");
+					// イベント発火元コントロールのDataContextからVMを取得して更新
+					if (x is RoutedEventArgs args &&
+						args.Source is FrameworkElement fe &&
+						fe.DataContext is PlayerModel player)
+					{
+						var view = new TodayBestSettingView()
+						{
+							DataContext = player
+						};
+						var result = await DialogHost.Show(view, "MainWindowDialog");
+					}
+				}catch (Exception ex)
+				{
+					Debug.WriteLine($"Exception TodayBestImput:{ex.ToString()}");
 				}
 			}).AddTo(Disposable);
 
@@ -247,7 +250,7 @@ namespace PlayerControl.ViewModels
 			Players.Add(new PlayerModel("GAF", 942, 656));
 			Players.Add(new PlayerModel("まつのゆ", 580, 530));
 			Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
-			Players.Add(new PlayerModel("チャーハンライス", 999, 702));
+			Players.Add(new PlayerModel("ガンズまつのゆチャーハンライスいにゅうえんどう", 999, 702));
 
 			Players.Add(new PlayerModel("ガンズ", 664, 425));
 			Players.Add(new PlayerModel("GAF", 942, 656));
