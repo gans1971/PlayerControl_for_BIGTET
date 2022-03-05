@@ -8,7 +8,9 @@
 	xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
 	xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 	xmlns:ri="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
+	xmlns:sys="clr-namespace:System;assembly=mscorlib"
 	xmlns:vm="clr-namespace:PlayerControl.ViewModels"
 	Title="PlayerControl"
 	Width="460"
@@ -121,29 +123,78 @@
 				</Border>
 			</Grid>
 
-			<!--  プレイヤー一覧（ItemsControl版）  -->
+			<!--  プレイヤー一覧  -->
 			<!--  ※覚書： https://mvrck.jp/documents/dotnet/wpf/itemscontrol-template/  -->
-			<ItemsControl
+			<ListBox
 				x:Name="PlayersControl"
 				Grid.Row="1"
 				HorizontalContentAlignment="Stretch"
 				VerticalContentAlignment="Center"
 				AlternationCount="2"
 				ItemsSource="{Binding Players}">
+				<ListBox.Resources>
+					<Style x:Key="listItemFocusVisualStyle">
+						<Setter Property="Control.Template">
+							<Setter.Value>
+								<ControlTemplate>
+									<Rectangle
+										SnapsToDevicePixels="true"
+										Stroke="DarkGreen"
+										StrokeThickness="1" />
+								</ControlTemplate>
+							</Setter.Value>
+						</Setter>
+					</Style>
+				</ListBox.Resources>
+
+				<ListBox.ItemContainerStyle>
+					<Style TargetType="{x:Type ListBoxItem}">
+						<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+
+						<Setter Property="Template">
+							<Setter.Value>
+								<ControlTemplate TargetType="{x:Type ListBoxItem}">
+									<Border Background="{TemplateBinding Background}">
+										<ContentPresenter />
+									</Border>
+								</ControlTemplate>
+							</Setter.Value>
+						</Setter>
+						<Style.Triggers>
+							<Trigger Property="ListBox.AlternationIndex" Value="0">
+								<Setter Property="Background" Value="WhiteSmoke" />
+							</Trigger>
+							<Trigger Property="ListBox.AlternationIndex" Value="1">
+								<Setter Property="Background" Value="White" />
+							</Trigger>
+							<MultiTrigger>
+								<MultiTrigger.Conditions>
+									<Condition Property="Selector.IsSelectionActive" Value="True" />
+									<Condition Property="IsSelected" Value="True" />
+								</MultiTrigger.Conditions>
+								<Setter Property="Background" Value="#FFD6E7F8" />
+							</MultiTrigger>
+						</Style.Triggers>
+					</Style>
+				</ListBox.ItemContainerStyle>
 
 				<!--  コントロールテンプレート  -->
-				<ItemsControl.Template>
-					<ControlTemplate TargetType="ItemsControl">
+				<ListBox.Template>
+					<ControlTemplate TargetType="ListBox">
 						<ScrollViewer Focusable="False">
+							<ScrollViewer.Resources>
+								<sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">10</sys:Double>
+							</ScrollViewer.Resources>
 							<ItemsPresenter />
 						</ScrollViewer>
+
 					</ControlTemplate>
-				</ItemsControl.Template>
+				</ListBox.Template>
 
 				<!--  アイテムテンプレート  -->
-				<ItemsControl.ItemTemplate>
+				<ListBox.ItemTemplate>
 					<DataTemplate>
-						<Grid x:Name="ItemGrid">
+						<Grid x:Name="ItemGrid" Background="Transparent">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto" MinWidth="160" />
 								<ColumnDefinition Width="Auto" />
@@ -151,6 +202,15 @@
 								<ColumnDefinition Width="*" />
 							</Grid.ColumnDefinitions>
 							<Grid.Resources>
+								<!--  プレイヤーチェンジボタンスタイル  -->
+								<Style BasedOn="{StaticResource MaterialDesignFloatingActionSecondaryLightButton}" TargetType="{x:Type Button}">
+									<Setter Property="Margin" Value="5,0" />
+									<Setter Property="Padding" Value="0" />
+									<Setter Property="Width" Value="30" />
+									<Setter Property="Height" Value="30" />
+									<Setter Property="FontSize" Value="18" />
+									<Setter Property="FontWeight" Value="Bold" />
+								</Style>
 								<!--  スコア文字スタイル  -->
 								<Style TargetType="{x:Type TextBlock}">
 									<Setter Property="VerticalAlignment" Value="Center" />
@@ -160,38 +220,57 @@
 									<Setter Property="FontWeight" Value="Bold" />
 								</Style>
 							</Grid.Resources>
-							<!--  行ごとに背景色を切り替える  -->
-							<Grid.Style>
-								<Style TargetType="Grid">
-									<Style.Triggers>
-										<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}, Path=(ItemsControl.AlternationIndex)}" Value="0">
-											<Setter Property="Background" Value="WhiteSmoke" />
-										</DataTrigger>
-										<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}, Path=(ItemsControl.AlternationIndex)}" Value="1">
-											<Setter Property="Background" Value="#FFFFFF" />
-										</DataTrigger>
-									</Style.Triggers>
-								</Style>
-							</Grid.Style>
 
 							<!--  プレイヤー名  -->
-							<Viewbox Width="{Binding ActualWidth, ElementName=PlayersLabel, Mode=OneWay}" StretchDirection="DownOnly">
+							<Grid x:Name="PlayerNameGrid">
+								<Viewbox
+									x:Name="PlayerNameViewBox"
+									Width="{Binding ActualWidth, ElementName=PlayersLabel, Mode=OneWay}"
+									StretchDirection="DownOnly">
 
-								<Label
-									x:Name="PlayerNameLabel"
-									VerticalContentAlignment="Center"
-									Content="{Binding Name.Value}"
-									FontSize="18"
-									FontWeight="Bold" />
-							</Viewbox>
+									<Label
+										x:Name="PlayerNameLabel"
+										VerticalContentAlignment="Center"
+										Content="{Binding Name.Value}"
+										FontSize="18"
+										FontWeight="Bold"
+										Foreground="Black" />
+								</Viewbox>
+							</Grid>
 
-							<!--  TODO:1p/2pボタンをポップアップで表示する  -->
-							<Popup PlacementTarget="{Binding ElementName=PlayerNameLabel}">
+							<!--  1P/2Pボタンをポップアップで表示する  -->
+							<!--  HorizontalOffset="{Binding ActualWidth, ElementName=PlayersLabel, Mode=OneWay}"  -->
+							<Popup
+								x:Name="PlayerSelectPopup"
+								AllowsTransparency="True"
+								HorizontalOffset="0"
+								Placement="Left"
+								PlacementRectangle="20,-5,200,10"
+								PlacementTarget="{Binding ElementName=PlayerNameGrid}"
+								PopupAnimation="Fade"
+								VerticalOffset="0">
 								<Border
-									Background="White"
-									BorderBrush="Red"
-									BorderThickness="1">
-									<TextBlock Margin="10" Text="1P 2P" />
+									Padding="10,5"
+									Background="#40605570"
+									BorderBrush="#A0404040"
+									BorderThickness="2"
+									CornerRadius="10">
+									<StackPanel x:Name="ChangeButtonPanel" Orientation="Horizontal">
+										<Button x:Name="Player1ChangeButton" Content="1P">
+											<i:Interaction.Triggers>
+												<i:EventTrigger EventName="Click">
+													<ri:EventToReactiveCommand Command="{Binding DataContext.Player1ChangeCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+												</i:EventTrigger>
+											</i:Interaction.Triggers>
+										</Button>
+										<Button x:Name="Player2ChangeButton" Content="2P">
+											<i:Interaction.Triggers>
+												<i:EventTrigger EventName="Click">
+													<ri:EventToReactiveCommand Command="{Binding DataContext.Player2ChangeCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+												</i:EventTrigger>
+											</i:Interaction.Triggers>
+										</Button>
+									</StackPanel>
 								</Border>
 							</Popup>
 
@@ -203,7 +282,7 @@
 							<Border Grid.Column="2" Width="{Binding ActualWidth, ElementName=TodayBestLabel, Mode=OneWay}">
 								<i:Interaction.Triggers>
 									<i:EventTrigger EventName="MouseDown">
-										<ri:EventToReactiveCommand Command="{Binding DataContext.SetTodayBestCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+										<ri:EventToReactiveCommand Command="{Binding DataContext.SetTodayBestCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
 									</i:EventTrigger>
 								</i:Interaction.Triggers>
 
@@ -212,48 +291,42 @@
 
 							<!--  プレイヤー別のコントロール  -->
 							<StackPanel
-								x:Name="ChangeButtonPanel"
+								x:Name="ChangeButtonPanel_"
 								Grid.Column="3"
-								Orientation="Horizontal">
-								<StackPanel.Resources>
-									<!--  プレイヤーチェンジボタンスタイル  -->
-									<Style BasedOn="{StaticResource MaterialDesignFloatingActionMiniSecondaryLightButton}" TargetType="{x:Type Button}">
-										<Setter Property="Margin" Value="5,0" />
-										<Setter Property="Padding" Value="0" />
-										<Setter Property="Width" Value="32" />
-										<Setter Property="Height" Value="32" />
-										<Setter Property="FontSize" Value="16" />
-										<Setter Property="FontWeight" Value="Bold" />
-									</Style>
-								</StackPanel.Resources>
-
-								<Button x:Name="Player1ChangeButton" Content="1P">
+								Orientation="Horizontal"
+								Visibility="Collapsed">
+								<Button x:Name="Player1ChangeButton_" Content="1P">
 									<i:Interaction.Triggers>
 										<i:EventTrigger EventName="Click">
-											<ri:EventToReactiveCommand Command="{Binding DataContext.Player1ChangeCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+											<ri:EventToReactiveCommand Command="{Binding DataContext.Player1ChangeCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
 										</i:EventTrigger>
 									</i:Interaction.Triggers>
 								</Button>
-								<Button x:Name="Player2ChangeButton" Content="2P">
+								<Button x:Name="Player2ChangeButton_" Content="2P">
 									<i:Interaction.Triggers>
 										<i:EventTrigger EventName="Click">
-											<ri:EventToReactiveCommand Command="{Binding DataContext.Player2ChangeCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+											<ri:EventToReactiveCommand Command="{Binding DataContext.Player2ChangeCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
 										</i:EventTrigger>
 									</i:Interaction.Triggers>
 								</Button>
 							</StackPanel>
 						</Grid>
-
 						<DataTemplate.Triggers>
-							<!--  マウスオーバートリガーの動作  -->
 							<Trigger Property="IsMouseOver" Value="false">
-								<Setter TargetName="ChangeButtonPanel" Property="Opacity" Value="0" />
+								<Setter TargetName="PlayerSelectPopup" Property="IsOpen" Value="False" />
+								<Setter TargetName="PlayerNameLabel" Property="Foreground" Value="Black" />
+
 							</Trigger>
+							<Trigger Property="IsMouseOver" Value="true">
+								<Setter TargetName="PlayerSelectPopup" Property="IsOpen" Value="True" />
+								<Setter TargetName="PlayerNameLabel" Property="Foreground" Value="DarkBlue" />
+							</Trigger>
+
 						</DataTemplate.Triggers>
 
 					</DataTemplate>
-				</ItemsControl.ItemTemplate>
-			</ItemsControl>
+				</ListBox.ItemTemplate>
+			</ListBox>
 		</Grid>
 
 
