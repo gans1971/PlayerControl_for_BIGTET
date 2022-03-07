@@ -12,6 +12,8 @@
 	mc:Ignorable="d">
 	<Grid
 		x:Name="LayoutRoot"
+		MinWidth="200"
+		MinHeight="100"
 		MaxWidth="300"
 		Margin="5,10"
 		HorizontalAlignment="Center">
@@ -27,7 +29,6 @@
 					<ColumnDefinition Width="*" MaxWidth="180" />
 				</Grid.ColumnDefinitions>
 				<md:PackIcon
-					Height="{Binding ActualHeight, ElementName=PlayerLabel, Mode=OneWay}"
 					Margin="0,0,5,0"
 					VerticalAlignment="Center"
 					VerticalContentAlignment="Center"
@@ -96,10 +97,18 @@
 					VerticalAlignment="Center"
 					Orientation="Horizontal">
 
-					<Button Command="{x:Static md:DialogHost.CloseDialogCommand}" Style="{StaticResource MaterialDesignFlatButton}">
+					<!--
+						Style="{StaticResource MaterialDesignFlatButton}"
+						Foreground="{StaticResource PrimaryHueMidBrush}"
+					-->
+					<Button
+						x:Name="ScoreSetButton"
+						Command="{x:Static md:DialogHost.CloseDialogCommand}"
+						Style="{StaticResource MaterialDesignFlatButton}">
 						<Button.CommandParameter>
 							<system:Boolean>True</system:Boolean>
 						</Button.CommandParameter>
+						<!--  ボタンコンテンツ  -->
 						<StackPanel Orientation="Horizontal">
 							<TextBlock
 								x:Name="SetLabel"
@@ -109,23 +118,11 @@
 								Height="{Binding ActualHeight, ElementName=SetLabel, Mode=OneWay}"
 								VerticalAlignment="Center"
 								VerticalContentAlignment="Center"
-								Foreground="{StaticResource PrimaryHueMidBrush}"
 								Kind="KeyboardReturn" />
 						</StackPanel>
 					</Button>
-					<!-- キャンセルボタンは不要？
-			<Button
-				Command="{x:Static md:DialogHost.CloseDialogCommand}"
-				Content="Cancel"
-				Style="{StaticResource MaterialDesignFlatButton}">
-				<Button.CommandParameter>
-					<system:Boolean>False</system:Boolean>
-				</Button.CommandParameter>
-			</Button>-->
 				</StackPanel>
-
 			</Grid>
 		</Grid>
-
 	</Grid>
 </UserControl>

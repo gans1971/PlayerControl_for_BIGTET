@@ -35,47 +35,13 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand LoadedCommand { get; }
 		public ReactiveCommand OpenGameEventSettingCommand { get; }
 		public ReactiveCommand SetTodayBestCommand { get; }
-
-
 		#endregion
-
-
-		/// <summary>
-		/// StreamControl互換のJSONファイルをテンプレートフォルダに出力する
-		/// </summary>
-		/// <param name="args"></param>
-		/// <param name="jsonFolder"></param>
-		/// <param name="isPlayer1"></param>
-		/// <returns></returns>
-		private bool SaveStremControlJson(RoutedEventArgs args, String jsonFolder, bool isPlayer1)
-		{
-			if (args.Source is FrameworkElement fe)
-			{
-				if (fe.DataContext is PlayerModel player)
-				{
-					if (isPlayer1)
-					{
-						CurrnetPlayer1.Value = player;
-					}
-					else
-					{
-						CurrnetPlayer2.Value = player;
-					}
-					return SaveStreamControlJson(jsonFolder);
-				}
-			}
-			return false;
-		}
 
 		/// <summary>
 		/// コンストラクタ
 		/// </summary>
 		public MainWindowViewModel()
 		{
-			// StreamControlのHTMLテンプレートパスを初期化
-			var jsonPath = GetStreamControlPath();
-			//TODO:パスが取得できなかった場合
-
 			// アプリ開始イベント
 			LoadedCommand = new ReactiveCommand();
 			LoadedCommand.Subscribe(_ =>
@@ -100,25 +66,12 @@ namespace PlayerControl.ViewModels
 
 			// 本日ベスト変更コマンド
 			SetTodayBestCommand = new ReactiveCommand();
-			SetTodayBestCommand.Subscribe(async x =>
+			SetTodayBestCommand.Subscribe( x =>
 			{
-				try
+				// イベント発火元コントロールのDataContextからVMを取得して更新
+				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe)
 				{
-
-					// イベント発火元コントロールのDataContextからVMを取得して更新
-					if (x is RoutedEventArgs args &&
-						args.Source is FrameworkElement fe &&
-						fe.DataContext is PlayerModel player)
-					{
-						var view = new TodayBestSettingView()
-						{
-							DataContext = player
-						};
-						var result = await DialogHost.Show(view, "MainWindowDialog");
-					}
-				}catch (Exception ex)
-				{
-					Debug.WriteLine($"Exception TodayBestImput:{ex.ToString()}");
+					ShowTodayBestSetting(fe.DataContext);
 				}
 			}).AddTo(Disposable);
 
@@ -126,9 +79,11 @@ namespace PlayerControl.ViewModels
 			Player1ChangeCommand = new ReactiveCommand();
 			Player1ChangeCommand.Subscribe(x =>
 			{
-				if (x is RoutedEventArgs args)
+				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && 
+					fe.DataContext is PlayerModel player)
 				{
-					SaveStremControlJson(args, jsonPath, true);
+					CurrnetPlayer1.Value = player;
+					SaveStreamControlJson();
 				}
 			}).AddTo(Disposable);
 
@@ -136,9 +91,11 @@ namespace PlayerControl.ViewModels
 			Player2ChangeCommand = new ReactiveCommand();
 			Player2ChangeCommand.Subscribe(x =>
 			{
-				if (x is RoutedEventArgs args)
+				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && 
+					fe.DataContext is PlayerModel player)
 				{
-					SaveStremControlJson(args, jsonPath, false);
+					CurrnetPlayer2.Value = player;
+					SaveStreamControlJson();
 				}
 			}).AddTo(Disposable);
 
@@ -153,6 +110,55 @@ namespace PlayerControl.ViewModels
 			});
 		}
 
+
+		public void ChangePlayer(object datacontext, bool isPlayer1)
+		{
+			if (datacontext is PlayerModel player)
+			{
+				if(isPlayer1)
+				{
+					CurrnetPlayer1.Value = player;
+				}
+				else
+				{
+					CurrnetPlayer2.Value = player;
+				}
+				SaveStreamControlJson();
+			}
+
+		}
+
+		/// <summary>
+		/// 本日ベスト入力コントロールを表示する
+		/// </summary>
+		/// <param name="datacontext"></param>
+		async public void ShowTodayBestSetting(object datacontext)
+		{
+			try
+			{
+				// イベント発火元コントロールのDataContextからVMを取得して更新
+				if (datacontext is PlayerModel player)
+				{
+					var view = new TodayBestSettingView()
+					{
+						DataContext = player
+					};
+					var result = await DialogHost.Show(view, "MainWindowDialog");
+					if( result is bool dlgResult && dlgResult)
+					{
+						// 現在選択中のユーザーのスコアを更新した場合
+						if( CurrnetPlayer1.Value == player || CurrnetPlayer2.Value == player)
+						{
+							SaveStreamControlJson();
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Exception TodayBestImput:{ex.ToString()}");
+			}
+		}
 
 		/// <summary>
 		/// MainWindow初期化時にコールされる初期化処理
@@ -197,21 +203,25 @@ namespace PlayerControl.ViewModels
 			return String.Empty;
 		}
 
+
 		/// <summary>
 		/// StreamControl互換JSONを保存する
 		/// </summary>
-		/// <param name="jsonpath"></param>
 		/// <returns></returns>
-		public bool SaveStreamControlJson(String jsonpath)
+		public bool SaveStreamControlJson()
 		{
 			try
 			{
+				// StreamControlのHTMLテンプレートパスを初期化
+				var jsonPath = GetStreamControlPath();
+				//TODO:パスが取得できなかった場合
+
 				// ファイルパスチェック
-				if (!Directory.Exists(jsonpath))
+				if (!Directory.Exists(jsonPath))
 				{
 					return false;
 				}
-				var savepath = System.IO.Path.Combine(jsonpath, "streamcontrol.json");
+				var savepath = System.IO.Path.Combine(jsonPath, "streamcontrol.json");
 
 				// Jsonクラスに値をセット
 
@@ -251,24 +261,9 @@ namespace PlayerControl.ViewModels
 			Players.Add(new PlayerModel("まつのゆ", 580, 530));
 			Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
 			Players.Add(new PlayerModel("ガンズまつのゆチャーハンライスいにゅうえんどう", 999, 702));
+			Players.Add(new PlayerModel("いざよい", 999, 702));
+			Players.Add(new PlayerModel("ピエロ", 720, 512));
 
-			Players.Add(new PlayerModel("ガンズ", 664, 425));
-			Players.Add(new PlayerModel("GAF", 942, 656));
-			Players.Add(new PlayerModel("まつのゆ", 580, 530));
-			Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
-			Players.Add(new PlayerModel("チャーハンライス", 999, 702));
-
-			Players.Add(new PlayerModel("ガンズ", 664, 425));
-			Players.Add(new PlayerModel("GAF", 942, 656));
-			Players.Add(new PlayerModel("まつのゆ", 580, 530));
-			Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
-			Players.Add(new PlayerModel("チャーハンライス", 999, 702));
-
-			Players.Add(new PlayerModel("ガンズ", 664, 425));
-			Players.Add(new PlayerModel("GAF", 942, 656));
-			Players.Add(new PlayerModel("まつのゆ", 580, 530));
-			Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
-			Players.Add(new PlayerModel("チャーハンライス", 999, 702));
 		}
 	}
 }
