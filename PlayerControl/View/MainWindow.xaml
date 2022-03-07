@@ -47,6 +47,9 @@
 		<i:EventTrigger EventName="Loaded">
 			<i:InvokeCommandAction Command="{Binding LoadedCommand}" />
 		</i:EventTrigger>
+		<i:EventTrigger EventName="Closing">
+			<i:InvokeCommandAction Command="{Binding ClosingCommand}" />
+		</i:EventTrigger>
 	</i:Interaction.Triggers>
 	<!--#endregion-->
 
@@ -275,7 +278,7 @@
 									<Border.Visibility>
 										<MultiBinding Converter="{StaticResource ObjectMatchVisibilityConverter}">
 											<Binding Path="." />
-											<Binding Path="DataContext.CurrnetPlayer1.Value" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type ListBox}}" />
+											<Binding Path="DataContext.CurrentPlayer1.Value" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type ListBox}}" />
 										</MultiBinding>
 									</Border.Visibility>
 								</Border>
@@ -296,7 +299,7 @@
 									<Border.Visibility>
 										<MultiBinding Converter="{StaticResource ObjectMatchVisibilityConverter}">
 											<Binding Path="." />
-											<Binding Path="DataContext.CurrnetPlayer2.Value" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type ListBox}}" />
+											<Binding Path="DataContext.CurrentPlayer2.Value" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type ListBox}}" />
 										</MultiBinding>
 									</Border.Visibility>
 								</Border>

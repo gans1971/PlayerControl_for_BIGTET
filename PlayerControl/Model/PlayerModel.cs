@@ -22,7 +22,7 @@ namespace PlayerControl.Model
 
         public PlayerModel()
         {
-
+			// ※ 引数なしの場合、LastAccess は初期値（MinValue）のままにしておく
         }
         public PlayerModel(String name, int personalbest, int todaybest )
         {

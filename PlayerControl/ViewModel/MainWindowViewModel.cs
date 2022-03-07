@@ -15,17 +15,19 @@ namespace PlayerControl.ViewModels
 {
 	public class MainWindowViewModel : BindableViewModel
 	{
-		private static String _htmlSourceFile = "scoreboard.html";
+		private const String _htmlSourceFile = "scoreboard.html";
+		private const String _jsonFileName = "streamcontrol.json";
 
 		public IDialogCoordinator MahAppsDialogCoordinator { get; set; } = new DialogCoordinator();
 
 		#region ReactiveProperty
 		public ReactivePropertySlim<string> targetHandle { get; } = new ReactivePropertySlim<string>(String.Empty);
 		public ReactivePropertySlim<PlayerModel> SelectedPlayer { get; } = new ReactivePropertySlim<PlayerModel>();
-		public ReactivePropertySlim<PlayerModel> CurrnetPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
-		public ReactivePropertySlim<PlayerModel> CurrnetPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
+		public ReactivePropertySlim<PlayerModel> CurrentPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
+		public ReactivePropertySlim<PlayerModel> CurrentPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<GameEventSettingViewModel> EventSetting { get; } = new ReactivePropertySlim<GameEventSettingViewModel>();
 		public ReactiveCollection<PlayerModel> Players { get; } = new ReactiveCollection<PlayerModel>();
+		public ReactiveCollection<PlayerModel> PlayersHistory { get; } = new ReactiveCollection<PlayerModel>();
 		#endregion
 
 		#region ReactiveCommand
@@ -33,6 +35,7 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand Player2ChangeCommand { get; }
 		public ReactiveCommand AboutBoxCommand { get; }
 		public ReactiveCommand LoadedCommand { get; }
+		public ReactiveCommand ClosingCommand { get; }
 		public ReactiveCommand OpenGameEventSettingCommand { get; }
 		public ReactiveCommand SetTodayBestCommand { get; }
 		#endregion
@@ -42,11 +45,26 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public MainWindowViewModel()
 		{
-			// アプリ開始イベント
+			// アプリ開始コマンド
 			LoadedCommand = new ReactiveCommand();
 			LoadedCommand.Subscribe(_ =>
 			{
-				InitPlayers();
+				// 初期状態でStreamControl Jsonファイルを保存
+				SaveStreamControlJson();
+
+				// プレイヤー履歴を初期化
+				InitPlayersHistory();
+
+			}).AddTo(Disposable);
+			// アプリ終了前コマンド
+			ClosingCommand = new ReactiveCommand();
+			ClosingCommand.Subscribe(_ =>
+			{
+				// StreamControl Jsonファイルを初期化（タイムスタンプも初期化）
+				CurrentPlayer1.Value = new PlayerModel();
+				CurrentPlayer2.Value = new PlayerModel();
+				SaveStreamControlJson(true);
+
 			}).AddTo(Disposable);
 
 			// イベント設定画面を表示するコマンド
@@ -66,23 +84,23 @@ namespace PlayerControl.ViewModels
 
 			// 本日ベスト変更コマンド
 			SetTodayBestCommand = new ReactiveCommand();
-			SetTodayBestCommand.Subscribe( x =>
-			{
+			SetTodayBestCommand.Subscribe(x =>
+		   {
 				// イベント発火元コントロールのDataContextからVMを取得して更新
 				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe)
-				{
-					ShowTodayBestSetting(fe.DataContext);
-				}
-			}).AddTo(Disposable);
+			   {
+				   ShowTodayBestSetting(fe.DataContext);
+			   }
+		   }).AddTo(Disposable);
 
 			// プレイヤー1切り替えコマンド
 			Player1ChangeCommand = new ReactiveCommand();
 			Player1ChangeCommand.Subscribe(x =>
 			{
-				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && 
+				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe &&
 					fe.DataContext is PlayerModel player)
 				{
-					CurrnetPlayer1.Value = player;
+					CurrentPlayer1.Value = player;
 					SaveStreamControlJson();
 				}
 			}).AddTo(Disposable);
@@ -91,10 +109,10 @@ namespace PlayerControl.ViewModels
 			Player2ChangeCommand = new ReactiveCommand();
 			Player2ChangeCommand.Subscribe(x =>
 			{
-				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && 
+				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe &&
 					fe.DataContext is PlayerModel player)
 				{
-					CurrnetPlayer2.Value = player;
+					CurrentPlayer2.Value = player;
 					SaveStreamControlJson();
 				}
 			}).AddTo(Disposable);
@@ -115,13 +133,13 @@ namespace PlayerControl.ViewModels
 		{
 			if (datacontext is PlayerModel player)
 			{
-				if(isPlayer1)
+				if (isPlayer1)
 				{
-					CurrnetPlayer1.Value = player;
+					CurrentPlayer1.Value = player;
 				}
 				else
 				{
-					CurrnetPlayer2.Value = player;
+					CurrentPlayer2.Value = player;
 				}
 				SaveStreamControlJson();
 			}
@@ -144,10 +162,10 @@ namespace PlayerControl.ViewModels
 						DataContext = player
 					};
 					var result = await DialogHost.Show(view, "MainWindowDialog");
-					if( result is bool dlgResult && dlgResult)
+					if (result is bool dlgResult && dlgResult)
 					{
 						// 現在選択中のユーザーのスコアを更新した場合
-						if( CurrnetPlayer1.Value == player || CurrnetPlayer2.Value == player)
+						if (CurrentPlayer1.Value == player || CurrentPlayer2.Value == player)
 						{
 							SaveStreamControlJson();
 						}
@@ -165,7 +183,9 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public void Initialize()
 		{
-			InitPlayers();
+
+			// TODO:プレイヤーリストを読み込む
+			InitPlayersHistory();
 		}
 
 		/// <summary>
@@ -208,33 +228,38 @@ namespace PlayerControl.ViewModels
 		/// StreamControl互換JSONを保存する
 		/// </summary>
 		/// <returns></returns>
-		public bool SaveStreamControlJson()
+		public bool SaveStreamControlJson(bool InitTimeStump = false)
 		{
 			try
 			{
 				// StreamControlのHTMLテンプレートパスを初期化
 				var jsonPath = GetStreamControlPath();
-				//TODO:パスが取得できなかった場合
 
 				// ファイルパスチェック
 				if (!Directory.Exists(jsonPath))
 				{
 					return false;
 				}
-				var savepath = System.IO.Path.Combine(jsonPath, "streamcontrol.json");
 
-				// Jsonクラスに値をセット
+				// Path + Jsonファイル名
+				var savepath = System.IO.Path.Combine(jsonPath, _jsonFileName);
 
+				// Jsonクラスに値をセット(CurrentPlayerがnullの場合は初期値のまま保存）
 				var StreamControlData = new StreamControlParam();
-				if (CurrnetPlayer1.Value != null)
+				if (CurrentPlayer1.Value != null)
 				{
-					StreamControlData.pName1 = CurrnetPlayer1.Value.Name.Value;
-					StreamControlData.pScore1 = CurrnetPlayer1.Value.TodayBest.Value.ToString();
+					StreamControlData.pName1 = CurrentPlayer1.Value.Name.Value;
+					StreamControlData.pScore1 = CurrentPlayer1.Value.TodayBest.Value.ToString();
 				}
-				if (CurrnetPlayer2.Value != null)
+				if (CurrentPlayer2.Value != null)
 				{
-					StreamControlData.pName2 = CurrnetPlayer2.Value.Name.Value;
-					StreamControlData.pScore2 = CurrnetPlayer2.Value.TodayBest.Value.ToString();
+					StreamControlData.pName2 = CurrentPlayer2.Value.Name.Value;
+					StreamControlData.pScore2 = CurrentPlayer2.Value.TodayBest.Value.ToString();
+				}
+				// タイムスタンプを初期化する場合
+				if( InitTimeStump)
+				{
+					StreamControlData.timestamp = "0";
 				}
 
 				var json = JsonConvert.SerializeObject(StreamControlData);
@@ -252,10 +277,20 @@ namespace PlayerControl.ViewModels
 		}
 
 		/// <summary>
-		/// プレイヤーリストを初期化する
+		/// プレイヤー履歴リストを初期化する
 		/// </summary>
-		public void InitPlayers()
+		public void InitPlayersHistory()
 		{
+			// TODO:ファイルから読み込む
+			PlayersHistory.Add(new PlayerModel("ガンズ", 664, 425));
+			PlayersHistory.Add(new PlayerModel("GAF", 942, 656));
+			PlayersHistory.Add(new PlayerModel("まつのゆ", 580, 530));
+			PlayersHistory.Add(new PlayerModel("いにゅうえんどう", 999, 702));
+			PlayersHistory.Add(new PlayerModel("ガンズまつのゆチャーハンライスいにゅうえんどう", 999, 702));
+			PlayersHistory.Add(new PlayerModel("いざよい", 999, 702));
+			PlayersHistory.Add(new PlayerModel("ピエロ", 720, 512));
+
+			// TODO:Player追加UIができたら消す
 			Players.Add(new PlayerModel("ガンズ", 664, 425));
 			Players.Add(new PlayerModel("GAF", 942, 656));
 			Players.Add(new PlayerModel("まつのゆ", 580, 530));
