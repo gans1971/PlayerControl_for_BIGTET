@@ -18,6 +18,9 @@ namespace PlayerControl.ViewModels
 		private const String _htmlSourceFile = "scoreboard.html";
 		private const String _jsonFileName = "streamcontrol.json";
 
+		// CurrentPlayerをクリアするためのインスタンス
+		private PlayerModel _emptyPlayer { get; } = new PlayerModel();
+
 		public IDialogCoordinator MahAppsDialogCoordinator { get; set; } = new DialogCoordinator();
 
 		#region ReactiveProperty
@@ -25,6 +28,7 @@ namespace PlayerControl.ViewModels
 		public ReactivePropertySlim<PlayerModel> SelectedPlayer { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
+
 		public ReactivePropertySlim<GameEventSettingViewModel> EventSetting { get; } = new ReactivePropertySlim<GameEventSettingViewModel>();
 		public ReactiveCollection<PlayerModel> Players { get; } = new ReactiveCollection<PlayerModel>();
 		public ReactiveCollection<PlayerModel> PlayersHistory { get; } = new ReactiveCollection<PlayerModel>();
@@ -37,7 +41,10 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand LoadedCommand { get; }
 		public ReactiveCommand ClosingCommand { get; }
 		public ReactiveCommand OpenGameEventSettingCommand { get; }
+		public ReactiveCommand EditPlayersListCommand { get; }
+		public ReactiveCommand RemovePlayerCommand { get; }
 		public ReactiveCommand SetTodayBestCommand { get; }
+		public ReactiveCommand InputScoreCommand { get; }
 		#endregion
 
 		/// <summary>
@@ -82,6 +89,15 @@ namespace PlayerControl.ViewModels
 				}
 			}).AddTo(Disposable);
 
+			// プレイヤー編集コマンド
+			EditPlayersListCommand = new ReactiveCommand();
+			EditPlayersListCommand.Subscribe(_ =>
+			{
+				var playerEditWindow = new PlayersEditWindow();
+				playerEditWindow.DataContext = this;
+				playerEditWindow.Show();
+			}).AddTo(Disposable);
+
 			// 本日ベスト変更コマンド
 			SetTodayBestCommand = new ReactiveCommand();
 			SetTodayBestCommand.Subscribe(x =>
@@ -89,7 +105,7 @@ namespace PlayerControl.ViewModels
 				// イベント発火元コントロールのDataContextからVMを取得して更新
 				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe)
 			   {
-				   ShowTodayBestSetting(fe.DataContext);
+				   InputScore(fe.DataContext);
 			   }
 		   }).AddTo(Disposable);
 
@@ -101,6 +117,10 @@ namespace PlayerControl.ViewModels
 					fe.DataContext is PlayerModel player)
 				{
 					CurrentPlayer1.Value = player;
+					if( CurrentPlayer2.Value == player)
+					{
+						CurrentPlayer2.Value = _emptyPlayer;
+					}
 					SaveStreamControlJson();
 				}
 			}).AddTo(Disposable);
@@ -113,22 +133,52 @@ namespace PlayerControl.ViewModels
 					fe.DataContext is PlayerModel player)
 				{
 					CurrentPlayer2.Value = player;
+					if (CurrentPlayer1.Value == player)
+					{
+						CurrentPlayer1.Value = _emptyPlayer;
+					}
 					SaveStreamControlJson();
 				}
 			}).AddTo(Disposable);
 
+			// プレイヤー削除コマンド
+			RemovePlayerCommand = new ReactiveCommand();
+			RemovePlayerCommand.Subscribe(x =>
+			{
+				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe &&
+					fe.DataContext is PlayerModel player)
+				{
+					Players.Remove(player);
+				}
+			}).AddTo(Disposable);
 
+			InputScoreCommand = new ReactiveCommand();
+			InputScoreCommand.Subscribe(x =>
+			{
+				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe &&
+					fe.DataContext is PlayerModel player)
+				{
+					InputScore(player);
+				}
+			}).AddTo(Disposable);
+
+			
 			// このアプリについて表示する
 			AboutBoxCommand = new ReactiveCommand();
 			AboutBoxCommand.Subscribe(async _ =>
 			{
 				var _asmAttr = new Servicies.AssemblyAttribute();
 				var _envInfo = new Servicies.EnvironmentInfo();
+
 				await this.MahAppsDialogCoordinator.ShowMessageAsync(this, $"{_envInfo.WindowsCaption}", $"Ver.{_envInfo.WindowsVersion} Now = {DateTime.Now}");
 			});
 		}
 
-
+		/// <summary>
+		/// 指定されたプレイヤーを1P or 2P に設定する
+		/// </summary>
+		/// <param name="datacontext"></param>
+		/// <param name="isPlayer1"></param>
 		public void ChangePlayer(object datacontext, bool isPlayer1)
 		{
 			if (datacontext is PlayerModel player)
@@ -136,10 +186,18 @@ namespace PlayerControl.ViewModels
 				if (isPlayer1)
 				{
 					CurrentPlayer1.Value = player;
+					if (CurrentPlayer2.Value == player)
+					{
+						CurrentPlayer2.Value = _emptyPlayer;
+					}
 				}
 				else
 				{
 					CurrentPlayer2.Value = player;
+					if (CurrentPlayer1.Value == player)
+					{
+						CurrentPlayer1.Value = _emptyPlayer;
+					}
 				}
 				SaveStreamControlJson();
 			}
@@ -147,10 +205,10 @@ namespace PlayerControl.ViewModels
 		}
 
 		/// <summary>
-		/// 本日ベスト入力コントロールを表示する
+		/// スコア入力コントロールを表示する
 		/// </summary>
 		/// <param name="datacontext"></param>
-		async public void ShowTodayBestSetting(object datacontext)
+		async public void InputScore(object datacontext)
 		{
 			try
 			{

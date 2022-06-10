@@ -8,9 +8,9 @@ namespace PlayerControl.View
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class MainWindow : MetroWindow
+	public partial class ScoreNoteWindow : MetroWindow
 	{
-		public MainWindow()
+		public ScoreNoteWindow()
 		{
 			InitializeComponent();
 		}
@@ -22,7 +22,6 @@ namespace PlayerControl.View
 				switch (e.Key)
 				{
 					case Key.Enter:
-					case Key.Space:
 						vm.InputScore(item.DataContext);
 						e.Handled = true;
 						break;

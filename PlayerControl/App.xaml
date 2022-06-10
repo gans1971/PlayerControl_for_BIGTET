@@ -33,7 +33,7 @@
 			<SolidColorBrush x:Key="MahApps.Brushes.Accent2" Color="{DynamicResource Primary400}" />
 			<SolidColorBrush x:Key="MahApps.Brushes.Accent3" Color="{DynamicResource Primary300}" />
 			<SolidColorBrush x:Key="MahApps.Brushes.Accent4" Color="{DynamicResource Primary200}" />
-			<SolidColorBrush x:Key="MahApps.Brushes.WindowTitle" Color="{DynamicResource Primary100}" />
+			<SolidColorBrush x:Key="MahApps.Brushes.WindowTitle" Color="{DynamicResource Primary700}" />
 			<SolidColorBrush x:Key="MahApps.Brushes.Selected.Foreground" Color="{DynamicResource Primary500Foreground}" />
 			<LinearGradientBrush x:Key="MahApps.Brushes.Progress" StartPoint="1.002,0.5" EndPoint="0.001,0.5">
 				<GradientStop Offset="0" Color="{DynamicResource Primary700}" />

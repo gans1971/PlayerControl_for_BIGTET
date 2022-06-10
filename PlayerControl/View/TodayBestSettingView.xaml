@@ -13,9 +13,9 @@
 	<Grid
 		x:Name="LayoutRoot"
 		MinWidth="200"
-		MinHeight="100"
 		MaxWidth="300"
-		Margin="5,10"
+		Margin="5,15"
+		FocusManager.FocusedElement="{Binding ElementName=ScoreTextBox}"
 		HorizontalAlignment="Center">
 		<Grid>
 			<Grid.RowDefinitions>
@@ -34,33 +34,32 @@
 					VerticalContentAlignment="Center"
 					Foreground="{StaticResource PrimaryHueMidBrush}"
 					Kind="AccountCircle" />
-				<Viewbox
+				<TextBox
 					Grid.Column="1"
 					VerticalAlignment="Center"
-					StretchDirection="DownOnly">
-					<TextBlock
-						VerticalAlignment="Center"
-						FontSize="15"
-						FontWeight="Bold"
-						Text="{Binding Name.Value, FallbackValue=---}" />
-				</Viewbox>
+					FontSize="16"
+					FontWeight="Bold"
+					Text="{Binding Name.Value, FallbackValue=---}" />
 			</Grid>
 
 			<Grid
 				x:Name="ScoreGrid"
 				Grid.Row="1"
-				Margin="20,10">
+				Margin="15,10">
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="100" />
+					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="Auto" />
 				</Grid.ColumnDefinitions>
+				<!--  スコアテキスト  -->
 				<TextBox
 					x:Name="ScoreTextBox"
-					MinWidth="100"
+					
+					MinWidth="110"
 					HorizontalAlignment="Center"
 					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Bottom"
 					bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus="True"
-					md:ValidationAssist.FontSize="9"
+					md:ValidationAssist.FontSize="10"
 					Background="WhiteSmoke"
 					CommandManager.PreviewExecuted="TextBox_PreviewExecuted"
 					Cursor="IBeam"
@@ -96,15 +95,15 @@
 					HorizontalAlignment="Left"
 					VerticalAlignment="Center"
 					Orientation="Horizontal">
-
 					<!--
 						Style="{StaticResource MaterialDesignFlatButton}"
 						Foreground="{StaticResource PrimaryHueMidBrush}"
 					-->
 					<Button
 						x:Name="ScoreSetButton"
+						Padding="10,0"
 						Command="{x:Static md:DialogHost.CloseDialogCommand}"
-						Style="{StaticResource MaterialDesignFlatButton}">
+						Style="{StaticResource MaterialDesignPaperButton}">
 						<Button.CommandParameter>
 							<system:Boolean>True</system:Boolean>
 						</Button.CommandParameter>
@@ -112,8 +111,10 @@
 						<StackPanel Orientation="Horizontal">
 							<TextBlock
 								x:Name="SetLabel"
+								Margin="0,0,10,0"
 								VerticalAlignment="Center"
-								Text="セット " />
+								FontSize="13"
+								Text="更新" />
 							<md:PackIcon
 								Height="{Binding ActualHeight, ElementName=SetLabel, Mode=OneWay}"
 								VerticalAlignment="Center"
