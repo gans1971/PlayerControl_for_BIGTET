@@ -1,19 +1,10 @@
-﻿using Newtonsoft.Json;
-using Prism.Mvvm;
+﻿using Prism.Mvvm;
 using Reactive.Bindings;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace PlayerControl.Model
 {
-    public class PlayerModel : BindableBase
+	public class PlayerModel : BindableBase
     {
         public ReactivePropertySlim<String> Name { get; } = new ReactivePropertySlim<string>(String.Empty);
         public ReactivePropertySlim<int> PersonalBest { get; } = new ReactivePropertySlim<int>(0);
@@ -37,7 +28,8 @@ namespace PlayerControl.Model
 	{
 		public StreamControlParam()
 		{
-			timestamp = DateTimeOffset.Now.ToUnixTimeSeconds().ToString();
+			// timestamp = DateTimeOffset.Now.ToUnixTimeSeconds().ToString();
+			timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString();
 		}
 		public String pCountry1 { get; set; } = String.Empty;
 		public String pCountry2 { get; set; } = String.Empty;

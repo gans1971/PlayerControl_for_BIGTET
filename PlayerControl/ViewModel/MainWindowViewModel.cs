@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace PlayerControl.ViewModels
 {
@@ -45,6 +46,11 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand RemovePlayerCommand { get; }
 		public ReactiveCommand SetTodayBestCommand { get; }
 		public ReactiveCommand InputScoreCommand { get; }
+		public ReactiveCommand<Object> AddPlayerCommand { get; }
+		public ReactiveCommand PlayerExchangeCommand { get; }
+		public ReactiveCommand<string> PlayerClearCommand { get; }
+		public ReactiveCommand SaveJsonCommand { get; }
+		
 		#endregion
 
 		/// <summary>
@@ -162,7 +168,55 @@ namespace PlayerControl.ViewModels
 				}
 			}).AddTo(Disposable);
 
+			// プレイヤー入れ替えコマンド
+			PlayerExchangeCommand = new ReactiveCommand();
+			PlayerExchangeCommand.Subscribe(x =>
+			{
+				var temp = CurrentPlayer1.Value;
+				CurrentPlayer1.Value = CurrentPlayer2.Value;
+				CurrentPlayer2.Value = temp;
+				SaveStreamControlJson();
+			}).AddTo(Disposable);
+
+			// プレイヤークリアコマンド
+			PlayerClearCommand = new ReactiveCommand<string>();
+			PlayerClearCommand.Subscribe(x =>
+			{
+				if (x == "Player1" || x == "PlayerAll")
+				{
+					CurrentPlayer1.Value = _emptyPlayer;
+				}
+				if (x == "Player2" || x == "PlayerAll")
+				{
+					CurrentPlayer2.Value = _emptyPlayer;
+				}
+				SaveStreamControlJson();
+			}).AddTo(Disposable);
+
+			// プレイヤー追加コマンド
+			AddPlayerCommand = new ReactiveCommand<Object>();
+			AddPlayerCommand.Subscribe(param =>
+			{
+				if( param is TextBox textBox )
+				{
+					var name = textBox.Text;
+					var trimName = name.Trim();
+					if(!String.IsNullOrEmpty(trimName))
+					{
+						Players.Add(new PlayerModel(trimName, 0, 0));
+						SaveStreamControlJson();
+					}
+					textBox.Text = String.Empty;
+				}
+			}).AddTo(Disposable);
+
+			SaveJsonCommand = new ReactiveCommand();
+			SaveJsonCommand.Subscribe(_ =>
+			{
+				SaveStreamControlJson();
+			}).AddTo(Disposable);
 			
+
 			// このアプリについて表示する
 			AboutBoxCommand = new ReactiveCommand();
 			AboutBoxCommand.Subscribe(async _ =>
@@ -296,6 +350,7 @@ namespace PlayerControl.ViewModels
 				// ファイルパスチェック
 				if (!Directory.Exists(jsonPath))
 				{
+					MessageBox.Show($"StreamControl の HTML保存フォルダが見つかりません");
 					return false;
 				}
 
@@ -320,6 +375,8 @@ namespace PlayerControl.ViewModels
 					StreamControlData.timestamp = "0";
 				}
 
+				Console.WriteLine($"time:{StreamControlData.timestamp}");
+
 				var json = JsonConvert.SerializeObject(StreamControlData);
 				using (var sw = new StreamWriter(savepath, false, Encoding.UTF8))
 				{
@@ -339,12 +396,10 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public void InitPlayersHistory()
 		{
+#if DEBUG
 			// TODO:ファイルから読み込む
 			PlayersHistory.Add(new PlayerModel("ガンズ", 664, 425));
 			PlayersHistory.Add(new PlayerModel("GAF", 942, 656));
-			PlayersHistory.Add(new PlayerModel("まつのゆ", 580, 530));
-			PlayersHistory.Add(new PlayerModel("いにゅうえんどう", 999, 702));
-			PlayersHistory.Add(new PlayerModel("ガンズまつのゆチャーハンライスいにゅうえんどう", 999, 702));
 			PlayersHistory.Add(new PlayerModel("いざよい", 999, 702));
 			PlayersHistory.Add(new PlayerModel("ピエロ", 720, 512));
 
@@ -353,10 +408,9 @@ namespace PlayerControl.ViewModels
 			Players.Add(new PlayerModel("GAF", 942, 656));
 			Players.Add(new PlayerModel("まつのゆ", 580, 530));
 			Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
-			Players.Add(new PlayerModel("ガンズまつのゆチャーハンライスいにゅうえんどう", 999, 702));
 			Players.Add(new PlayerModel("いざよい", 999, 702));
 			Players.Add(new PlayerModel("ピエロ", 720, 512));
-
+#endif
 		}
 	}
 }

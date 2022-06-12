@@ -12,7 +12,7 @@
 	xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 	xmlns:ri="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
 	Title="本日のプレイヤー"
-	Width="540"
+	Width="320"
 	Height="480"
 	MinWidth="420"
 	MinHeight="320"
@@ -51,18 +51,36 @@
 			<Label
 				VerticalAlignment="Stretch"
 				VerticalContentAlignment="Center"
-				Content="追加プレイヤー名："
+				Content="プレイヤー名："
 				FontSize="14" />
 			<TextBox
 				x:Name="AddPlayerName"
 				Grid.Column="1"
-				VerticalAlignment="Stretch" />
+				VerticalAlignment="Stretch"
+				md:HintAssist.Foreground="Azure"
+				md:HintAssist.HelperTextFontSize="10"
+				md:HintAssist.Hint="入力後 ENTER で追加"
+				md:HintAssist.HintOpacity="0.3"
+				FontSize="16"
+				FontWeight="Bold">
+				<TextBox.InputBindings>
+					<KeyBinding
+						Command="{Binding AddPlayerCommand}"
+						CommandParameter="{Binding ElementName=AddPlayerName}"
+						Gesture="Enter" />
+				</TextBox.InputBindings>
+			</TextBox>
 			<Button
 				Grid.Column="2"
+				Margin="10,0"
 				Padding="10,0"
 				HorizontalContentAlignment="Center"
 				VerticalContentAlignment="Center"
+				Command="{Binding AddPlayerCommand}"
+				CommandParameter="{Binding ElementName=AddPlayerName}"
+				Style="{StaticResource MaterialDesignRaisedLightButton}"
 				ToolTip="プレイヤーを追加">
+
 				<StackPanel Orientation="Horizontal">
 					<md:PackIcon
 						HorizontalAlignment="Center"
@@ -81,7 +99,7 @@
 		<ListBox
 			x:Name="PlayersListBox"
 			Grid.Row="1"
-			Margin="5"
+			Margin="0,5"
 			HorizontalContentAlignment="Stretch"
 			VerticalContentAlignment="Center"
 			dd:DragDrop.DropScrollingMode="VerticalOnly"
@@ -91,8 +109,9 @@
 			dd:DragDrop.ShowAlwaysDropTargetAdorner="True"
 			dd:DragDrop.UseDefaultDragAdorner="True"
 			AlternationCount="2"
+			Background="{DynamicResource MaterialDesignDataGridRowHoverBackground}"
 			BorderBrush="{StaticResource MahApps.Brushes.Gray7}"
-			BorderThickness="1"
+			BorderThickness="0"
 			ItemsSource="{Binding Players}"
 			Style="{StaticResource MaterialDesignCardsListBox}">
 
@@ -114,7 +133,7 @@
 			<!--  アイテムテンプレート  -->
 			<ListBox.ItemTemplate>
 				<DataTemplate>
-					<Grid x:Name="ItemGrid" Margin="0,5">
+					<Grid x:Name="ItemGrid" Margin="5,5">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="Auto" />
 							<ColumnDefinition Width="Auto" />
