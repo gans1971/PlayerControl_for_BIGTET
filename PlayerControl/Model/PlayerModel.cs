@@ -35,8 +35,8 @@ namespace PlayerControl.Model
 			// timestamp = DateTimeOffset.Now.ToUnixTimeSeconds().ToString();
 			timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString();
 		}
-		public String pCountry1 { get; set; } = String.Empty;
-		public String pCountry2 { get; set; } = String.Empty;
+		public String pCountry1 { get; set; } = "blk";
+		public String pCountry2 { get; set; } = "blk";
 		public String pName1 { get; set; } = String.Empty;
 		public String pName2 { get; set; } = String.Empty;
 		public String pScore1 { get; set; } = String.Empty;

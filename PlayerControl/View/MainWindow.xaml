@@ -36,7 +36,6 @@
 		Topmost ="True"
 	-->
 
-
 	<!--#region データコンテキスト-->
 	<mah:MetroWindow.DataContext>
 		<vm:MainWindowViewModel>
@@ -162,7 +161,6 @@
 		</DockPanel>
 		<!--#endregion-->
 
-
 		<!--#region プレイヤーコントロールグループ-->
 		<!--  ※覚書： https://mvrck.jp/documents/dotnet/wpf/itemscontrol-template/  -->
 		<ListBox
@@ -198,9 +196,10 @@
 
 			<!--  アイテムの背景をトリガーで設定（選択・行ごとなど）：ItemContainerStyle  -->
 			<ListBox.ItemContainerStyle>
-				<Style TargetType="{x:Type ListBoxItem}">
-					<Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
 
+				<Style TargetType="{x:Type ListBoxItem}">
+					<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+					<Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
 					<!--  コンテキストメニュー  -->
 					<Setter Property="ContextMenu">
 						<Setter.Value>
@@ -229,7 +228,6 @@
 							</ContextMenu>
 						</Setter.Value>
 					</Setter>
-
 					<EventSetter Event="KeyDown" Handler="ListViewItem_KeyDown" />
 					<Setter Property="Template">
 						<Setter.Value>
@@ -434,8 +432,7 @@
 		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->
 		<!--  参考：http://nineworks2.blog.fc2.com/blog-entry-117.html  -->
 		<materialDesign:DialogHost
-			Grid.Row="1"
-			Grid.RowSpan="5"
+			Grid.RowSpan="4"
 			d:IsHidden="True"
 			CloseOnClickAway="False"
 			Identifier="MainWindowDialog" />

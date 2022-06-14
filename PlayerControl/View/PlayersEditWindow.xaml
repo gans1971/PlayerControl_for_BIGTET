@@ -219,7 +219,7 @@
 		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->
 		<!--  参考：http://nineworks2.blog.fc2.com/blog-entry-117.html  -->
 		<materialDesign:DialogHost
-			Grid.RowSpan="5"
+			Grid.RowSpan="3"
 			d:IsHidden="True"
 			CloseOnClickAway="False"
 			Identifier="MainWindowDialog" />
