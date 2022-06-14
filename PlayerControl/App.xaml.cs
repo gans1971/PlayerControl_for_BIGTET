@@ -22,7 +22,7 @@ namespace PlayerControl
 			MessageBox.Show(
 				"CurrentDomain_UnhandledException() error\n" +
 				sender.ToString() + "→" + e.ExceptionObject.ToString(),
-				"APP 例外キャッチ",
+				"アプリケーション例外が発生",
 				  MessageBoxButton.OK,
 				MessageBoxImage.Error);
 		}

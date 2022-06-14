@@ -11,7 +11,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 	xmlns:ri="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
-	Title="本日のプレイヤー"
+	Title="プレイヤーリスト設定"
 	Width="320"
 	Height="480"
 	MinWidth="420"
@@ -19,13 +19,14 @@
 	BorderThickness="1"
 	IsWindowDraggable="True"
 	SaveWindowPosition="True"
-	ShowMaxRestoreButton="False"
+	ShowMaxRestoreButton="True"
 	ShowMinButton="False"
 	TitleCharacterCasing="Normal"
 	Topmost="True"
 	mc:Ignorable="d">
 
 	<mah:MetroWindow.Resources>
+		<converters:StringBoolConverter x:Key="StringBoolConverter" />
 		<converters:ObjectMatchVisibilityConverter x:Key="ObjectMatchVisibilityConverter" />
 	</mah:MetroWindow.Resources>
 
@@ -36,7 +37,14 @@
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 
-		<!--#region ツールグリッド TODO:機能実装-->
+		<!--  同じ名前が登録されているときに表示する警告スナックバー  -->
+		<md:Snackbar
+			Grid.Row="1"
+			Grid.RowSpan="2"
+			FontSize="15"
+			MessageQueue="{Binding PlayerEditSnackbarMessageQueue.Value}" />
+
+		<!--#region ツールグリッド-->
 		<Grid x:Name="ToolGrid" Margin="5">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
@@ -49,19 +57,21 @@
 				</Style>
 			</Grid.Resources>
 			<Label
-				VerticalAlignment="Stretch"
+				VerticalAlignment="Center"
 				VerticalContentAlignment="Center"
 				Content="プレイヤー名："
-				FontSize="14" />
+				FontSize="14"
+				FontWeight="Bold"
+				Foreground="{StaticResource MahApps.Brushes.Gray3}"
+				IsHitTestVisible="False" />
 			<TextBox
 				x:Name="AddPlayerName"
 				Grid.Column="1"
 				VerticalAlignment="Stretch"
-				md:HintAssist.Foreground="Azure"
 				md:HintAssist.HelperTextFontSize="10"
 				md:HintAssist.Hint="入力後 ENTER で追加"
 				md:HintAssist.HintOpacity="0.3"
-				FontSize="16"
+				FontSize="14"
 				FontWeight="Bold">
 				<TextBox.InputBindings>
 					<KeyBinding
@@ -71,13 +81,15 @@
 				</TextBox.InputBindings>
 			</TextBox>
 			<Button
+				x:Name="AddButton"
 				Grid.Column="2"
-				Margin="10,0"
+				Margin="10,0,5,0"
 				Padding="10,0"
 				HorizontalContentAlignment="Center"
 				VerticalContentAlignment="Center"
 				Command="{Binding AddPlayerCommand}"
 				CommandParameter="{Binding ElementName=AddPlayerName}"
+				IsEnabled="{Binding Text, Converter={StaticResource StringBoolConverter}, ElementName=AddPlayerName}"
 				Style="{StaticResource MaterialDesignRaisedLightButton}"
 				ToolTip="プレイヤーを追加">
 
@@ -93,8 +105,6 @@
 		<!--#endregion-->
 
 		<!--#region プレイヤーコントロールグループ-->
-
-		<!--  プレイヤー一覧  -->
 		<!--  ※覚書： https://mvrck.jp/documents/dotnet/wpf/itemscontrol-template/  -->
 		<ListBox
 			x:Name="PlayersListBox"
@@ -105,13 +115,9 @@
 			dd:DragDrop.DropScrollingMode="VerticalOnly"
 			dd:DragDrop.IsDragSource="True"
 			dd:DragDrop.IsDropTarget="True"
-			dd:DragDrop.MinimumVerticalDragDistance="1"
+			dd:DragDrop.MinimumVerticalDragDistance="5"
 			dd:DragDrop.ShowAlwaysDropTargetAdorner="True"
-			dd:DragDrop.UseDefaultDragAdorner="True"
-			AlternationCount="2"
-			Background="{DynamicResource MaterialDesignDataGridRowHoverBackground}"
-			BorderBrush="{StaticResource MahApps.Brushes.Gray7}"
-			BorderThickness="0"
+			dd:DragDrop.UseDefaultDragAdorner="False"
 			ItemsSource="{Binding Players}"
 			Style="{StaticResource MaterialDesignCardsListBox}">
 
@@ -133,26 +139,53 @@
 			<!--  アイテムテンプレート  -->
 			<ListBox.ItemTemplate>
 				<DataTemplate>
-					<Grid x:Name="ItemGrid" Margin="5,5">
+					<Grid x:Name="ItemGrid">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
-						<!--  プレイヤー名文字  -->
-						<Label
-							x:Name="PlayerNameLabel"
-							Grid.Column="1"
-							HorizontalContentAlignment="Left"
-							VerticalContentAlignment="Center"
-							Content="{Binding Name.Value}"
-							FontSize="18"
-							FontWeight="Bold"
-							Foreground="Black" />
+						<Button
+							x:Name="PlayerNameEditButton"
+							Margin="5,0,0,0"
+							Padding="5,0"
+							Click="PlayerNameEditButton_Click"
+							Style="{StaticResource MaterialDesignFlatLightButton}">
+							<md:PackIcon Width="18" Kind="PencilOutline" />
+						</Button>
 
+						<!--  プレイヤー名文字  -->
+						<Grid Grid.Column="1">
+							<Label
+								x:Name="PlayerNameLabel"
+								Margin="2"
+								Padding="5,0"
+								HorizontalContentAlignment="Left"
+								VerticalContentAlignment="Center"
+								Content="{Binding Name.Value}"
+								FontSize="14"
+								FontWeight="Bold"
+								Visibility="Visible" />
+							<TextBox
+								x:Name="PlayerNameTextBox"
+								Margin="2"
+								Padding="5,0"
+								HorizontalContentAlignment="Left"
+								VerticalContentAlignment="Center"
+								FontSize="14"
+								LostFocus="PlayerNameTextBox_LostFocus"
+								LostKeyboardFocus="PlayerNameTextBox_LostFocus"
+								PreviewKeyDown="PlayerNameTextBox_PreviewKeyDown"
+								Style="{StaticResource MahApps.Styles.TextBox}"
+								Text="{Binding Name.Value}"
+								Visibility="Collapsed" />
+						</Grid>
 
 						<!--  プレイヤー削除コントロール  -->
 						<Button
 							x:Name="PlayerRemoveButton"
+							Grid.Column="2"
+							Margin="5,0"
 							Padding="0"
 							Style="{StaticResource MaterialDesignFlatLightButton}">
 							<i:Interaction.Triggers>
@@ -160,16 +193,28 @@
 									<ri:EventToReactiveCommand Command="{Binding DataContext.RemovePlayerCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
 								</i:EventTrigger>
 							</i:Interaction.Triggers>
-							<md:PackIcon
-								Width="28"
-								Height="28"
-								Kind="SelectRemove" />
+							<md:PackIcon Width="18" Kind="Close" />
 						</Button>
 					</Grid>
+					<DataTemplate.Triggers>
+						<DataTrigger Binding="{Binding IsPlayerNameInEditMode.Value}" Value="True">
+							<Setter TargetName="PlayerNameLabel" Property="Visibility" Value="Collapsed" />
+							<Setter TargetName="PlayerNameTextBox" Property="Visibility" Value="Visible" />
+						</DataTrigger>
+					</DataTemplate.Triggers>
 				</DataTemplate>
 			</ListBox.ItemTemplate>
 		</ListBox>
 		<!--#endregion-->
+
+		<Grid x:Name="FooterGrid" Grid.Row="2">
+			<Button
+				Margin="5"
+				HorizontalAlignment="Right"
+				VerticalAlignment="Center"
+				Click="OkButton_Click"
+				Content="OK" />
+		</Grid>
 
 		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->
 		<!--  参考：http://nineworks2.blog.fc2.com/blog-entry-117.html  -->

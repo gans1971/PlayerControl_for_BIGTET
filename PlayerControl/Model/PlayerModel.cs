@@ -10,8 +10,10 @@ namespace PlayerControl.Model
         public ReactivePropertySlim<int> PersonalBest { get; } = new ReactivePropertySlim<int>(0);
         public ReactivePropertySlim<int> TodayBest { get; } = new ReactivePropertySlim<int>(0);
         public ReactivePropertySlim<DateTime> LastAccess { get; } = new ReactivePropertySlim<DateTime>(DateTime.MinValue);
+		public ReactivePropertySlim<bool> IsPlayerNameInEditMode { get; } = new ReactivePropertySlim<bool>(false);
 
-        public PlayerModel()
+
+		public PlayerModel()
         {
 			// ※ 引数なしの場合、LastAccess は初期値（MinValue）のままにしておく
         }
@@ -22,6 +24,8 @@ namespace PlayerControl.Model
             TodayBest.Value = todaybest;
             LastAccess.Value = DateTime.Now;
         }
+
+
 	}
 
 	public class StreamControlParam

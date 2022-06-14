@@ -1,7 +1,10 @@
 ﻿using MahApps.Metro.Controls;
 using PlayerControl.ViewModels;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace PlayerControl.View
 {
@@ -22,24 +25,53 @@ namespace PlayerControl.View
 				switch (e.Key)
 				{
 					case Key.Enter:
+						vm.SaveStreamControlJson();
+						item.Dispatcher.BeginInvoke(DispatcherPriority.Input, new ThreadStart(delegate ()
+						{
+							item.Focus();
+						}));
+
+						e.Handled = true;
+						break;
 					case Key.Space:
 						vm.InputScore(item.DataContext);
 						e.Handled = true;
 						break;
 					case Key.Left:
-					case Key.NumPad1:
-					case Key.D1:
 						vm.ChangePlayer(item.DataContext, true);
 						e.Handled = true;
 						break;
 					case Key.Right:
-					case Key.NumPad2:
-					case Key.D2:
 						vm.ChangePlayer(item.DataContext, false);
+						e.Handled = true;
+						break;
+					case Key.R:
+						vm.SaveStreamControlJson();
 						e.Handled = true;
 						break;
 				}
 			}
 		}
+
+		private void ScoreTextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+		{
+			InputMethod.Current.ImeState = InputMethodState.Off;
+		}
+
+		private void ScoreTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+		{
+			// 0-9のみ
+			e.Handled = !new Regex("[0-9]").IsMatch(e.Text);
+		}
+
+		private void ScoreTextBox_PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
+		{
+			// 貼り付けを許可しない
+			if (e.Command == ApplicationCommands.Paste)
+			{
+				e.Handled = true;
+			}
+		}
+
 	}
 }

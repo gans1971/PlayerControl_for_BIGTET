@@ -8,9 +8,12 @@ using Reactive.Bindings.Extensions;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace PlayerControl.ViewModels
 {
@@ -25,14 +28,16 @@ namespace PlayerControl.ViewModels
 		public IDialogCoordinator MahAppsDialogCoordinator { get; set; } = new DialogCoordinator();
 
 		#region ReactiveProperty
-		public ReactivePropertySlim<string> targetHandle { get; } = new ReactivePropertySlim<string>(String.Empty);
+		public ReactivePropertySlim<String> AppTitle { get; } = new ReactivePropertySlim<String>("PlayerControl");
 		public ReactivePropertySlim<PlayerModel> SelectedPlayer { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
+		public ReactivePropertySlim<String> Stage { get; } = new ReactivePropertySlim<String>(String.Empty);
+		public ReactivePropertySlim<SnackbarMessageQueue> PlayerEditSnackbarMessageQueue { get; } = new ReactivePropertySlim<SnackbarMessageQueue>(new SnackbarMessageQueue());
 
-		public ReactivePropertySlim<GameEventSettingViewModel> EventSetting { get; } = new ReactivePropertySlim<GameEventSettingViewModel>();
 		public ReactiveCollection<PlayerModel> Players { get; } = new ReactiveCollection<PlayerModel>();
 		public ReactiveCollection<PlayerModel> PlayersHistory { get; } = new ReactiveCollection<PlayerModel>();
+
 		#endregion
 
 		#region ReactiveCommand
@@ -41,7 +46,6 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand AboutBoxCommand { get; }
 		public ReactiveCommand LoadedCommand { get; }
 		public ReactiveCommand ClosingCommand { get; }
-		public ReactiveCommand OpenGameEventSettingCommand { get; }
 		public ReactiveCommand EditPlayersListCommand { get; }
 		public ReactiveCommand RemovePlayerCommand { get; }
 		public ReactiveCommand SetTodayBestCommand { get; }
@@ -50,7 +54,7 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand PlayerExchangeCommand { get; }
 		public ReactiveCommand<string> PlayerClearCommand { get; }
 		public ReactiveCommand SaveJsonCommand { get; }
-		
+		public ReactiveCommand SetStageCommand { get; }
 		#endregion
 
 		/// <summary>
@@ -58,6 +62,13 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public MainWindowViewModel()
 		{
+			// アプリタイトルを設定
+			var fileVersionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+			if (fileVersionInfo != null)
+			{
+				AppTitle.Value = $"{fileVersionInfo.ProductName} Ver {fileVersionInfo.ProductVersion}";
+			}
+
 			// アプリ開始コマンド
 			LoadedCommand = new ReactiveCommand();
 			LoadedCommand.Subscribe(_ =>
@@ -68,40 +79,30 @@ namespace PlayerControl.ViewModels
 				// プレイヤー履歴を初期化
 				InitPlayersHistory();
 
+				// プレイヤー設定画面を表示
+				if( Players.Count == 0)
+				{
+					EditPlayersList();
+				}
 			}).AddTo(Disposable);
 			// アプリ終了前コマンド
 			ClosingCommand = new ReactiveCommand();
 			ClosingCommand.Subscribe(_ =>
 			{
 				// StreamControl Jsonファイルを初期化（タイムスタンプも初期化）
-				CurrentPlayer1.Value = new PlayerModel();
-				CurrentPlayer2.Value = new PlayerModel();
+				CurrentPlayer1.Value = _emptyPlayer;
+				CurrentPlayer2.Value = _emptyPlayer;
+				Stage.Value = String.Empty;
 				SaveStreamControlJson(true);
 
 			}).AddTo(Disposable);
 
-			// イベント設定画面を表示するコマンド
-			OpenGameEventSettingCommand = new ReactiveCommand();
-			OpenGameEventSettingCommand.Subscribe(async _ =>
-			{
-				var view = new GameEventSettingView()
-				{
-					DataContext = EventSetting.Value
-				};
-				// ダイアログ外をクリックして閉じた場合はnullが返ってくる
-				var result = await DialogHost.Show(view, "MainWindowDialog");
-				if (result is bool settingResult)
-				{
-				}
-			}).AddTo(Disposable);
 
 			// プレイヤー編集コマンド
 			EditPlayersListCommand = new ReactiveCommand();
 			EditPlayersListCommand.Subscribe(_ =>
 			{
-				var playerEditWindow = new PlayersEditWindow();
-				playerEditWindow.DataContext = this;
-				playerEditWindow.Show();
+				EditPlayersList();
 			}).AddTo(Disposable);
 
 			// 本日ベスト変更コマンド
@@ -195,7 +196,7 @@ namespace PlayerControl.ViewModels
 
 			// プレイヤー追加コマンド
 			AddPlayerCommand = new ReactiveCommand<Object>();
-			AddPlayerCommand.Subscribe(param =>
+			AddPlayerCommand.Subscribe(async param =>
 			{
 				if( param is TextBox textBox )
 				{
@@ -203,19 +204,44 @@ namespace PlayerControl.ViewModels
 					var trimName = name.Trim();
 					if(!String.IsNullOrEmpty(trimName))
 					{
-						Players.Add(new PlayerModel(trimName, 0, 0));
-						SaveStreamControlJson();
+						bool IsExistSameName = false;
+						// 同じ名前のユーザーがいないかチェック
+						foreach(var checkPlayer in Players)
+						{
+							if( checkPlayer.Name.Value == trimName)
+							{
+								IsExistSameName = true;
+							}
+						}
+						// 同じ名前がすでに存在した場合
+						if(IsExistSameName)
+						{
+							// 警告を出す
+							PlayerEditSnackbarMessageQueue.Value.Enqueue("すでに登録されています");
+						}
+						// ユーザーを追加
+						else
+						{
+							Players.Add(new PlayerModel(trimName, 0, 0));
+							SaveStreamControlJson();
+							textBox.Text = String.Empty;
+						}
 					}
-					textBox.Text = String.Empty;
 				}
 			}).AddTo(Disposable);
 
+			// 現在の状態でJSONファイルを保存し直すコマンド
 			SaveJsonCommand = new ReactiveCommand();
 			SaveJsonCommand.Subscribe(_ =>
 			{
 				SaveStreamControlJson();
 			}).AddTo(Disposable);
-			
+
+			SetStageCommand = new ReactiveCommand();
+			SetStageCommand.Subscribe(_ =>
+			{
+				SaveStreamControlJson();
+			}).AddTo(Disposable);
 
 			// このアプリについて表示する
 			AboutBoxCommand = new ReactiveCommand();
@@ -226,6 +252,17 @@ namespace PlayerControl.ViewModels
 
 				await this.MahAppsDialogCoordinator.ShowMessageAsync(this, $"{_envInfo.WindowsCaption}", $"Ver.{_envInfo.WindowsVersion} Now = {DateTime.Now}");
 			});
+		}
+
+
+		/// <summary>
+		/// プレイヤー一覧設定ウィンドウを表示する
+		/// </summary>
+		public void EditPlayersList()
+		{
+			var playerEditWindow = new PlayersEditWindow();
+			playerEditWindow.DataContext = this;
+			playerEditWindow.Show();
 		}
 
 		/// <summary>
@@ -357,13 +394,20 @@ namespace PlayerControl.ViewModels
 				// Path + Jsonファイル名
 				var savepath = System.IO.Path.Combine(jsonPath, _jsonFileName);
 
+
 				// Jsonクラスに値をセット(CurrentPlayerがnullの場合は初期値のまま保存）
 				var StreamControlData = new StreamControlParam();
+
+				// イベント名をセット
+				StreamControlData.stage = Stage.Value;
+
+				// プレイヤー１情報
 				if (CurrentPlayer1.Value != null)
 				{
 					StreamControlData.pName1 = CurrentPlayer1.Value.Name.Value;
 					StreamControlData.pScore1 = CurrentPlayer1.Value.TodayBest.Value.ToString();
 				}
+				// プレイヤー２情報
 				if (CurrentPlayer2.Value != null)
 				{
 					StreamControlData.pName2 = CurrentPlayer2.Value.Name.Value;
@@ -404,12 +448,12 @@ namespace PlayerControl.ViewModels
 			PlayersHistory.Add(new PlayerModel("ピエロ", 720, 512));
 
 			// TODO:Player追加UIができたら消す
-			Players.Add(new PlayerModel("ガンズ", 664, 425));
-			Players.Add(new PlayerModel("GAF", 942, 656));
-			Players.Add(new PlayerModel("まつのゆ", 580, 530));
-			Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
-			Players.Add(new PlayerModel("いざよい", 999, 702));
-			Players.Add(new PlayerModel("ピエロ", 720, 512));
+			//Players.Add(new PlayerModel("ガンズ", 664, 425));
+			//Players.Add(new PlayerModel("GAF", 942, 656));
+			//Players.Add(new PlayerModel("まつのゆ", 580, 530));
+			//Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
+			//Players.Add(new PlayerModel("いざよい", 999, 702));
+			//Players.Add(new PlayerModel("ピエロ", 720, 512));
 #endif
 		}
 	}

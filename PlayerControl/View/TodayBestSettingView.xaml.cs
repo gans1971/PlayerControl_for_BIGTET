@@ -15,7 +15,7 @@ namespace PlayerControl.View
 			InitializeComponent();
 		}
 
-		private void NumericUpDown_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+		private void TextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
 		{
 			InputMethod.Current.ImeState = InputMethodState.Off;
 		}
