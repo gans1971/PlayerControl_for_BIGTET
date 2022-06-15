@@ -12,7 +12,7 @@
 	mc:Ignorable="d">
 	<Grid
 		x:Name="LayoutRoot"
-		MinWidth="390"
+		MaxWidth="370"
 		MinHeight="180"
 		HorizontalAlignment="Center"
 		FocusManager.FocusedElement="{Binding ElementName=ScoreTextBox}">
