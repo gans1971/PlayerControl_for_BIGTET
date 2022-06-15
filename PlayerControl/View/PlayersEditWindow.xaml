@@ -21,9 +21,21 @@
 	SaveWindowPosition="True"
 	ShowMaxRestoreButton="True"
 	ShowMinButton="False"
+	TitleBarHeight="25"
 	TitleCharacterCasing="Normal"
 	Topmost="True"
 	mc:Ignorable="d">
+	<mah:MetroWindow.TitleTemplate>
+		<DataTemplate>
+			<TextBlock
+				Margin="5,-1,5,0"
+				VerticalAlignment="Center"
+				FontFamily="{DynamicResource HeaderFontFamily}"
+				FontSize="{DynamicResource WindowTitleFontSize}"
+				Text="{TemplateBinding Content}"
+				TextTrimming="CharacterEllipsis" />
+		</DataTemplate>
+	</mah:MetroWindow.TitleTemplate>
 
 	<mah:MetroWindow.Resources>
 		<converters:StringBoolConverter x:Key="StringBoolConverter" />
@@ -36,6 +48,17 @@
 			<RowDefinition Height="*" />
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
+		<Grid.Resources>
+			<Style BasedOn="{StaticResource MaterialDesignFlatLightBgButton}" TargetType="{x:Type Button}">
+				<Setter Property="Margin" Value="10,0,5,0" />
+				<Setter Property="Padding" Value="15,0" />
+				<Setter Property="HorizontalContentAlignment" Value="Center" />
+				<Setter Property="VerticalContentAlignment" Value="Center" />
+				<Setter Property="FontSize" Value="12" />
+				<Setter Property="Height" Value="30" />
+				<Setter Property="Cursor" Value="Hand" />
+			</Style>
+		</Grid.Resources>
 
 		<!--  同じ名前が登録されているときに表示する警告スナックバー  -->
 		<md:Snackbar
@@ -51,11 +74,7 @@
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
-			<Grid.Resources>
-				<Style BasedOn="{StaticResource MaterialDesignOutlinedLightButton}" TargetType="{x:Type Button}">
-					<Setter Property="Margin" Value="5,0" />
-				</Style>
-			</Grid.Resources>
+			<Grid.Resources />
 			<Label
 				VerticalAlignment="Center"
 				VerticalContentAlignment="Center"
@@ -83,14 +102,9 @@
 			<Button
 				x:Name="AddButton"
 				Grid.Column="2"
-				Margin="10,0,5,0"
-				Padding="10,0"
-				HorizontalContentAlignment="Center"
-				VerticalContentAlignment="Center"
 				Command="{Binding AddPlayerCommand}"
 				CommandParameter="{Binding ElementName=AddPlayerName}"
 				IsEnabled="{Binding Text, Converter={StaticResource StringBoolConverter}, ElementName=AddPlayerName}"
-				Style="{StaticResource MaterialDesignRaisedLightButton}"
 				ToolTip="プレイヤーを追加">
 
 				<StackPanel Orientation="Horizontal">
@@ -204,17 +218,60 @@
 					</DataTemplate.Triggers>
 				</DataTemplate>
 			</ListBox.ItemTemplate>
+
 		</ListBox>
 		<!--#endregion-->
 
-		<Grid x:Name="FooterGrid" Grid.Row="2">
-			<Button
-				Margin="5"
-				HorizontalAlignment="Right"
-				VerticalAlignment="Center"
-				Click="OkButton_Click"
-				Content="OK" />
-		</Grid>
+		<Border
+			Grid.Row="2"
+			Padding="5,10,5,5"
+			BorderBrush="{StaticResource MahApps.Brushes.Gray7}"
+			BorderThickness="0,1,0,0">
+			<Grid x:Name="FooterGrid">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+
+				<Grid x:Name="EventSettingGrid">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<TextBlock
+						Margin="5,0"
+						VerticalAlignment="Center"
+						FontSize="12"
+						Foreground="{StaticResource MahApps.Brushes.Gray3}"
+						IsHitTestVisible="False"
+						Text="Default Country :" />
+					<TextBox
+						x:Name="StageName"
+						Grid.Column="1"
+						MinWidth="80"
+						MinHeight="20"
+						Margin="0,2,0,0"
+						Padding="5,0"
+						HorizontalAlignment="Left"
+						VerticalAlignment="Center"
+						VerticalContentAlignment="Center"
+						BorderBrush="{StaticResource MahApps.Brushes.Accent4}"
+						Cursor="Arrow"
+						FontSize="12"
+						MaxLength="10"
+						Style="{StaticResource MahApps.Styles.TextBox}"
+						Text="{Binding DefaultCountry.Value, UpdateSourceTrigger=LostFocus}" />
+				</Grid>
+
+				<Button
+					Grid.Column="1"
+					HorizontalAlignment="Left"
+					VerticalAlignment="Center"
+					Click="OkButton_Click"
+					Content="閉じる"
+					Cursor="Hand" />
+			</Grid>
+		</Border>
 
 		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->
 		<!--  参考：http://nineworks2.blog.fc2.com/blog-entry-117.html  -->
@@ -222,6 +279,6 @@
 			Grid.RowSpan="3"
 			d:IsHidden="True"
 			CloseOnClickAway="False"
-			Identifier="MainWindowDialog" />
+			Identifier="PlayerEditDialog" />
 	</Grid>
 </mah:MetroWindow>

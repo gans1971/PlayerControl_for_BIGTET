@@ -2,6 +2,7 @@
 using PlayerControl.ViewModels;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -16,6 +17,11 @@ namespace PlayerControl.View
 		public MainWindow()
 		{
 			InitializeComponent();
+		}
+
+		private void StageTextbox_KeyDown(object sender, KeyEventArgs e)
+		{
+
 		}
 
 		private void ListViewItem_KeyDown(object sender, KeyEventArgs e)
@@ -45,9 +51,12 @@ namespace PlayerControl.View
 						vm.ChangePlayer(item.DataContext, false);
 						e.Handled = true;
 						break;
-					case Key.R:
-						vm.SaveStreamControlJson();
-						e.Handled = true;
+					case Key.C:
+						if (Keyboard.Modifiers == ModifierKeys.Control)
+						{
+							vm.SetPlayerInfoToClipboard(item.DataContext);
+							e.Handled = true;
+						}
 						break;
 				}
 			}
@@ -73,5 +82,18 @@ namespace PlayerControl.View
 			}
 		}
 
+		private void StageName_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == System.Windows.Input.Key.Enter)
+			{
+				if(FocusManager.GetFocusedElement(this) is FrameworkElement fe)
+				{
+					fe.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+				}
+
+
+				e.Handled = true;
+			}
+		}
 	}
 }

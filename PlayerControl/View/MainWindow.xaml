@@ -17,9 +17,9 @@
 	xmlns:v="clr-namespace:PlayerControl.View"
 	xmlns:vm="clr-namespace:PlayerControl.ViewModels"
 	Title="{Binding AppTitle.Value}"
-	Width="460"
+	Width="390"
 	Height="200"
-	MinWidth="420"
+	MinWidth="390"
 	MinHeight="200"
 	Dialog:DialogParticipation.Register="{Binding}"
 	BorderThickness="1"
@@ -29,8 +29,37 @@
 	ShowMaxRestoreButton="False"
 	ShowMinButton="False"
 	ShowTitleBar="True"
+	TitleBarHeight="25"
 	TitleCharacterCasing="Normal"
 	mc:Ignorable="d">
+	<mah:MetroWindow.TitleTemplate>
+		<DataTemplate>
+			<TextBlock
+				Margin="5,-1,5,0"
+				VerticalAlignment="Center"
+				FontFamily="{DynamicResource HeaderFontFamily}"
+				FontSize="{DynamicResource WindowTitleFontSize}"
+				FontWeight="Light"
+				Text="{TemplateBinding Content}"
+				TextTrimming="CharacterEllipsis" />
+		</DataTemplate>
+	</mah:MetroWindow.TitleTemplate>
+	<mah:MetroWindow.RightWindowCommands>
+		<mah:WindowCommands>
+			<Button x:Name="AboutBox">
+				<i:Interaction.Triggers>
+					<i:EventTrigger EventName="Click">
+						<ri:EventToReactiveCommand Command="{Binding AboutBoxCommand}" />
+					</i:EventTrigger>
+				</i:Interaction.Triggers>
+				<md:PackIcon
+					Width="22"
+					Height="22"
+					Kind="InformationOutline" />
+			</Button>
+		</mah:WindowCommands>
+	</mah:MetroWindow.RightWindowCommands>
+
 	<!--
 		TODO:設定画面で切り替えられるようにする
 		Topmost ="True"
@@ -71,7 +100,7 @@
 		</Grid.RowDefinitions>
 
 		<!--#region イベント名-->
-		<Grid x:Name="EventSettingGrid" Margin="5,10,5,0">
+		<Grid x:Name="EventSettingGrid" Margin="5,5,5,0">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition Width="*" />
@@ -81,24 +110,32 @@
 				VerticalAlignment="Center"
 				VerticalContentAlignment="Center"
 				Content="Stage:"
-				FontSize="15"
+				FontSize="14"
 				FontWeight="Bold"
 				Foreground="{StaticResource MahApps.Brushes.Gray2}"
 				IsHitTestVisible="False" />
 			<TextBox
 				x:Name="StageName"
 				Grid.Column="1"
-				Margin="5,0,5,5"
-				md:HintAssist.Hint="ステージ名を入力してください"
-				md:HintAssist.HintOpacity="0.1"
-				md:TextFieldAssist.CharacterCounterVisibility="Collapsed"
-				FontSize="15"
+				Margin="5,0,0,5"
+				VerticalAlignment="Center"
+				VerticalContentAlignment="Center"
+				mah:TextBoxHelper.ClearTextButton="True"
+				BorderBrush="{StaticResource MahApps.Brushes.Accent4}"
+				Cursor="Arrow"
+				FontSize="14"
 				FontWeight="Bold"
 				MaxLength="32"
+				PreviewKeyDown="StageName_PreviewKeyDown"
+				Style="{StaticResource MahApps.Styles.TextBox}"
 				Text="{Binding Stage.Value, UpdateSourceTrigger=PropertyChanged}">
 				<TextBox.InputBindings>
 					<KeyBinding Command="{Binding SetStageCommand}" Gesture="Enter" />
 				</TextBox.InputBindings>
+				<mah:TextBoxHelper.ButtonContent>
+					<md:PackIcon Kind="CloseThick" />
+				</mah:TextBoxHelper.ButtonContent>
+
 			</TextBox>
 		</Grid>
 		<!--#endregion-->
@@ -107,16 +144,16 @@
 		<DockPanel
 			x:Name="ToolDockPanel"
 			Grid.Row="1"
-			Margin="5"
+			Margin="5,0,0,5"
 			LastChildFill="False">
 			<DockPanel.Resources>
-				<Style BasedOn="{StaticResource MaterialDesignRaisedDarkButton}" TargetType="{x:Type Button}">
+				<Style BasedOn="{StaticResource MaterialDesignFlatLightBgButton}" TargetType="{x:Type Button}">
 					<Setter Property="Margin" Value="0,0,5,0" />
 					<Setter Property="Padding" Value="5,0" />
 					<Setter Property="HorizontalContentAlignment" Value="Center" />
 					<Setter Property="VerticalContentAlignment" Value="Center" />
 					<Setter Property="FontSize" Value="12" />
-					<Setter Property="Foreground" Value="White" />
+					<Setter Property="Height" Value="25" />
 					<Setter Property="Cursor" Value="Hand" />
 				</Style>
 				<Style TargetType="md:PackIcon">
@@ -124,39 +161,36 @@
 					<Setter Property="Height" Value="18" />
 					<Setter Property="VerticalAlignment" Value="Center" />
 				</Style>
-				<Style TargetType="Label">
+				<Style TargetType="TextBlock">
 					<Setter Property="FontSize" Value="12" />
-					<Setter Property="Foreground" Value="White" />
+					<Setter Property="Margin" Value="5,0" />
+					<Setter Property="Foreground" Value="{StaticResource MaterialDesignLightForeground}" />
 				</Style>
 			</DockPanel.Resources>
 
 			<Button Command="{Binding EditPlayersListCommand}" ToolTip="プレイヤーリストを編集">
 				<StackPanel Orientation="Horizontal">
 					<md:PackIcon Kind="AccountMultiple" />
-					<Label Content="プレイヤーリスト" />
+					<TextBlock Text="プレイヤーリスト" />
 				</StackPanel>
 			</Button>
-			<Button Command="{Binding PlayerExchangeCommand}" ToolTip="プレイヤーを交換">
+			<Button Command="{Binding PlayerExchangeCommand}" ToolTip="1P 2P プレイヤーを入替え">
 				<StackPanel Orientation="Horizontal">
 					<md:PackIcon Kind="SwapHorizontal" />
-					<Label Content="入替え" />
+					<TextBlock Text="入替え" />
 				</StackPanel>
 			</Button>
-			<Button
-				Command="{Binding PlayerClearCommand}"
-				CommandParameter="Player1"
-				Content="1P クリア"
-				ToolTip="プレイヤー1をクリア" />
-			<Button
-				Command="{Binding PlayerClearCommand}"
-				CommandParameter="Player2"
-				Content="2P クリア"
-				ToolTip="プレイヤー2をクリア" />
+			<Button Command="{Binding PlayerClearCommand}" CommandParameter="Player1">
+				<TextBlock Text="1P クリア" />
+			</Button>
+			<Button Command="{Binding PlayerClearCommand}" CommandParameter="Player2">
+				<TextBlock Text="2P クリア" />
+			</Button>
 			<Button
 				Command="{Binding SaveJsonCommand}"
 				DockPanel.Dock="Right"
-				ToolTip="リロード">
-				<md:PackIcon Kind="Refresh" />
+				ToolTip="設定を保存（手動）">
+				<md:PackIcon Kind="ContentSaveEditOutline" />
 			</Button>
 		</DockPanel>
 		<!--#endregion-->
@@ -168,6 +202,7 @@
 			Grid.Row="2"
 			HorizontalContentAlignment="Stretch"
 			VerticalContentAlignment="Center"
+			d:ItemsSource="{d:SampleData ItemCount=5}"
 			dd:DragDrop.DropScrollingMode="VerticalOnly"
 			dd:DragDrop.IsDragSource="True"
 			dd:DragDrop.IsDropTarget="True"
@@ -196,11 +231,14 @@
 
 			<!--  アイテムの背景をトリガーで設定（選択・行ごとなど）：ItemContainerStyle  -->
 			<ListBox.ItemContainerStyle>
-
 				<Style TargetType="{x:Type ListBoxItem}">
-					<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-					<Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
+					<EventSetter Event="KeyDown" Handler="ListViewItem_KeyDown" />
+
+					<!--  フォーカス時の点線を解除  -->
+					<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+
 					<!--  コンテキストメニュー  -->
+					<Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
 					<Setter Property="ContextMenu">
 						<Setter.Value>
 							<ContextMenu>
@@ -218,17 +256,19 @@
 										</i:EventTrigger>
 									</i:Interaction.Triggers>
 								</MenuItem>
-								<MenuItem Header="プレイヤー名/スコア設定">
+								<MenuItem Header="名前+スコア ⇨クリップボード">
 									<i:Interaction.Triggers>
 										<i:EventTrigger EventName="Click">
-											<ri:EventToReactiveCommand Command="{Binding PlacementTarget.Tag.InputScoreCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+											<ri:EventToReactiveCommand Command="{Binding PlacementTarget.Tag.ToClipboardCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
 										</i:EventTrigger>
 									</i:Interaction.Triggers>
+									<MenuItem.Icon>
+										<md:PackIcon Kind="ClipboardAccountOutline" />
+									</MenuItem.Icon>
 								</MenuItem>
 							</ContextMenu>
 						</Setter.Value>
 					</Setter>
-					<EventSetter Event="KeyDown" Handler="ListViewItem_KeyDown" />
 					<Setter Property="Template">
 						<Setter.Value>
 							<ControlTemplate TargetType="{x:Type ListBoxItem}">
@@ -238,6 +278,8 @@
 							</ControlTemplate>
 						</Setter.Value>
 					</Setter>
+
+					<!--  ListBoxItemの背景を設定  -->
 					<Style.Triggers>
 						<Trigger Property="ListBox.AlternationIndex" Value="0">
 							<Setter Property="Background" Value="White" />
@@ -260,10 +302,7 @@
 			<!--  アイテムテンプレート  -->
 			<ListBox.ItemTemplate>
 				<DataTemplate>
-					<Grid
-						x:Name="ItemGrid"
-						MinHeight="35"
-						Background="Transparent">
+					<Grid x:Name="ItemGrid" Background="Transparent">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="Auto" />
@@ -273,7 +312,7 @@
 						<!--  プレイヤー名  -->
 						<Grid x:Name="PlayerNameGrid">
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto" MinWidth="35" />
+								<ColumnDefinition Width="Auto" MinWidth="30" />
 								<ColumnDefinition Width="*" />
 							</Grid.ColumnDefinitions>
 							<Grid.Resources>
@@ -281,16 +320,16 @@
 									<Setter Property="VerticalAlignment" Value="Center" />
 									<Setter Property="HorizontalAlignment" Value="Center" />
 									<Setter Property="Foreground" Value="White" />
-									<Setter Property="FontSize" Value="13" />
+									<Setter Property="FontSize" Value="12" />
 									<Setter Property="FontWeight" Value="Bold" />
 								</Style>
 								<Style x:Key="IconBorderStyle" TargetType="{x:Type Border}">
 									<Setter Property="VerticalAlignment" Value="Center" />
 									<Setter Property="HorizontalAlignment" Value="Center" />
 									<Setter Property="CornerRadius" Value="5" />
-									<Setter Property="Width" Value="25" />
-									<Setter Property="Height" Value="25" />
-									<Setter Property="Margin" Value="5,5,0,5" />
+									<Setter Property="Width" Value="22" />
+									<Setter Property="Height" Value="22" />
+									<Setter Property="Margin" Value="5,0,0,0" />
 								</Style>
 							</Grid.Resources>
 
@@ -331,7 +370,7 @@
 									HorizontalContentAlignment="Left"
 									VerticalContentAlignment="Center"
 									Content="{Binding Name.Value}"
-									FontSize="15"
+									FontSize="13"
 									FontWeight="Bold"
 									Foreground="Black" />
 							</Viewbox>
@@ -339,44 +378,46 @@
 
 						<!--  表示スコア  -->
 						<Border Grid.Column="1" Margin="10,0">
-							<!--<i:Interaction.Triggers>
+							<!-- スコア入力ダイアログ表示用（参考）
+							<i:Interaction.Triggers>
 								<i:EventTrigger EventName="MouseDown">
-									<ri:EventToReactiveCommand Command="{Binding DataContext.SetTodayBestCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+									<ri:EventToReactiveCommand Command="{Binding DataContext.SetScoreCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
 								</i:EventTrigger>
-							</i:Interaction.Triggers>-->
+							</i:Interaction.Triggers>
+							-->
 							<TextBox
 								MinWidth="50"
+								MinHeight="15"
 								VerticalAlignment="Center"
 								HorizontalContentAlignment="Right"
 								VerticalContentAlignment="Center"
 								bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus="True"
 								CommandManager.PreviewExecuted="ScoreTextBox_PreviewExecuted"
 								Cursor="IBeam"
-								FontFamily="Arial"
-								FontSize="15"
+								FontSize="14"
 								GotKeyboardFocus="ScoreTextBox_GotKeyboardFocus"
 								MaxLength="3"
 								PreviewTextInput="ScoreTextBox_PreviewTextInput"
 								Style="{StaticResource MahApps.Styles.TextBox}"
-								Text="{Binding TodayBest.Value, UpdateSourceTrigger=PropertyChanged}" />
+								Text="{Binding Score.Value, UpdateSourceTrigger=PropertyChanged}" />
 						</Border>
 
 						<!--  1P/2P 設定ボタン  -->
 						<StackPanel
 							x:Name="ChangeButtonPanel"
 							Grid.Column="2"
-							MinWidth="80"
+							MinWidth="70"
 							Orientation="Horizontal"
 							Visibility="Visible">
 							<StackPanel.Resources>
 								<Style BasedOn="{StaticResource MaterialDesignFloatingActionMiniSecondaryLightButton}" TargetType="{x:Type Button}">
 									<Setter Property="VerticalAlignment" Value="Center" />
 									<Setter Property="HorizontalAlignment" Value="Center" />
-									<Setter Property="FontSize" Value="13" />
-									<Setter Property="Margin" Value="5,2" />
+									<Setter Property="FontSize" Value="11" />
+									<Setter Property="Margin" Value="10,2,0,2" />
 									<Setter Property="Padding" Value="0" />
-									<Setter Property="Width" Value="25" />
-									<Setter Property="Height" Value="25" />
+									<Setter Property="Width" Value="22" />
+									<Setter Property="Height" Value="22" />
 									<Setter Property="md:RippleAssist.IsDisabled" Value="False" />
 									<Setter Property="Visibility" Value="Collapsed" />
 									<Style.Triggers>
@@ -413,20 +454,34 @@
 		<StackPanel
 			x:Name="HintPanel"
 			Grid.Row="3"
+			Margin="5,0"
 			Orientation="Horizontal">
 			<StackPanel.Resources>
 				<Style TargetType="{x:Type Label}">
 					<Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.Gray2}" />
-					<Setter Property="Margin" Value="0,0,1,0" />
-					<Setter Property="FontSize" Value="11" />
+					<Setter Property="Margin" Value="0,0,5,0" />
+					<Setter Property="FontSize" Value="12" />
+					<Setter Property="FontWeight" Value="Bold" />
+				</Style>
+				<Style TargetType="md:PackIcon">
+					<Setter Property="Width" Value="22" />
+					<Setter Property="Height" Value="22" />
+					<Setter Property="VerticalAlignment" Value="Center" />
+					<Setter Property="Margin" Value="0,0,0,0" />
+					<Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.Gray3}" />
 				</Style>
 
 			</StackPanel.Resources>
 
-			<Label Content="[↑] [↓] ：プレイヤー選択" />
-			<Label Content="[←]：1Pにセット" />
-			<Label Content="[→]：2Pにセット" />
-			<Label Content="[Space]：スコア入力" />
+			<md:PackIcon Kind="ArrowUpBox" />
+			<md:PackIcon Kind="ArrowDownBox" />
+			<Label Content="プレイヤー選択" />
+			<md:PackIcon Kind="ArrowLeftBox" />
+			<Label Content="1Pにセット" />
+			<md:PackIcon Kind="ArrowRightBox" />
+			<Label Content="2Pにセット" />
+			<md:PackIcon Kind="KeyboardSpace" />
+			<Label Content="スコア入力" />
 		</StackPanel>
 
 		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->

@@ -8,7 +8,7 @@ namespace PlayerControl.Model
     {
         public ReactivePropertySlim<String> Name { get; } = new ReactivePropertySlim<string>(String.Empty);
         public ReactivePropertySlim<int> PersonalBest { get; } = new ReactivePropertySlim<int>(0);
-        public ReactivePropertySlim<int> TodayBest { get; } = new ReactivePropertySlim<int>(0);
+        public ReactivePropertySlim<int> Score { get; } = new ReactivePropertySlim<int>(0);
         public ReactivePropertySlim<DateTime> LastAccess { get; } = new ReactivePropertySlim<DateTime>(DateTime.MinValue);
 		public ReactivePropertySlim<bool> IsPlayerNameInEditMode { get; } = new ReactivePropertySlim<bool>(false);
 
@@ -17,11 +17,11 @@ namespace PlayerControl.Model
         {
 			// ※ 引数なしの場合、LastAccess は初期値（MinValue）のままにしておく
         }
-        public PlayerModel(String name, int personalbest, int todaybest )
+        public PlayerModel(String name, int personalbest, int score )
         {
             Name.Value = name;
             PersonalBest.Value = personalbest;
-            TodayBest.Value = todaybest;
+            Score.Value = score;
             LastAccess.Value = DateTime.Now;
         }
 

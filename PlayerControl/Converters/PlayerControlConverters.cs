@@ -18,9 +18,9 @@ namespace Converters
 			{
 				if( values[0] is int selfBest)
 				{
-					if(values[0] is int todayBest)
+					if(values[0] is int score)
 					{
-						if(selfBest< todayBest)
+						if(selfBest< score)
 						{
 							return true;
 						}

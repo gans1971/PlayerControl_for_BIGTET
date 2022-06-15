@@ -1,5 +1,6 @@
 ﻿using MahApps.Metro.Controls.Dialogs;
 using MaterialDesignThemes.Wpf;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using PlayerControl.Model;
 using PlayerControl.View;
@@ -13,6 +14,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace PlayerControl.ViewModels
@@ -28,16 +30,18 @@ namespace PlayerControl.ViewModels
 		public IDialogCoordinator MahAppsDialogCoordinator { get; set; } = new DialogCoordinator();
 
 		#region ReactiveProperty
-		public ReactivePropertySlim<String> AppTitle { get; } = new ReactivePropertySlim<String>("PlayerControl");
+		public ReactivePropertySlim<String> AppTitle { get; } = new ReactivePropertySlim<String>("Player Control for BIGTET");
+		public ReactivePropertySlim<String> OutputJsonPath { get; } = new ReactivePropertySlim<String>();
+
 		public ReactivePropertySlim<PlayerModel> SelectedPlayer { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<String> Stage { get; } = new ReactivePropertySlim<String>(String.Empty);
 		public ReactivePropertySlim<SnackbarMessageQueue> PlayerEditSnackbarMessageQueue { get; } = new ReactivePropertySlim<SnackbarMessageQueue>(new SnackbarMessageQueue());
+		public ReactivePropertySlim<String> DefaultCountry { get; } = new ReactivePropertySlim<String>("blk");
 
 		public ReactiveCollection<PlayerModel> Players { get; } = new ReactiveCollection<PlayerModel>();
 		public ReactiveCollection<PlayerModel> PlayersHistory { get; } = new ReactiveCollection<PlayerModel>();
-
 		#endregion
 
 		#region ReactiveCommand
@@ -48,13 +52,15 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand ClosingCommand { get; }
 		public ReactiveCommand EditPlayersListCommand { get; }
 		public ReactiveCommand RemovePlayerCommand { get; }
-		public ReactiveCommand SetTodayBestCommand { get; }
+		public ReactiveCommand SetScoreCommand { get; }
 		public ReactiveCommand InputScoreCommand { get; }
 		public ReactiveCommand<Object> AddPlayerCommand { get; }
 		public ReactiveCommand PlayerExchangeCommand { get; }
 		public ReactiveCommand<string> PlayerClearCommand { get; }
 		public ReactiveCommand SaveJsonCommand { get; }
 		public ReactiveCommand SetStageCommand { get; }
+		public ReactiveCommand ToClipboardCommand { get; }
+		
 		#endregion
 
 		/// <summary>
@@ -63,11 +69,35 @@ namespace PlayerControl.ViewModels
 		public MainWindowViewModel()
 		{
 			// アプリタイトルを設定
-			var fileVersionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
-			if (fileVersionInfo != null)
+
+			//var fileVersionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+
+
+			var asm = Assembly.GetExecutingAssembly();
+			try
 			{
-				AppTitle.Value = $"{fileVersionInfo.ProductName} Ver {fileVersionInfo.ProductVersion}";
+				if (asm != null)
+				{
+					var asmName = asm.GetName();
+					if (asmName != null)
+					{
+						var AppName = asmName.Name;
+
+						// 属性から製品名が取得できたらそちらを使う
+						object[] productarray = asm.GetCustomAttributes(typeof(AssemblyProductAttribute), false);
+						if (productarray != null && productarray.Length > 0)
+						{
+							AppName = ((AssemblyProductAttribute)productarray[0]).Product;
+						}
+						AppTitle.Value = $"{AppName} ver {asmName.Version}";
+					}
+				}
 			}
+			catch
+			{
+				// アセンブリ情報（タイトルバー表示）が取れない場合はなにもせずデフォルト名を表示する
+			}
+
 
 			// アプリ開始コマンド
 			LoadedCommand = new ReactiveCommand();
@@ -79,11 +109,6 @@ namespace PlayerControl.ViewModels
 				// プレイヤー履歴を初期化
 				InitPlayersHistory();
 
-				// プレイヤー設定画面を表示
-				if( Players.Count == 0)
-				{
-//					EditPlayersList();
-				}
 			}).AddTo(Disposable);
 
 			// アプリ終了前コマンド
@@ -107,8 +132,8 @@ namespace PlayerControl.ViewModels
 			}).AddTo(Disposable);
 
 			// 本日ベスト変更コマンド
-			SetTodayBestCommand = new ReactiveCommand();
-			SetTodayBestCommand.Subscribe(x =>
+			SetScoreCommand = new ReactiveCommand();
+			SetScoreCommand.Subscribe(x =>
 		   {
 				// イベント発火元コントロールのDataContextからVMを取得して更新
 				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe)
@@ -160,6 +185,7 @@ namespace PlayerControl.ViewModels
 				}
 			}).AddTo(Disposable);
 
+			// スコア入力ダイアログ表示コマンド
 			InputScoreCommand = new ReactiveCommand();
 			InputScoreCommand.Subscribe(x =>
 			{
@@ -238,11 +264,23 @@ namespace PlayerControl.ViewModels
 				SaveStreamControlJson();
 			}).AddTo(Disposable);
 
+			// Stage文字列をJSONに保存するコマンド
 			SetStageCommand = new ReactiveCommand();
 			SetStageCommand.Subscribe(_ =>
 			{
 				SaveStreamControlJson();
 			}).AddTo(Disposable);
+
+			// クリップボードにユーザー名とスコアを貼り付けるコマンド
+			ToClipboardCommand= new ReactiveCommand();
+			ToClipboardCommand.Subscribe(x =>
+			{
+				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe &&	fe.DataContext is PlayerModel player)
+				{
+					SetPlayerInfoToClipboard(player);
+				}
+			}).AddTo(Disposable);
+
 
 			// このアプリについて表示する
 			AboutBoxCommand = new ReactiveCommand();
@@ -253,6 +291,13 @@ namespace PlayerControl.ViewModels
 
 				await this.MahAppsDialogCoordinator.ShowMessageAsync(this, $"{_envInfo.WindowsCaption}", $"Ver.{_envInfo.WindowsVersion} Now = {DateTime.Now}");
 			});
+		}
+		public void SetPlayerInfoToClipboard(object datacontext)
+		{
+			if (datacontext is PlayerModel player)
+			{
+				Clipboard.SetText($"{player.Name}\t{player.Score}");
+			}
 		}
 
 
@@ -307,7 +352,7 @@ namespace PlayerControl.ViewModels
 				// イベント発火元コントロールのDataContextからVMを取得して更新
 				if (datacontext is PlayerModel player)
 				{
-					var view = new TodayBestSettingView()
+					var view = new ScoreSettingView()
 					{
 						DataContext = player
 					};
@@ -324,7 +369,7 @@ namespace PlayerControl.ViewModels
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine($"Exception TodayBestImput:{ex.ToString()}");
+				Debug.WriteLine($"Exception ScoreImput:{ex.ToString()}");
 			}
 		}
 
@@ -333,8 +378,7 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public void Initialize()
 		{
-
-			// TODO:プレイヤーリストを読み込む
+			// プレイヤーリストを読み込む
 			InitPlayersHistory();
 		}
 
@@ -345,9 +389,8 @@ namespace PlayerControl.ViewModels
 		/// <returns></returns>
 		private String GetStreamControlPath()
 		{
-			// 実行ファイルのパスを取得
-			var appPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-			var di = new DirectoryInfo(appPath);
+			// 実行ファイルのパスを取得 ※ .NET5以降では Assenmbly.Locationは空を返すので使用しないこと
+			var di = new DirectoryInfo(AppContext.BaseDirectory);
 			while (true)
 			{
 				if (di == null)
@@ -373,7 +416,6 @@ namespace PlayerControl.ViewModels
 			return String.Empty;
 		}
 
-
 		/// <summary>
 		/// StreamControl互換JSONを保存する
 		/// </summary>
@@ -383,18 +425,47 @@ namespace PlayerControl.ViewModels
 			try
 			{
 				// StreamControlのHTMLテンプレートパスを初期化
-				var jsonPath = GetStreamControlPath();
-
-				// ファイルパスチェック
-				if (!Directory.Exists(jsonPath))
+				if (!Directory.Exists(OutputJsonPath.Value))
 				{
-					MessageBox.Show($"StreamControl の HTML保存フォルダが見つかりません");
+					// 実行ファイルの親フォルダを辿って scoreboard.html が存在するフォルダを探す
+					var scoreboardHtmlPath = GetStreamControlPath();
+
+					// 見つかったらJSON保存先として設定
+					if (Directory.Exists(scoreboardHtmlPath))
+					{
+						OutputJsonPath.Value = scoreboardHtmlPath;
+					}
+					// 親を辿ってみつからなかったら手動で設定させる
+					else
+					{
+						MessageBox.Show($"アプリの上位フォルダにStreamControl用 [scoreboard.html] 保存フォルダが見つかりません\n\n[scoreboard.html]が保存されているフォルダを指定してください");
+						var openDlg = new CommonOpenFileDialog()
+						{
+							Title = "[scoreboard.html] 保存フォルダを選択してください",
+							InitialDirectory = AppContext.BaseDirectory,
+							// フォルダ選択モードにする
+							IsFolderPicker = true,
+						};
+						if (openDlg.ShowDialog() != CommonFileDialogResult.Ok)
+						{
+							return false;
+						}
+						else
+						{
+							OutputJsonPath.Value = openDlg.FileName;
+						}
+					}
+				}
+
+				// 念のためチェック
+				if(!Directory.Exists(OutputJsonPath.Value))
+				{
+					MessageBox.Show($"[streamcontrol.json] 保存先が設定できませんでした");
 					return false;
 				}
 
 				// Path + Jsonファイル名
-				var savepath = System.IO.Path.Combine(jsonPath, _jsonFileName);
-
+				var savepath = System.IO.Path.Combine(OutputJsonPath.Value, _jsonFileName);
 
 				// Jsonクラスに値をセット(CurrentPlayerがnullの場合は初期値のまま保存）
 				var StreamControlData = new StreamControlParam();
@@ -406,22 +477,21 @@ namespace PlayerControl.ViewModels
 				if (CurrentPlayer1.Value != null)
 				{
 					StreamControlData.pName1 = CurrentPlayer1.Value.Name.Value;
-					StreamControlData.pScore1 = CurrentPlayer1.Value.TodayBest.Value.ToString();
+					StreamControlData.pScore1 = CurrentPlayer1.Value.Score.Value.ToString();
+					StreamControlData.pCountry1 = DefaultCountry.Value;
 				}
 				// プレイヤー２情報
 				if (CurrentPlayer2.Value != null)
 				{
 					StreamControlData.pName2 = CurrentPlayer2.Value.Name.Value;
-					StreamControlData.pScore2 = CurrentPlayer2.Value.TodayBest.Value.ToString();
+					StreamControlData.pScore2 = CurrentPlayer2.Value.Score.Value.ToString();
+					StreamControlData.pCountry2 = DefaultCountry.Value;
 				}
 				// タイムスタンプを初期化する場合
-				if( InitTimeStump)
+				if ( InitTimeStump)
 				{
 					StreamControlData.timestamp = "0";
 				}
-
-				Console.WriteLine($"time:{StreamControlData.timestamp}");
-
 				var json = JsonConvert.SerializeObject(StreamControlData);
 				using (var sw = new StreamWriter(savepath, false, Encoding.UTF8))
 				{

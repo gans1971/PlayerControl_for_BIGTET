@@ -129,7 +129,7 @@
 					<Label Content="自己ベスト" />
 				</Border>
 				<Border
-					x:Name="TodayBestLabel"
+					x:Name="ScoreLabel"
 					Grid.Column="3"
 					IsHitTestVisible="False">
 					<Label Content="本日ベスト" Foreground="OrangeRed" />
@@ -360,14 +360,14 @@
 								<TextBlock Foreground="DarkGray" Text="{Binding PersonalBest.Value}" />
 							</Border>
 							<!--  本日ベスト  -->
-							<Border Grid.Column="2" Width="{Binding ActualWidth, ElementName=TodayBestLabel, Mode=OneWay}">
+							<Border Grid.Column="2" Width="{Binding ActualWidth, ElementName=ScoreLabel, Mode=OneWay}">
 								<i:Interaction.Triggers>
 									<i:EventTrigger EventName="MouseDown">
-										<ri:EventToReactiveCommand Command="{Binding DataContext.SetTodayBestCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+										<ri:EventToReactiveCommand Command="{Binding DataContext.SetScoreCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
 									</i:EventTrigger>
 								</i:Interaction.Triggers>
 
-								<TextBlock Text="{Binding TodayBest.Value}" />
+								<TextBlock Text="{Binding Score.Value}" />
 							</Border>
 
 							<!--  プレイヤー別のコントロール  -->
@@ -441,6 +441,6 @@
 			Grid.RowSpan="5"
 			d:IsHidden="True"
 			CloseOnClickAway="False"
-			Identifier="MainWindowDialog" />
+			Identifier="ScoreNoteDialog" />
 	</Grid>
 </mah:MetroWindow>

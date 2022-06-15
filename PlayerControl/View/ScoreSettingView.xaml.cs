@@ -6,11 +6,11 @@ using System.Windows.Input;
 namespace PlayerControl.View
 {
 	/// <summary>
-	/// GameEvetSettingView.xaml の相互作用ロジック
+	/// ScoreSettingView.xaml の相互作用ロジック
 	/// </summary>
-	public partial class TodayBestSettingView : UserControl
+	public partial class ScoreSettingView : UserControl
 	{
-		public TodayBestSettingView()
+		public ScoreSettingView()
 		{
 			InitializeComponent();
 		}
