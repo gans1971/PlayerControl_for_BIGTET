@@ -13,7 +13,7 @@
 
 		<RepositoryUrl>https://github.com/grafficia-nim/PlayerControl_for_BIGTET</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<Authors>GANS</Authors>
+		<Authors>GANS  [twitter] @PTARMI_GANS </Authors>
 		<PackageId>$(AssemblyName)</PackageId>
 		<Product>Player Control for BIGTET</Product>
 		<InformationalVersion>0.4.0.0</InformationalVersion>
@@ -37,13 +37,6 @@
 
 	<ItemGroup>
 		<Content Include="playerControl.ico" />
-		<Content Include="Resources\app.ico" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Resource Include="Resources\capturecursor.png">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -61,6 +54,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="Resources\" />
 		<Folder Include="Servicies\" />
 		<Folder Include="Styles\" />
 	</ItemGroup>
@@ -101,6 +95,9 @@
 
 	<ItemGroup>
 	  <Page Update="View\PlayersEditWindow.xaml">
+	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+	  </Page>
+	  <Page Update="View\AboutView.xaml">
 	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 	  </Page>
 	  <Page Update="View\ScoreSettingView.xaml">

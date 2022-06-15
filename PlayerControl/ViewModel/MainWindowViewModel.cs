@@ -69,10 +69,6 @@ namespace PlayerControl.ViewModels
 		public MainWindowViewModel()
 		{
 			// アプリタイトルを設定
-
-			//var fileVersionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
-
-
 			var asm = Assembly.GetExecutingAssembly();
 			try
 			{
@@ -286,10 +282,22 @@ namespace PlayerControl.ViewModels
 			AboutBoxCommand = new ReactiveCommand();
 			AboutBoxCommand.Subscribe(async _ =>
 			{
-				var _asmAttr = new Servicies.AssemblyAttribute();
 				var _envInfo = new Servicies.EnvironmentInfo();
 
-				await this.MahAppsDialogCoordinator.ShowMessageAsync(this, $"{_envInfo.WindowsCaption}", $"Ver.{_envInfo.WindowsVersion} Now = {DateTime.Now}");
+				try
+				{
+					// イベント発火元コントロールのDataContextからVMを取得して更新
+					var view = new AboutView()
+					{
+						DataContext = this
+					};
+					var result = await DialogHost.Show(view, "MainWindowDialog");
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"Exception AboutBox:{ex.ToString()}");
+				}
+
 			});
 		}
 		public void SetPlayerInfoToClipboard(object datacontext)
