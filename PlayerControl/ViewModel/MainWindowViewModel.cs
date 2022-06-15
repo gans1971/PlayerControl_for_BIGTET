@@ -82,9 +82,10 @@ namespace PlayerControl.ViewModels
 				// プレイヤー設定画面を表示
 				if( Players.Count == 0)
 				{
-					EditPlayersList();
+//					EditPlayersList();
 				}
 			}).AddTo(Disposable);
+
 			// アプリ終了前コマンド
 			ClosingCommand = new ReactiveCommand();
 			ClosingCommand.Subscribe(_ =>
@@ -196,7 +197,7 @@ namespace PlayerControl.ViewModels
 
 			// プレイヤー追加コマンド
 			AddPlayerCommand = new ReactiveCommand<Object>();
-			AddPlayerCommand.Subscribe(async param =>
+			AddPlayerCommand.Subscribe(param =>
 			{
 				if( param is TextBox textBox )
 				{
@@ -446,14 +447,6 @@ namespace PlayerControl.ViewModels
 			PlayersHistory.Add(new PlayerModel("GAF", 942, 656));
 			PlayersHistory.Add(new PlayerModel("いざよい", 999, 702));
 			PlayersHistory.Add(new PlayerModel("ピエロ", 720, 512));
-
-			// TODO:Player追加UIができたら消す
-			//Players.Add(new PlayerModel("ガンズ", 664, 425));
-			//Players.Add(new PlayerModel("GAF", 942, 656));
-			//Players.Add(new PlayerModel("まつのゆ", 580, 530));
-			//Players.Add(new PlayerModel("いにゅうえんどう", 999, 702));
-			//Players.Add(new PlayerModel("いざよい", 999, 702));
-			//Players.Add(new PlayerModel("ピエロ", 720, 512));
 #endif
 		}
 	}
