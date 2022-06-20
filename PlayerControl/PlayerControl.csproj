@@ -5,8 +5,8 @@
 		<TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<UseWPF>true</UseWPF>
-		<AssemblyVersion>0.3.0.0</AssemblyVersion>
-		<FileVersion>0.3.0.0</FileVersion>
+		<AssemblyVersion>0.3.1.0</AssemblyVersion>
+		<FileVersion>0.3.1.0</FileVersion>
 		<NeutralLanguage>ja-JP</NeutralLanguage>
 		<BaseOutputPath>..\StreamControl-for-UMBR-feature-use_number_score\PlayerControl</BaseOutputPath>
 		<ApplicationIcon>playerControl.ico</ApplicationIcon>
@@ -16,23 +16,28 @@
 		<Authors>GANS  [twitter] @PTARMI_GANS </Authors>
 		<PackageId>$(AssemblyName)</PackageId>
 		<Product>Player Control for BIGTET</Product>
-		<InformationalVersion>0.4.0.0</InformationalVersion>
-		<Version>0.0.3.0</Version>
+		<InformationalVersion>0.3.1.0</InformationalVersion>
+		<Version>0.3.1.0</Version>
 		
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Resources\**" />
+	  <EmbeddedResource Remove="Resources\**" />
+	  <None Remove="Resources\**" />
+	  <Page Remove="Resources\**" />
+	</ItemGroup>
 
 
 	<ItemGroup>
 		<Compile Remove="ViewModel\NativeMethod.cs" />
 		<Compile Remove="View\GetWindowHandle.xaml.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Remove="Resources\capturecursor.png" />
+		<Compile Remove="View\ScoreNoteWindow.xaml.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Page Remove="View\GetWindowHandle.xaml" />
+		<Page Remove="View\ScoreNoteWindow.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -54,7 +59,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Resources\" />
 		<Folder Include="Servicies\" />
 		<Folder Include="Styles\" />
 	</ItemGroup>
@@ -98,6 +102,9 @@
 	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 	  </Page>
 	  <Page Update="View\AboutView.xaml">
+	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+	  </Page>
+	  <Page Update="View\PlayerSettingView.xaml">
 	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 	  </Page>
 	  <Page Update="View\ScoreSettingView.xaml">

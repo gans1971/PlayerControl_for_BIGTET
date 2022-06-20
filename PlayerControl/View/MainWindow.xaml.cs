@@ -1,11 +1,17 @@
 ﻿using MahApps.Metro.Controls;
+using MaterialDesignThemes.Wpf;
+using PlayerControl.Model;
 using PlayerControl.ViewModels;
+using System.Collections.Generic;
+using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.Xaml.Behaviors;
 
 namespace PlayerControl.View
 {
@@ -19,12 +25,7 @@ namespace PlayerControl.View
 			InitializeComponent();
 		}
 
-		private void StageTextbox_KeyDown(object sender, KeyEventArgs e)
-		{
-
-		}
-
-		private void ListViewItem_KeyDown(object sender, KeyEventArgs e)
+		private void ListBoxItem_KeyDown(object sender, KeyEventArgs e)
 		{
 			if (DataContext is MainWindowViewModel vm && sender is ListBoxItem item)
 			{
@@ -78,20 +79,6 @@ namespace PlayerControl.View
 			// 貼り付けを許可しない
 			if (e.Command == ApplicationCommands.Paste)
 			{
-				e.Handled = true;
-			}
-		}
-
-		private void StageName_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			if (e.Key == System.Windows.Input.Key.Enter)
-			{
-				if(FocusManager.GetFocusedElement(this) is FrameworkElement fe)
-				{
-					fe.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-				}
-
-
 				e.Handled = true;
 			}
 		}

@@ -52,8 +52,6 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand ClosingCommand { get; }
 		public ReactiveCommand EditPlayersListCommand { get; }
 		public ReactiveCommand RemovePlayerCommand { get; }
-		public ReactiveCommand SetScoreCommand { get; }
-		public ReactiveCommand InputScoreCommand { get; }
 		public ReactiveCommand<Object> AddPlayerCommand { get; }
 		public ReactiveCommand PlayerExchangeCommand { get; }
 		public ReactiveCommand<string> PlayerClearCommand { get; }
@@ -127,17 +125,6 @@ namespace PlayerControl.ViewModels
 				EditPlayersList();
 			}).AddTo(Disposable);
 
-			// 本日ベスト変更コマンド
-			SetScoreCommand = new ReactiveCommand();
-			SetScoreCommand.Subscribe(x =>
-		   {
-				// イベント発火元コントロールのDataContextからVMを取得して更新
-				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe)
-			   {
-				   InputScore(fe.DataContext);
-			   }
-		   }).AddTo(Disposable);
-
 			// プレイヤー1切り替えコマンド
 			Player1ChangeCommand = new ReactiveCommand();
 			Player1ChangeCommand.Subscribe(x =>
@@ -181,17 +168,6 @@ namespace PlayerControl.ViewModels
 				}
 			}).AddTo(Disposable);
 
-			// スコア入力ダイアログ表示コマンド
-			InputScoreCommand = new ReactiveCommand();
-			InputScoreCommand.Subscribe(x =>
-			{
-				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe &&
-					fe.DataContext is PlayerModel player)
-				{
-					InputScore(player);
-				}
-			}).AddTo(Disposable);
-
 			// プレイヤー入れ替えコマンド
 			PlayerExchangeCommand = new ReactiveCommand();
 			PlayerExchangeCommand.Subscribe(x =>
@@ -227,20 +203,22 @@ namespace PlayerControl.ViewModels
 					var trimName = name.Trim();
 					if(!String.IsNullOrEmpty(trimName))
 					{
-						bool IsExistSameName = false;
+						var IsExistSameName = false;
+						var SameName = String.Empty;
 						// 同じ名前のユーザーがいないかチェック
 						foreach(var checkPlayer in Players)
 						{
 							if( checkPlayer.Name.Value == trimName)
 							{
 								IsExistSameName = true;
+								SameName = trimName;
 							}
 						}
 						// 同じ名前がすでに存在した場合
 						if(IsExistSameName)
 						{
 							// 警告を出す
-							PlayerEditSnackbarMessageQueue.Value.Enqueue("すでに登録されています");
+							PlayerEditSnackbarMessageQueue.Value.Enqueue($"[{SameName}] すでに登録されています");
 						}
 						// ユーザーを追加
 						else
@@ -316,7 +294,7 @@ namespace PlayerControl.ViewModels
 		{
 			var playerEditWindow = new PlayersEditWindow();
 			playerEditWindow.DataContext = this;
-			playerEditWindow.Show();
+			playerEditWindow.ShowDialog();
 		}
 
 		/// <summary>
@@ -380,6 +358,30 @@ namespace PlayerControl.ViewModels
 				Debug.WriteLine($"Exception ScoreImput:{ex.ToString()}");
 			}
 		}
+		async public void InputPlayerName(object datacontext)
+		{
+			try
+			{
+				// イベント発火元コントロールのDataContextからVMを取得して更新
+				if (datacontext is PlayerModel player)
+				{
+					var view = new PlayerSettingView()
+					{
+						EditName = player.Name.Value
+					};
+					var result = await DialogHost.Show(view, "PlayersEditDialog");
+					if (result is bool dlgResult && dlgResult)
+					{
+						player.Name.Value = view.EditName;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Exception ScoreImput:{ex.ToString()}");
+			}
+		}
+
 
 		/// <summary>
 		/// MainWindow初期化時にコールされる初期化処理

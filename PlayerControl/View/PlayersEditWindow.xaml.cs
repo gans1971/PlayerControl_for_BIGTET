@@ -24,11 +24,17 @@ namespace PlayerControl.View
 
 		private void PlayerNameEditButton_Click(object sender, RoutedEventArgs e)
 		{
-			if( sender is FrameworkElement fe && fe.DataContext is PlayerModel player)
+			if (DataContext is MainWindowViewModel vm && sender is FrameworkElement fe)
 			{
-				player.IsPlayerNameInEditMode.Value = true;
+				vm.InputPlayerName(fe.DataContext);
 				e.Handled = true;
 			}
+			//if (sender is FrameworkElement fe && fe.DataContext is PlayerModel player)
+			//{
+			//	player.IsPlayerNameInEditMode.Value = true;
+			//	e.Handled = true;
+			//}
+
 		}
 
 		private void PlayerNameTextBox_PreviewKeyDown(object sender, KeyEventArgs e)

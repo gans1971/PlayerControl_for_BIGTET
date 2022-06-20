@@ -120,20 +120,22 @@
 				Margin="5,0,0,5"
 				VerticalAlignment="Center"
 				VerticalContentAlignment="Center"
-				mah:TextBoxHelper.ClearTextButton="True"
-				BorderBrush="{StaticResource MahApps.Brushes.Accent4}"
+				mah:TextBoxHelper.ButtonCommand="{Binding SetStageCommand}"
+				mah:TextBoxHelper.TextButton="True"
 				Cursor="Arrow"
 				FontSize="14"
 				FontWeight="Bold"
 				MaxLength="32"
-				PreviewKeyDown="StageName_PreviewKeyDown"
-				Style="{StaticResource MahApps.Styles.TextBox}"
+				Style="{StaticResource MahApps.Styles.TextBox.Button}"
 				Text="{Binding Stage.Value, UpdateSourceTrigger=PropertyChanged}">
 				<TextBox.InputBindings>
 					<KeyBinding Command="{Binding SetStageCommand}" Gesture="Enter" />
 				</TextBox.InputBindings>
 				<mah:TextBoxHelper.ButtonContent>
-					<md:PackIcon Kind="CloseThick" />
+					<md:PackIcon
+						HorizontalAlignment="Center"
+						VerticalAlignment="Center"
+						Kind="KeyboardReturn" />
 				</mah:TextBoxHelper.ButtonContent>
 
 			</TextBox>
@@ -168,13 +170,13 @@
 				</Style>
 			</DockPanel.Resources>
 
-			<Button Command="{Binding EditPlayersListCommand}" ToolTip="プレイヤーリストを編集">
+			<Button Command="{Binding EditPlayersListCommand}">
 				<StackPanel Orientation="Horizontal">
 					<md:PackIcon Kind="AccountMultiple" />
 					<TextBlock Text="プレイヤーリスト" />
 				</StackPanel>
 			</Button>
-			<Button Command="{Binding PlayerExchangeCommand}" ToolTip="1P 2P プレイヤーを入替え">
+			<Button Command="{Binding PlayerExchangeCommand}">
 				<StackPanel Orientation="Horizontal">
 					<md:PackIcon Kind="SwapHorizontal" />
 					<TextBlock Text="入替え" />
@@ -212,16 +214,20 @@
 			AlternationCount="2"
 			BorderBrush="{StaticResource MahApps.Brushes.Accent4}"
 			BorderThickness="1"
-			ItemsSource="{Binding Players}">
+			ItemsSource="{Binding Players}"
+			ScrollViewer.CanContentScroll="True">
+			<i:Interaction.Behaviors>
+				<v:ScrollIntoViewForListBox />
+			</i:Interaction.Behaviors>
 
 			<!--  ItemsPanelテンプレート（垂直スタックパネル）  -->
 			<ListBox.ItemsPanel>
 				<ItemsPanelTemplate>
 					<StackPanel>
 						<i:Interaction.Behaviors>
-							<i:FluidMoveBehavior AppliesTo="Children" Duration="0:0:0.2">
+							<i:FluidMoveBehavior AppliesTo="Children" Duration="0:0:0.1">
 								<i:FluidMoveBehavior.EaseY>
-									<PowerEase EasingMode="EaseInOut" />
+									<PowerEase EasingMode="EaseOut" Power="3" />
 								</i:FluidMoveBehavior.EaseY>
 							</i:FluidMoveBehavior>
 						</i:Interaction.Behaviors>
@@ -232,7 +238,7 @@
 			<!--  アイテムの背景をトリガーで設定（選択・行ごとなど）：ItemContainerStyle  -->
 			<ListBox.ItemContainerStyle>
 				<Style TargetType="{x:Type ListBoxItem}">
-					<EventSetter Event="KeyDown" Handler="ListViewItem_KeyDown" />
+					<EventSetter Event="KeyDown" Handler="ListBoxItem_KeyDown" />
 
 					<!--  フォーカス時の点線を解除  -->
 					<Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -378,7 +384,7 @@
 
 						<!--  表示スコア  -->
 						<Border Grid.Column="1" Margin="10,0">
-							<!-- スコア入力ダイアログ表示用（参考）
+							<!-- イベントトリガ（参考）
 							<i:Interaction.Triggers>
 								<i:EventTrigger EventName="MouseDown">
 									<ri:EventToReactiveCommand Command="{Binding DataContext.SetScoreCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
