@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Servicies
 {
@@ -43,48 +44,38 @@ namespace Servicies
         public string OsBit { get { return _OsBit; } }
     }
 
-    // サポート用：アセンブリ情報
+    // アセンブリ情報
     public class AssemblyAttribute
     {
         public AssemblyAttribute()
         {
-#if false
             try
             {
-                //AssemblyTitleの取得
-                AssemblyTitleAttribute asmttl =
-                    (AssemblyTitleAttribute)
-                    Attribute.GetCustomAttribute(
-                        Assembly.GetExecutingAssembly(),
-                        typeof(AssemblyTitleAttribute));
-                _Title = asmttl.Title;
+				//AssemblyTitleの取得
+				if (Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyTitleAttribute)) is AssemblyTitleAttribute asmttl)
+				{
+					_Title = asmttl.Title;
+				}
 
-                //AssemblyCompanyの取得
-                AssemblyCompanyAttribute asmcmp =
-                    (AssemblyCompanyAttribute)
-                    Attribute.GetCustomAttribute(
-                    Assembly.GetExecutingAssembly(),
-                    typeof(AssemblyCompanyAttribute));
-                _Company = asmcmp.Company;
+				//AssemblyCompanyの取得
+				if (Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyCompanyAttribute)) is AssemblyCompanyAttribute asmcmp)
+				{
+					_Company = asmcmp.Company;
+				}
 
-                //AssemblyProductの取得
-                AssemblyProductAttribute asmprd =
-                    (AssemblyProductAttribute)
-                    Attribute.GetCustomAttribute(
-                    Assembly.GetExecutingAssembly(),
-                    typeof(AssemblyProductAttribute));
-                _Product = asmprd.Product;
+				//AssemblyProductの取得
+				if (Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(),typeof(AssemblyProductAttribute)) is AssemblyProductAttribute asmprd)
+				{
+					_Product = asmprd.Product;
+				}
 
-                //AssemblyCopyrightの取得
-                AssemblyCopyrightAttribute asmcpy =
-                    (AssemblyCopyrightAttribute)
-                    Attribute.GetCustomAttribute(
-                    Assembly.GetExecutingAssembly(),
-                    typeof(AssemblyCopyrightAttribute));
-                _Copyright = asmcpy.Copyright;
+				//AssemblyCopyrightの取得
+				if (Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(),typeof(AssemblyCopyrightAttribute)) is AssemblyCopyrightAttribute asmcpy)
+				{
+					_Copyright = asmcpy.Copyright;
+				}
             }
             catch { }
-#endif
         }
 
         private string _Title = string.Empty;

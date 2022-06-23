@@ -885,8 +885,6 @@ namespace Converters
 
 	#endregion
 
-
-
 	public class ObjectMatchVisibilityConverter : IMultiValueConverter
 	{
 		public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -903,4 +901,30 @@ namespace Converters
 		}
 	}
 
+	public class StringEmptyToZeroConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			if (value is String inputStr)
+			{
+				if (String.IsNullOrEmpty(inputStr))
+				{
+					return 0;
+				}
+			}
+			return value;
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			if (value is String inputStr)
+			{
+				if (String.IsNullOrEmpty(inputStr))
+				{
+					return 0;
+				}
+			}
+			return value;
+		}
+	}
 }

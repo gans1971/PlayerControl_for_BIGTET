@@ -8,7 +8,7 @@ using System.Windows.Input;
 namespace PlayerControl.View
 {
 	/// <summary>
-	/// Interaction logic for MainWindow.xaml
+	/// Interaction logic for PlayersEditWindow.xaml
 	/// </summary>
 	public partial class PlayersEditWindow : MetroWindow
 	{
@@ -24,7 +24,7 @@ namespace PlayerControl.View
 
 		private void PlayerNameEditButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (DataContext is MainWindowViewModel vm && sender is FrameworkElement fe)
+			if (DataContext is MainViewModel vm && sender is FrameworkElement fe)
 			{
 				vm.InputPlayerName(fe.DataContext);
 				e.Handled = true;

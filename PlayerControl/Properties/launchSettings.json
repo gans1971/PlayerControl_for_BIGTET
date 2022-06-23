@@ -1,8 +1,7 @@
 {
   "profiles": {
-    "PlayerControl": {
-      "commandName": "Project",
-      "nativeDebugging": false
+    "StreamControl": {
+      "commandName": "Project"
     }
   }
 }

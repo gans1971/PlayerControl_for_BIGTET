@@ -14,6 +14,7 @@
 		<RepositoryUrl>https://github.com/grafficia-nim/PlayerControl_for_BIGTET</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Authors>GANS</Authors>
+		<Copyright>GANS</Copyright>
 		<PackageId>$(AssemblyName)</PackageId>
 		<Product>Player Control for BIGTET</Product>
 		<InformationalVersion>0.3.1.0</InformationalVersion>

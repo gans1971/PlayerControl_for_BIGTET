@@ -1,5 +1,5 @@
 ﻿<mah:MetroWindow
-	x:Class="PlayerControl.View.MainWindow"
+	x:Class="PlayerControl.View.PlayerControlWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
@@ -67,11 +67,11 @@
 
 	<!--#region データコンテキスト-->
 	<mah:MetroWindow.DataContext>
-		<vm:MainWindowViewModel>
-			<vm:MainWindowViewModel.MahAppsDialogCoordinator>
+		<vm:MainViewModel>
+			<vm:MainViewModel.MahAppsDialogCoordinator>
 				<Dialog:DialogCoordinator />
-			</vm:MainWindowViewModel.MahAppsDialogCoordinator>
-		</vm:MainWindowViewModel>
+			</vm:MainViewModel.MahAppsDialogCoordinator>
+		</vm:MainViewModel>
 	</mah:MetroWindow.DataContext>
 	<!--#endregion-->
 
@@ -87,8 +87,11 @@
 	<!--#endregion-->
 
 	<mah:MetroWindow.Resources>
+		<!--#region コンバーター-->
 		<converters:ObjectMatchVisibilityConverter x:Key="ObjectMatchVisibilityConverter" />
 		<converters:StringBoolConverter x:Key="StringBoolConverter" />
+		<converters:StringEmptyToZeroConverter x:Key="StringEmptyToZeroConverter" />
+		<!--#endregion-->
 	</mah:MetroWindow.Resources>
 
 	<Grid x:Name="LayoutRoot" FocusManager.FocusedElement="{Binding ElementName=PlayersListBox}">
@@ -384,13 +387,6 @@
 
 						<!--  表示スコア  -->
 						<Border Grid.Column="1" Margin="10,0">
-							<!-- イベントトリガ（参考）
-							<i:Interaction.Triggers>
-								<i:EventTrigger EventName="MouseDown">
-									<ri:EventToReactiveCommand Command="{Binding DataContext.SetScoreCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
-								</i:EventTrigger>
-							</i:Interaction.Triggers>
-							-->
 							<TextBox
 								MinWidth="50"
 								MinHeight="15"
@@ -405,7 +401,7 @@
 								MaxLength="3"
 								PreviewTextInput="ScoreTextBox_PreviewTextInput"
 								Style="{StaticResource MahApps.Styles.TextBox}"
-								Text="{Binding Score.Value, UpdateSourceTrigger=PropertyChanged}" />
+								Text="{Binding Score.Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringEmptyToZeroConverter}}" />
 						</Border>
 
 						<!--  1P/2P 設定ボタン  -->
@@ -496,6 +492,6 @@
 			Grid.RowSpan="4"
 			d:IsHidden="True"
 			CloseOnClickAway="False"
-			Identifier="MainWindowDialog" />
+			Identifier="PlayerControlWindowDialog" />
 	</Grid>
 </mah:MetroWindow>

@@ -1,26 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Data;
 
 namespace Converters
 {
-	internal class PlayerControlConverters
+	public class PlayerControlConverters
 	{
-
-
 		public class IsBestScoreUpdateConverter : IMultiValueConverter
 		{
 			public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 			{
-				if( values[0] is int selfBest)
+				if (values[0] is int selfBest)
 				{
-					if(values[0] is int score)
+					if (values[0] is int score)
 					{
-						if(selfBest< score)
+						if (selfBest < score)
 						{
 							return true;
 						}
@@ -33,8 +26,5 @@ namespace Converters
 				throw new NotImplementedException("ConvertBack Not Supported");
 			}
 		}
-
-
-
 	}
 }

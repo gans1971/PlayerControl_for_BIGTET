@@ -6,6 +6,7 @@ using PlayerControl.Model;
 using PlayerControl.View;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using Servicies;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -19,7 +20,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace PlayerControl.ViewModels
 {
-	public class MainWindowViewModel : BindableViewModel
+	public class MainViewModel : BindableViewModel
 	{
 		private const String _htmlSourceFile = "scoreboard.html";
 		private const String _jsonFileName = "streamcontrol.json";
@@ -64,8 +65,10 @@ namespace PlayerControl.ViewModels
 		/// <summary>
 		/// コンストラクタ
 		/// </summary>
-		public MainWindowViewModel()
+		public MainViewModel()
 		{
+			var assmAttr = new AssemblyAttribute();
+
 			// アプリタイトルを設定
 			var asm = Assembly.GetExecutingAssembly();
 			try
@@ -269,7 +272,7 @@ namespace PlayerControl.ViewModels
 					{
 						DataContext = this
 					};
-					var result = await DialogHost.Show(view, "MainWindowDialog");
+					var result = await DialogHost.Show(view, "PlayerControlWindowDialog");
 				}
 				catch (Exception ex)
 				{
@@ -342,7 +345,7 @@ namespace PlayerControl.ViewModels
 					{
 						DataContext = player
 					};
-					var result = await DialogHost.Show(view, "MainWindowDialog");
+					var result = await DialogHost.Show(view, "PlayerControlWindowDialog");
 					if (result is bool dlgResult && dlgResult)
 					{
 						// 現在選択中のユーザーのスコアを更新した場合
@@ -384,7 +387,7 @@ namespace PlayerControl.ViewModels
 
 
 		/// <summary>
-		/// MainWindow初期化時にコールされる初期化処理
+		/// PlayerControlWindow 初期化時にコールされる初期化処理
 		/// </summary>
 		public void Initialize()
 		{
