@@ -13,7 +13,7 @@
 
 		<RepositoryUrl>https://github.com/grafficia-nim/PlayerControl_for_BIGTET</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<Authors>GANS  [twitter] @PTARMI_GANS </Authors>
+		<Authors>GANS</Authors>
 		<PackageId>$(AssemblyName)</PackageId>
 		<Product>Player Control for BIGTET</Product>
 		<InformationalVersion>0.3.1.0</InformationalVersion>
@@ -22,9 +22,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Manual\**" />
 	  <Compile Remove="Resources\**" />
+	  <EmbeddedResource Remove="Manual\**" />
 	  <EmbeddedResource Remove="Resources\**" />
+	  <None Remove="Manual\**" />
 	  <None Remove="Resources\**" />
+	  <Page Remove="Manual\**" />
 	  <Page Remove="Resources\**" />
 	</ItemGroup>
 
