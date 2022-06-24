@@ -68,9 +68,9 @@
 	<!--#region データコンテキスト-->
 	<mah:MetroWindow.DataContext>
 		<vm:MainViewModel>
-			<vm:MainViewModel.MahAppsDialogCoordinator>
+			<vm:MainViewModel.PlayerControlDialogCoordinator>
 				<Dialog:DialogCoordinator />
-			</vm:MainViewModel.MahAppsDialogCoordinator>
+			</vm:MainViewModel.PlayerControlDialogCoordinator>
 		</vm:MainViewModel>
 	</mah:MetroWindow.DataContext>
 	<!--#endregion-->

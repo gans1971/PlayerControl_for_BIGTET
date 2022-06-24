@@ -28,7 +28,7 @@ namespace PlayerControl.ViewModels
 		// CurrentPlayerをクリアするためのインスタンス
 		private PlayerModel _emptyPlayer { get; } = new PlayerModel();
 
-		public IDialogCoordinator MahAppsDialogCoordinator { get; set; } = new DialogCoordinator();
+		public IDialogCoordinator PlayerControlDialogCoordinator { get; set; } = new DialogCoordinator();
 
 		#region ReactiveProperty
 		public ReactivePropertySlim<String> AppTitle { get; } = new ReactivePropertySlim<String>("Player Control for BIGTET");
@@ -59,7 +59,7 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand SaveJsonCommand { get; }
 		public ReactiveCommand SetStageCommand { get; }
 		public ReactiveCommand ToClipboardCommand { get; }
-		
+		public ReactiveCommand CloseModalWindowCommand { get; }
 		#endregion
 
 		/// <summary>
@@ -136,7 +136,7 @@ namespace PlayerControl.ViewModels
 					fe.DataContext is PlayerModel player)
 				{
 					CurrentPlayer1.Value = player;
-					if( CurrentPlayer2.Value == player)
+					if (CurrentPlayer2.Value == player)
 					{
 						CurrentPlayer2.Value = _emptyPlayer;
 					}
@@ -200,28 +200,20 @@ namespace PlayerControl.ViewModels
 			AddPlayerCommand = new ReactiveCommand<Object>();
 			AddPlayerCommand.Subscribe(param =>
 			{
-				if( param is TextBox textBox )
+				if (param is TextBox textBox)
 				{
 					var name = textBox.Text;
 					var trimName = name.Trim();
-					if(!String.IsNullOrEmpty(trimName))
+					if (!String.IsNullOrEmpty(trimName))
 					{
-						var IsExistSameName = false;
-						var SameName = String.Empty;
 						// 同じ名前のユーザーがいないかチェック
-						foreach(var checkPlayer in Players)
-						{
-							if( checkPlayer.Name.Value == trimName)
-							{
-								IsExistSameName = true;
-								SameName = trimName;
-							}
-						}
+						var sameNamePlayer = SearchPlayer(trimName);
+
 						// 同じ名前がすでに存在した場合
-						if(IsExistSameName)
+						if (sameNamePlayer != null)
 						{
 							// 警告を出す
-							PlayerEditSnackbarMessageQueue.Value.Enqueue($"[{SameName}] すでに登録されています");
+							PlayerEditSnackbarMessageQueue.Value.Enqueue($"[{trimName}] 同じ名前が登録されています");
 						}
 						// ユーザーを追加
 						else
@@ -249,12 +241,23 @@ namespace PlayerControl.ViewModels
 			}).AddTo(Disposable);
 
 			// クリップボードにユーザー名とスコアを貼り付けるコマンド
-			ToClipboardCommand= new ReactiveCommand();
+			ToClipboardCommand = new ReactiveCommand();
 			ToClipboardCommand.Subscribe(x =>
 			{
-				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe &&	fe.DataContext is PlayerModel player)
+				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && fe.DataContext is PlayerModel player)
 				{
 					SetPlayerInfoToClipboard(player);
+				}
+			}).AddTo(Disposable);
+
+
+			// モーダルウィンドウを閉じる
+			CloseModalWindowCommand = new ReactiveCommand();
+			CloseModalWindowCommand.Subscribe(x =>
+			{
+				if (x is System.Windows.Window wnd)
+				{
+					wnd.Close();
 				}
 			}).AddTo(Disposable);
 
@@ -281,6 +284,11 @@ namespace PlayerControl.ViewModels
 
 			});
 		}
+
+		/// <summary>
+		/// プレイヤー情報（名前＋スコア）をクリップボードに積む
+		/// </summary>
+		/// <param name="datacontext"></param>
 		public void SetPlayerInfoToClipboard(object datacontext)
 		{
 			if (datacontext is PlayerModel player)
@@ -288,7 +296,6 @@ namespace PlayerControl.ViewModels
 				Clipboard.SetText($"{player.Name}\t{player.Score}");
 			}
 		}
-
 
 		/// <summary>
 		/// プレイヤー一覧設定ウィンドウを表示する
@@ -341,6 +348,9 @@ namespace PlayerControl.ViewModels
 				// イベント発火元コントロールのDataContextからVMを取得して更新
 				if (datacontext is PlayerModel player)
 				{
+					// 下記行を入れないとアニメーション中にキー操作すると元ダイアログにフォーカスが移動してしまう
+					System.Windows.Input.Keyboard.ClearFocus();
+
 					var view = new ScoreSettingView()
 					{
 						DataContext = player
@@ -361,6 +371,11 @@ namespace PlayerControl.ViewModels
 				Debug.WriteLine($"Exception ScoreImput:{ex.ToString()}");
 			}
 		}
+
+		/// <summary>
+		/// プレイヤー名ダイアログでプレイヤー名を入力する
+		/// </summary>
+		/// <param name="datacontext"></param>
 		async public void InputPlayerName(object datacontext)
 		{
 			try
@@ -372,10 +387,26 @@ namespace PlayerControl.ViewModels
 					{
 						EditName = player.Name.Value
 					};
+
 					var result = await DialogHost.Show(view, "PlayersEditDialog");
 					if (result is bool dlgResult && dlgResult)
 					{
-						player.Name.Value = view.EditName;
+						var trimName = view.EditName;
+
+						// 同じ名前のユーザーがいないかチェック
+						var sameNamePlayer = SearchPlayer(trimName);
+
+						// 同じ名前がすでに存在した場合
+						if (sameNamePlayer != null )
+						{
+							// 警告を出す
+							PlayerEditSnackbarMessageQueue.Value.Enqueue($"[{trimName}]同じ名前が登録されています");
+						}
+						// ユーザー名を更新
+						else
+						{
+							player.Name.Value = trimName;
+						}
 					}
 				}
 			}
@@ -383,6 +414,26 @@ namespace PlayerControl.ViewModels
 			{
 				Debug.WriteLine($"Exception ScoreImput:{ex.ToString()}");
 			}
+		}
+
+
+		/// <summary>
+		/// プレイヤーリストの中から同じ名前のプレイヤーを探す
+		/// </summary>
+		/// <param name="targetName"></param>
+		/// <returns></returns>
+		PlayerModel? SearchPlayer(String targetName)
+		{
+
+
+			foreach (var checkPlayer in Players)
+			{
+				if (checkPlayer.Name.Value == targetName)
+				{
+					return checkPlayer;
+				}
+			}
+			return null;
 		}
 
 

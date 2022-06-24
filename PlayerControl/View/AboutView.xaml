@@ -12,8 +12,8 @@
 	mc:Ignorable="d">
 	<Grid
 		x:Name="LayoutRoot"
-		MaxWidth="370"
 		MinHeight="180"
+		MaxWidth="370"
 		HorizontalAlignment="Center"
 		FocusManager.FocusedElement="{Binding ElementName=ScoreTextBox}">
 		<Grid.Resources>
@@ -80,7 +80,7 @@
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="Auto" />
 					</Grid.RowDefinitions>
-					<Label Content="開発：" />
+					<Label Content="作者：" />
 					<TextBox
 						x:Name="CreaterTextBox"
 						Grid.Column="1"

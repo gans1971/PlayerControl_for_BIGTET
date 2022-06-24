@@ -42,6 +42,19 @@
 		<converters:ObjectMatchVisibilityConverter x:Key="ObjectMatchVisibilityConverter" />
 	</mah:MetroWindow.Resources>
 
+	<Window.InputBindings>
+		<!--#region プレイヤーリスト設定ウィンドウを閉じるショートカット(CTRL+W or ESC）-->
+		<KeyBinding
+			Command="{Binding CloseModalWindowCommand}"
+			CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
+			Gesture="Ctrl+W" />
+		<KeyBinding
+			Command="{Binding CloseModalWindowCommand}"
+			CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
+			Gesture="Escape" />
+		<!--#endregion-->
+	</Window.InputBindings>
+
 	<Grid x:Name="LayoutRoot" FocusManager.FocusedElement="{Binding ElementName=AddPlayerName}">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
@@ -61,7 +74,7 @@
 		</Grid.Resources>
 
 		<!--#region ツールグリッド-->
-		<Grid x:Name="ToolGrid" Margin="5,10,5,5">
+		<Grid x:Name="ToolGrid" Margin="5,15,5,5">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
@@ -77,7 +90,7 @@
 				md:HintAssist.FloatingScale="1.0"
 				md:HintAssist.Hint="プレイヤー名入力（Enter で追加）"
 				md:HintAssist.IsFloating="True"
-				FontSize="14"
+				FontSize="13"
 				FontWeight="Bold"
 				Style="{StaticResource MaterialDesignOutlinedTextBox}">
 				<TextBox.InputBindings>
@@ -121,7 +134,8 @@
 		<!--  同じ名前が登録されているときに表示する警告スナックバー  -->
 		<md:Snackbar
 			Grid.Row="1"
-			FontSize="15"
+			Background="{StaticResource MahApps.Brushes.Accent3}"
+			FontSize="12"
 			MessageQueue="{Binding PlayerEditSnackbarMessageQueue.Value}" />
 
 		<!--#region プレイヤーコントロールグループ-->
@@ -283,7 +297,7 @@
 					HorizontalAlignment="Left"
 					VerticalAlignment="Center"
 					Click="OkButton_Click"
-					Content="OK"
+					Content="OK [ CTRL+W ]"
 					Cursor="Hand" />
 			</Grid>
 		</Border>
