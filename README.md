@@ -30,7 +30,7 @@ GitHub Releaseから [最新版ダウンロード](https://github.com/gans1971/P
 - 実行ファイルを直接起動：PlayerControl_for_BIGTETフォルダ - PlayerControl.exe
   - デスクトップ等にショートカットを作成してご利用ください
 (/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf)
-![InstCard](Manual/InstCard.png)
+![InstCard](Images/InstCard.png)
 [インストカードPDFダウンロード](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf)
 
 ## リリースノート
