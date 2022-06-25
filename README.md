@@ -34,7 +34,7 @@
   - StreamControl テンプレートフォルダに展開したフォルダをコピー
   - (StreamControl フォルダと同じ階層)
 </br></br>
-<img src="Images/setup.png" width="360px">
+![SetupFolder](Images/setup.png)
 
 ## 削除方法
 
