@@ -9,7 +9,7 @@
 - 3桁数値に特化したスコア入力画面
 
 ## ダウンロード
-GitHub Releaseから [最新版ダウンロード](/releases)
+GitHub Releaseから [最新版ダウンロード](https://github.com/gans1971/PlayerControl_for_BIGTET/releases/)
 
 ### 動作環境
 - Windows10 / 11
