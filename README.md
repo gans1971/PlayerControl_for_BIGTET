@@ -1,9 +1,10 @@
 # PlayerControl for BIGTET
 
-![capture](https://user-images.githubusercontent.com/87809679/175765945-74904b8b-928e-4ebb-9bda-f8c4e2a612a2.gif)
+<img src="https://user-images.githubusercontent.com/87809679/175765945-74904b8b-928e-4ebb-9bda-f8c4e2a612a2.gif" width="480px">
+
 ***カーソルキー上下で選択 左右で1P/2Pを設定しています***
 
-![InstCard](Images/InstCard.png)
+<img src="Images/InstCard.png" width="480px">
 
 [**インストカード PDF (A5版) ダウンロード**](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf)
 
