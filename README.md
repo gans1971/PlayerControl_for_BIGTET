@@ -29,14 +29,16 @@
 
 ## セットアップ方法
 
-- [**セットアップ方法PDF**](/Manual/PlayerControlForBIGTET_Setup.pdf)
+- [**セットアップ方法 PDF**](/Manual/PlayerControlForBIGTET_Setup.pdf)
   - ZIPファイル ⇛ *PlayerControl_for_BIGTET* フォルダ展開
-  - テンプレートフォルダに展開したフォルダをコピー
+  - StreamControl テンプレートフォルダに展開したフォルダをコピー
   - (StreamControl フォルダと同じ階層)
+</br></br>
+<img src="Images/setup.png" width="360px">
 
 ## 削除方法
 
-- テンプレートフォルダにコピーした *PlayerControl_for_BIGTET* をフォルダごと削除
+- StreamControl テンプレートフォルダから *PlayerControl_for_BIGTET* をフォルダごと削除
 - アプリ内でレジストリは使用していない
 
 ## 使い方
