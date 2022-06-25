@@ -1,13 +1,13 @@
 # PlayerControl for BIGTET
 
 ![capture](https://user-images.githubusercontent.com/87809679/175765945-74904b8b-928e-4ebb-9bda-f8c4e2a612a2.gif)
-カーソルキーの上下で選択、左右で1P/2Pを設定しています
+*カーソルキーの上下で選択、左右で1P/2Pを設定しています*
 
 ![InstCard](Images/InstCard.png)
 
 [インストカードPDFダウンロード](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf)
 
-### 概要・特徴
+## 概要・特徴
 
 - 対戦型ゲーム配信サポートツール <[StreamControl](http://streamcontroljapan.blog.jp/)> 互換 Windows アプリ
 - StreamControlとの共存・同時使用が可能
@@ -15,32 +15,32 @@
 - プレイヤー名一覧を登録 カーソルキー上下でプレイヤー選択 カーソルキー左右で 1P/2P セット
 - 3桁数値に特化したスコア入力画面
 
-### ダウンロード
+## ダウンロード
 
 GitHub Releaseから [最新版ダウンロード](https://github.com/gans1971/PlayerControl_for_BIGTET/releases/)
 
-### 動作環境
+## 動作環境
 
 - Windows10 / 11
 - 追加ランタイム不要（.NET6 自己完結型アプリ）
 
-### セットアップ方法
+## セットアップ方法
 
 - [セットアップ方法PDFダウンロード](/Manual/PlayerControlForBIGTET_Setup.pdf)
 - ZIPファイル ⇛ PlayerControl_for_BIGTET フォルダ展開
 - StreamControl テンプレートフォルダに展開したフォルダをコピー(StreamControl フォルダと同じ階層)
 
-### 使い方
+## 使い方
 
 - セットアップフォルダ内の **PlayerControl.exe** を直接実行
 - デスクトップ等にショートカットを作成してご利用ください
 
-### 備考
+## 備考
 
 - 動作検証用に [SHIG Website StreamControl テンプレート](http://shigaming.com/2018/11/30/streamcontroltemplate2019/) をリポジトリ内に収録しております。
 - githubリポジトリは [こちらです](https://github.com/Pon57/StreamControl-for-UMBR)
 
-### LICENSE
+## LICENSE
 
 - MIT License
 
