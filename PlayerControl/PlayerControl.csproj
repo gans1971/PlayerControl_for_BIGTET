@@ -1,0 +1,129 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<AssemblyVersion>0.3.1.0</AssemblyVersion>
+		<FileVersion>0.3.1.0</FileVersion>
+		<NeutralLanguage>ja-JP</NeutralLanguage>
+		<BaseOutputPath>..\StreamControl-for-UMBR-feature-use_number_score\PlayerControl</BaseOutputPath>
+		<ApplicationIcon>playerControl.ico</ApplicationIcon>
+
+		<RepositoryUrl>https://github.com/grafficia-nim/PlayerControl_for_BIGTET</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<Authors>GANS</Authors>
+		<Copyright>GANS</Copyright>
+		<PackageId>$(AssemblyName)</PackageId>
+		<Product>Player Control for BIGTET</Product>
+		<InformationalVersion>0.3.1.0</InformationalVersion>
+		<Version>0.3.1.0</Version>
+		
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <DebugType>none</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <DebugType>none</DebugType>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Manual\**" />
+	  <Compile Remove="Resources\**" />
+	  <EmbeddedResource Remove="Manual\**" />
+	  <EmbeddedResource Remove="Resources\**" />
+	  <None Remove="Manual\**" />
+	  <None Remove="Resources\**" />
+	  <Page Remove="Manual\**" />
+	  <Page Remove="Resources\**" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<Compile Remove="ViewModel\NativeMethod.cs" />
+		<Compile Remove="View\GetWindowHandle.xaml.cs" />
+		<Compile Remove="View\ScoreNoteWindow.xaml.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Page Remove="View\GetWindowHandle.xaml" />
+		<Page Remove="View\ScoreNoteWindow.xaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="playerControl.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CsvHelper" Version="27.2.1" />
+		<PackageReference Include="gong-wpf-dragdrop" Version="3.1.1" />
+		<PackageReference Include="MahApps.Metro" Version="2.4.9" />
+		<PackageReference Include="MaterialDesignColors" Version="2.0.6" />
+		<PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.2" />
+		<PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="Prism.Core" Version="8.1.97" />
+		<PackageReference Include="ReactiveProperty.WPF" Version="8.1.2" />
+		<PackageReference Include="System.Management" Version="6.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Servicies\" />
+		<Folder Include="Styles\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\.gitignore" Link=".gitignore" />
+	  <None Include="..\README.md" Link="README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Properties\Resources.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Properties\Settings.Designer.cs">
+		  <DesignTimeSharedInput>True</DesignTimeSharedInput>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Properties\Resources.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Properties\Settings.settings">
+	    <Generator>PublicSettingsSingleFileGenerator</Generator>
+	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Update="View\PlayersEditWindow.xaml">
+	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+	  </Page>
+	  <Page Update="View\AboutView.xaml">
+	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+	  </Page>
+	  <Page Update="View\PlayerSettingView.xaml">
+	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+	  </Page>
+	  <Page Update="View\ScoreSettingView.xaml">
+	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+	  </Page>
+	</ItemGroup>
+
+</Project>
