@@ -5,7 +5,7 @@
 
 ![InstCard](Images/InstCard.png)
 
-[**インストカードPDFダウンロード**](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf)
+[**インストカード PDF (A5版) ダウンロード**](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf)
 
 ## 概要・特徴
 
@@ -14,8 +14,8 @@
 - TETRIS the Grandmaster ビッグモード（通称ビグテト）配信用に特化
 - プレイヤーが頻繁に入れ替わるフリープレイイベントやローリングマッチを想定
   - 事前にプレイヤーリストを登録
-  - カーソルキーだけで 1P/2P の保存が可能
-  - スコアは3桁半角数字入力に特化
+  - カーソルキーだけで プレイヤー選択 と 1P/2Pセット が操作可能
+  - スコアは3桁半角数字のみ入力可能
 
 ## ダウンロード
 
@@ -30,15 +30,20 @@
 ## セットアップ方法
 
 - [**セットアップ方法PDF**](/Manual/PlayerControlForBIGTET_Setup.pdf)
-  - ZIPファイル ⇛ PlayerControl_for_BIGTET フォルダ展開
+  - ZIPファイル ⇛ *PlayerControl_for_BIGTET* フォルダ展開
   - テンプレートフォルダに展開したフォルダをコピー
   - (StreamControl フォルダと同じ階層)
+
+## 削除方法
+
+- テンプレートフォルダにコピーした *PlayerControl_for_BIGTET* をフォルダごと削除
+- アプリ内でレジストリは使用していない
 
 ## 使い方
 
 - セットアップフォルダ内の **PlayerControl.exe** を直接実行
-- デスクトップ等にショートカットを作成してご利用ください
-- 基本的な使用法は [**インストカード**](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf) を御覧ください
+- よく使う場合はデスクトップ等にショートカットを作成
+- 基本的な使用法は [**インストカード PDF (A5版)**](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf) を参照
 
 ## アプリの挙動解説
 
