@@ -1,8 +1,8 @@
 ## PlayerControl for BIGTET
 
-### 概要・特徴
-
 ![Capture](Images/Capture.gif)
+
+### 概要・特徴
 
 - 対戦型ゲームの配信サポートツール <[StreamControl](http://streamcontroljapan.blog.jp/)> 互換のWindowsアプリ
 - StreamControlとの共存・同時使用が可能
