@@ -33,8 +33,7 @@
   - ZIPファイル ⇛ *PlayerControl_for_BIGTET* フォルダ展開
   - StreamControl テンプレートフォルダに展開したフォルダをコピー
   - (StreamControl フォルダと同じ階層)
-</br></br>
-![Setup](Images/setup.png)
+![Setup](Images/Setup.png)
 
 ## 削除方法
 
