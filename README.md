@@ -1,13 +1,14 @@
-## PlayerControl for BIGTET
+# PlayerControl for BIGTET
 
 ![capture](https://user-images.githubusercontent.com/87809679/175765945-74904b8b-928e-4ebb-9bda-f8c4e2a612a2.gif)
 
 ![InstCard](Images/InstCard.png)
+
 [インストカードPDFダウンロード](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf)
 
 ### 概要・特徴
 
-- 対戦型ゲームの配信サポートツール <[StreamControl](http://streamcontroljapan.blog.jp/)> 互換のWindowsアプリ
+- 対戦型ゲーム配信サポートツール <[StreamControl](http://streamcontroljapan.blog.jp/)> 互換 Windows アプリ
 - StreamControlとの共存・同時使用が可能
 - TETRIS the Grandmaster ビッグモード（通称ビグテト）配信用にカスタマイズ
 - プレイヤー名一覧を登録し、カーソルキーで 1P/2P ユーザー名・スコアを変更可能
