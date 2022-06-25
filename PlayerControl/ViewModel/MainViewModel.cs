@@ -14,9 +14,6 @@ using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media.Animation;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace PlayerControl.ViewModels
 {
@@ -383,7 +380,7 @@ namespace PlayerControl.ViewModels
 						var sameNamePlayer = SearchPlayer(trimName);
 
 						// 同じ名前がすでに存在した場合
-						if (sameNamePlayer != null )
+						if (sameNamePlayer != null)
 						{
 							// 警告を出す
 							PlayerEditSnackbarMessageQueue.Value.Enqueue($"[{trimName}]同じ名前が登録されています");
@@ -410,8 +407,6 @@ namespace PlayerControl.ViewModels
 		/// <returns></returns>
 		PlayerModel? SearchPlayer(String targetName)
 		{
-
-
 			foreach (var checkPlayer in Players)
 			{
 				if (checkPlayer.Name.Value == targetName)
@@ -421,7 +416,6 @@ namespace PlayerControl.ViewModels
 			}
 			return null;
 		}
-
 
 		/// <summary>
 		/// PlayerControlWindow 初期化時にコールされる初期化処理
@@ -508,7 +502,7 @@ namespace PlayerControl.ViewModels
 				}
 
 				// 念のためチェック
-				if(!Directory.Exists(OutputJsonPath.Value))
+				if (!Directory.Exists(OutputJsonPath.Value))
 				{
 					MessageBox.Show($"[streamcontrol.json] 保存先が設定できませんでした");
 					return false;
@@ -538,7 +532,7 @@ namespace PlayerControl.ViewModels
 					StreamControlData.pCountry2 = DefaultCountry.Value;
 				}
 				// タイムスタンプを初期化する場合
-				if ( InitTimeStump)
+				if (InitTimeStump)
 				{
 					StreamControlData.timestamp = "0";
 				}
