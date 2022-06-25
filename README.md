@@ -35,9 +35,14 @@ GitHub Releaseから [最新版ダウンロード](https://github.com/gans1971/P
 - セットアップフォルダ内の **PlayerControl.exe** を直接実行
 - デスクトップ等にショートカットを作成してご利用ください
 
+### 備考
+
+- 動作検証用に [SHIG Website StreamControl テンプレート](http://shigaming.com/2018/11/30/streamcontroltemplate2019/) をリポジトリ内に収録しております。
+- githubリポジトリは [こちらです](https://github.com/Pon57/StreamControl-for-UMBR)
+
 ### LICENSE
 
-MIT License
+- MIT License
 
 ## リリースノート
 
@@ -64,4 +69,5 @@ MIT License
 - コンテキストメニューにクリップボード追加
 
 ### ■ Ver0.2.0.0(2022/06/11)
+
 - ロケテ版（池袋大感謝祭用）
