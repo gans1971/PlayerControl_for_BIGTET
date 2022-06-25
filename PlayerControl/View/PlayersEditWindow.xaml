@@ -297,7 +297,7 @@
 					HorizontalAlignment="Left"
 					VerticalAlignment="Center"
 					Click="OkButton_Click"
-					Content="OK [ CTRL+W ]"
+					Content="OK (_W)"
 					Cursor="Hand" />
 			</Grid>
 		</Border>

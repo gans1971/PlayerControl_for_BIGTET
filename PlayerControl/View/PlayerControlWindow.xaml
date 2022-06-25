@@ -59,6 +59,17 @@
 			</Button>
 		</mah:WindowCommands>
 	</mah:MetroWindow.RightWindowCommands>
+	<mah:MetroWindow.InputBindings>
+		<!--#region ショートカット-->
+		<KeyBinding Command="{Binding EditPlayersListCommand}" Gesture="Alt+P" />
+		<KeyBinding
+			Key="P"
+			Command="{Binding EditPlayersListCommand}"
+			Gesture="Ctrl+P"
+			Modifiers="Alt" />
+		<KeyBinding Command="{Binding SaveJsonCommand}" Gesture="Ctrl+S" />
+		<!--#endregion-->
+	</mah:MetroWindow.InputBindings>
 
 	<!--
 		TODO:設定画面で切り替えられるようにする
@@ -176,7 +187,9 @@
 			<Button Command="{Binding EditPlayersListCommand}">
 				<StackPanel Orientation="Horizontal">
 					<md:PackIcon Kind="AccountMultiple" />
-					<TextBlock Text="プレイヤーリスト" />
+					<TextBlock>
+						プレイヤーリスト(<Underline>P</Underline>)
+					</TextBlock>
 				</StackPanel>
 			</Button>
 			<Button Command="{Binding PlayerExchangeCommand}">

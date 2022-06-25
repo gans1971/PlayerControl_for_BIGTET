@@ -132,15 +132,9 @@ namespace PlayerControl.ViewModels
 			Player1ChangeCommand = new ReactiveCommand();
 			Player1ChangeCommand.Subscribe(x =>
 			{
-				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe &&
-					fe.DataContext is PlayerModel player)
+				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && fe.DataContext is PlayerModel player)
 				{
-					CurrentPlayer1.Value = player;
-					if (CurrentPlayer2.Value == player)
-					{
-						CurrentPlayer2.Value = _emptyPlayer;
-					}
-					SaveStreamControlJson();
+					ChangePlayer(player, true);
 				}
 			}).AddTo(Disposable);
 
@@ -148,15 +142,9 @@ namespace PlayerControl.ViewModels
 			Player2ChangeCommand = new ReactiveCommand();
 			Player2ChangeCommand.Subscribe(x =>
 			{
-				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe &&
-					fe.DataContext is PlayerModel player)
+				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && fe.DataContext is PlayerModel player)
 				{
-					CurrentPlayer2.Value = player;
-					if (CurrentPlayer1.Value == player)
-					{
-						CurrentPlayer1.Value = _emptyPlayer;
-					}
-					SaveStreamControlJson();
+					ChangePlayer(player, false);
 				}
 			}).AddTo(Disposable);
 
@@ -250,7 +238,6 @@ namespace PlayerControl.ViewModels
 				}
 			}).AddTo(Disposable);
 
-
 			// モーダルウィンドウを閉じる
 			CloseModalWindowCommand = new ReactiveCommand();
 			CloseModalWindowCommand.Subscribe(x =>
@@ -260,7 +247,6 @@ namespace PlayerControl.ViewModels
 					wnd.Close();
 				}
 			}).AddTo(Disposable);
-
 
 			// このアプリについて表示する
 			AboutBoxCommand = new ReactiveCommand();
