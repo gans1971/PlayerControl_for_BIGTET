@@ -10,14 +10,16 @@
 ## 概要・特徴
 
 - 対戦型ゲーム配信サポートツール <[**StreamControl**](http://streamcontroljapan.blog.jp/)> 互換 Windows アプリ
-- StreamControlとの共存・同時使用が可能
-- TETRIS the Grandmaster ビッグモード（通称ビグテト）配信用にカスタマイズ
-- プレイヤー名一覧を登録 カーソルキー上下でプレイヤー選択 カーソルキー左右で 1P/2P セット
-- 3桁数値に特化したスコア入力画面
+  - StreamControl との共存・同時使用が可能
+- TETRIS the Grandmaster ビッグモード（通称ビグテト）配信用に特化
+- プレイヤーが頻繁に入れ替わるフリープレイイベントやローリングマッチを想定
+  - 事前にプレイヤーリストを登録
+  - カーソルキーだけで 1P/2P の保存が可能
+  - スコアは3桁半角数字入力に特化
 
 ## ダウンロード
 
-[**最新版ダウンロード先**](https://github.com/gans1971/PlayerControl_for_BIGTET/releases/)
+[**最新版ダウンロード**](https://github.com/gans1971/PlayerControl_for_BIGTET/releases/)
 
 ## 動作環境
 
@@ -71,10 +73,6 @@
 |pCountry2|"blk"| 国旗など（ビグテト配信専用 固定画像）|
 |timestamp|"1656151419511"| ファイル保存時刻(long)|
 
-## LICENSE
-
-- MIT License
-
 ## リリースノート
 
 ### ■ Ver0.3.1.0(2022/06/25)
@@ -102,6 +100,15 @@
 ### ■ Ver0.2.0.0(2022/06/11)
 
 - 初回ロケテ版
+
+## 開発環境
+
+- Visual Studio Community 2022
+- プラットフォーム: .NET6 + WPF
+
+## LICENSE
+
+- MIT License
 
 ## 備考
 
