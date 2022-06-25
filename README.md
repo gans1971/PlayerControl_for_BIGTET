@@ -2,6 +2,9 @@
 
 ![capture](https://user-images.githubusercontent.com/87809679/175765945-74904b8b-928e-4ebb-9bda-f8c4e2a612a2.gif)
 
+![InstCard](Images/InstCard.png)
+[インストカードPDFダウンロード](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf)
+
 ### 概要・特徴
 
 - 対戦型ゲームの配信サポートツール <[StreamControl](http://streamcontroljapan.blog.jp/)> 互換のWindowsアプリ
@@ -30,8 +33,6 @@ GitHub Releaseから [最新版ダウンロード](https://github.com/gans1971/P
 - 実行ファイルを直接起動：PlayerControl_for_BIGTETフォルダ - PlayerControl.exe
   - デスクトップ等にショートカットを作成してご利用ください
 
-[インストカードPDFダウンロード](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf)
-![InstCard](Images/InstCard.png)
 
 ## リリースノート
 
