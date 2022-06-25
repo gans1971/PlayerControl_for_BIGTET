@@ -1,19 +1,32 @@
 # PlayerControl for BIGTET
 
 ## 概要・特徴
-- 「PlayerControl for BIGTET」は対戦型ゲームの配信サポートツール 《[StreamControl](http://streamcontroljapan.blog.jp/)》 互換のアプリケーションです。
-- TETRIS the Grandmaster（TGM1）ビッグモード（通称ビグテト）の配信用にカスタマイズしています。
-- プレイヤー名を登録すればカーソルキーだけで 1P/2P ユーザー名・スコア切り替えができます。
-- 
 
-## アプリダウンロード
-GitHub Release [v0.3.1](https://github.com/gans1971/PlayerControl_for_BIGTET/releases/tag/v0.3.1)
+- 対戦型ゲームの配信サポートツール <[StreamControl](http://streamcontroljapan.blog.jp/)> 互換のアプリケーション
+- StreamControlとの共存・同時使用が可能
+- TETRIS the Grandmaster ビッグモード（通称ビグテト）配信用にカスタマイズ
+- プレイヤー名一覧を登録し、カーソルキーで 1P/2P ユーザー名・スコアを変更可能
+- 3桁数値に特化したスコア入力画面
 
-## セットアップ方法
+## ダウンロード
+GitHub Releaseから [最新版ダウンロード](/releases/)
+
+### 動作環境
+- Windows10 / 11
+- 追加ランタイム不要（.NET6 自己完結型アプリ）
+
+### セットアップ方法
 - ダウンロードしたZIPファイルを展開
 - 
-
 ## 使い方
+- [インストカードダウンロード](/)
+
+ZIPファイルを展開
+PlayerControl_for_BIGTET フォルダ作成
+テンプレートフォルダに展開したフォルダをコピー
+StreamControl フォルダと同じ階層に配置
+展開フォルダ内  PlayerControl.exe でアプリ起動
+デスクトップ等にショートカットを作成してご利用ください
 
 
 ## リリースノート
