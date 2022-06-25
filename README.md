@@ -9,7 +9,7 @@
 - 3桁数値に特化したスコア入力画面
 
 ## ダウンロード
-GitHub Releaseから [最新版ダウンロード](/releases/)
+GitHub Releaseから [最新版ダウンロード](/releases)
 
 ### 動作環境
 - Windows10 / 11
