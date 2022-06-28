@@ -118,7 +118,7 @@
 
 - MIT License
 
-## 備考
+## 謝辞
 
 - 動作検証用に [SHIG Website StreamControl テンプレート](http://shigaming.com/2018/11/30/streamcontroltemplate2019/) を使用いたしました。
   - githubリポジトリは [こちらです](https://github.com/Pon57/StreamControl-for-UMBR)

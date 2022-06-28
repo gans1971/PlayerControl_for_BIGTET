@@ -5,20 +5,20 @@
 		<TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<UseWPF>true</UseWPF>
-		<AssemblyVersion>0.3.1.0</AssemblyVersion>
-		<FileVersion>0.3.1.0</FileVersion>
 		<NeutralLanguage>ja-JP</NeutralLanguage>
 		<BaseOutputPath>..\StreamControl-for-UMBR-feature-use_number_score\PlayerControl</BaseOutputPath>
 		<ApplicationIcon>playerControl.ico</ApplicationIcon>
 
-		<RepositoryUrl>https://github.com/grafficia-nim/PlayerControl_for_BIGTET</RepositoryUrl>
+		<RepositoryUrl>https://github.com/gans1971/PlayerControl_for_BIGTET</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Authors>GANS</Authors>
 		<Copyright>GANS</Copyright>
 		<PackageId>$(AssemblyName)</PackageId>
 		<Product>Player Control for BIGTET</Product>
-		<InformationalVersion>0.3.1.0</InformationalVersion>
-		<Version>0.3.1.0</Version>
+		<AssemblyVersion>0.3.2.0</AssemblyVersion>
+		<FileVersion>0.3.2.0</FileVersion>
+		<InformationalVersion>0.3.2.0</InformationalVersion>
+		<Version>0.3.2.0</Version>
 		
 	</PropertyGroup>
 
@@ -41,12 +41,10 @@
 	<ItemGroup>
 		<Compile Remove="ViewModel\NativeMethod.cs" />
 		<Compile Remove="View\GetWindowHandle.xaml.cs" />
-		<Compile Remove="View\ScoreNoteWindow.xaml.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Page Remove="View\GetWindowHandle.xaml" />
-		<Page Remove="View\ScoreNoteWindow.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
