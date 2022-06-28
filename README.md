@@ -1,7 +1,7 @@
 # PlayerControl for BIGTET
 
 ![capture](https://user-images.githubusercontent.com/87809679/175765945-74904b8b-928e-4ebb-9bda-f8c4e2a612a2.gif)
-***カーソルキー上下で選択 左右で1P/2Pを設定しています***
+***カーソルキー上下で選択・左右で1P/2Pを設定・スペースキーでスコア入力***
 
 ![InstCard](Images/InstCard.png)
 
@@ -13,10 +13,11 @@
 - 対戦型ゲーム配信サポートツール <[**StreamControl**](http://streamcontroljapan.blog.jp/)> 互換 Windows アプリ
   - StreamControl との共存・同時使用が可能
 - TETRIS the Grandmaster ビッグモード（通称ビグテト）配信用に特化
-- プレイヤーが頻繁に入れ替わるフリープレイイベントやローリングマッチを想定
+- プレイヤーが頻繁に入れ替わるフリープレイイベントやローリングマッチを想定- 
   - 事前にプレイヤーリストを登録
   - カーソルキーだけで プレイヤー選択 と 1P/2Pセット が操作可能
   - スコアは3桁半角数字のみ入力可能
+  - 保存ボタン不要で変更後即反映
 
 ## ダウンロード
 
