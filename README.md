@@ -5,7 +5,8 @@
 
 ![InstCard](Images/InstCard.png)
 
-[**インストカード PDF (A5版) ダウンロード**](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf)
+- [**インストカード PDF (A5版) ダウンロード**](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf)
+- [**セットアップ方法 PDF (A5版) ダウンロード**](/Manual/PlayerControlForBIGTET_Setup.pdf)
 
 ## 概要・特徴
 
@@ -19,7 +20,7 @@
 
 ## ダウンロード
 
-[**最新版ダウンロード**](https://github.com/gans1971/PlayerControl_for_BIGTET/releases/)
+[**リリース版ダウンロード**](https://github.com/gans1971/PlayerControl_for_BIGTET/releases/)
 
 ## 動作環境
 
@@ -29,10 +30,10 @@
 
 ## セットアップ方法
 
-- [**セットアップ方法 PDF**](/Manual/PlayerControlForBIGTET_Setup.pdf)
-  - ZIPファイル ⇛ *PlayerControl_for_BIGTET* フォルダ展開
-  - StreamControl テンプレートフォルダに展開したフォルダをコピー
-  - (StreamControl フォルダと同じ階層)
+- 詳細は [**セットアップ方法 PDF**](/Manual/PlayerControlForBIGTET_Setup.pdf) 参照
+- ZIPファイル展開 ⇨ *PlayerControl_for_BIGTET* フォルダ
+- StreamControl テンプレートフォルダ直下にフォルダごとコピー
+  - ※　StreamControl フォルダと同じ階層
 <img src="Images/Setup.png" width="400px">
 
 ## 削除方法
