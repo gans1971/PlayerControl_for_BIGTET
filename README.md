@@ -120,6 +120,6 @@
 
 ## 備考
 
-- 動作検証用に [SHIG Website StreamControl テンプレート](http://shigaming.com/2018/11/30/streamcontroltemplate2019/) をリポジトリ内に収録しております。
+- 動作検証用に [SHIG Website StreamControl テンプレート](http://shigaming.com/2018/11/30/streamcontroltemplate2019/) を使用いたしました。
   - githubリポジトリは [こちらです](https://github.com/Pon57/StreamControl-for-UMBR)
 - *StreamControl* の挙動解析に [GitHubソースコード](https://github.com/farpenoodle/StreamControl) を参照しました。
