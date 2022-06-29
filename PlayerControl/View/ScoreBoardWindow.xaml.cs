@@ -6,7 +6,7 @@ using System.Windows.Input;
 namespace PlayerControl.View
 {
 	/// <summary>
-	/// Interaction logic for MainWindow.xaml
+	/// Interaction logic for ScoreBoardWindow.xaml
 	/// </summary>
 	public partial class ScoreBoardWindow : MetroWindow
 	{
@@ -14,6 +14,5 @@ namespace PlayerControl.View
 		{
 			InitializeComponent();
 		}
-
 	}
 }

@@ -25,6 +25,7 @@
 	BorderThickness="1"
 	GlowBrush="{DynamicResource AccentColorBrush}"
 	IsWindowDraggable="True"
+	Loaded="PlayerControlWindow_Loaded"
 	SaveWindowPosition="True"
 	ShowMaxRestoreButton="False"
 	ShowMinButton="False"
@@ -188,8 +189,8 @@
 				<StackPanel Orientation="Horizontal">
 					<md:PackIcon Kind="AccountMultiple" />
 					<TextBlock>
-						プレイヤーリスト(<Underline>P</Underline>)
-					</TextBlock>
+						プレイヤーリスト(<Underline>P</Underline>
+						)</TextBlock>
 				</StackPanel>
 			</Button>
 			<Button Command="{Binding PlayerExchangeCommand}">

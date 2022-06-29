@@ -23,11 +23,11 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <DebugType>none</DebugType>
+	  <DebugType>full</DebugType>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	  <DebugType>none</DebugType>
+	  <DebugType>full</DebugType>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -45,6 +45,7 @@
 
 	<ItemGroup>
 		<Page Remove="View\GetWindowHandle.xaml" />
+		<Page Remove="View\ScoreBoardWindow_backup.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>

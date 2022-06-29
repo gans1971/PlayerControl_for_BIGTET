@@ -15,7 +15,7 @@
 	xmlns:sys="clr-namespace:System;assembly=mscorlib"
 	xmlns:v="clr-namespace:PlayerControl.View"
 	xmlns:vm="clr-namespace:PlayerControl.ViewModels"
-	Title="PlayerControl"
+	Title="ScoreBoard"
 	Width="460"
 	Height="480"
 	MinWidth="400"
@@ -25,11 +25,12 @@
 	GlowBrush="{DynamicResource AccentColorBrush}"
 	IsWindowDraggable="True"
 	SaveWindowPosition="True"
+	ShowCloseButton="False"
 	ShowMaxRestoreButton="False"
 	ShowMinButton="False"
 	ShowTitleBar="False"
 	TitleCharacterCasing="Normal"
-	Topmost="True"
+	Topmost="False"
 	mc:Ignorable="d">
 
 	<!--#region Windowのイベントトリガ-->
@@ -61,63 +62,46 @@
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
 
-			<!--  プレイヤー一覧 ラベル行  -->
-			<Grid x:Name="PlayerGrid_ItemsControl">
-				<Grid.Resources>
-					<Style TargetType="{x:Type Label}">
-						<Setter Property="VerticalAlignment" Value="Center" />
-						<Setter Property="HorizontalAlignment" Value="Center" />
-						<Setter Property="FontSize" Value="14" />
-						<Setter Property="FontWeight" Value="Bold" />
-						<Setter Property="Foreground" Value="#FF818181" />
-					</Style>
-				</Grid.Resources>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" MinWidth="160" />
-					<ColumnDefinition Width="3" />
-					<ColumnDefinition Width="80" />
-					<ColumnDefinition Width="80" />
-					<ColumnDefinition Width="*" />
-				</Grid.ColumnDefinitions>
-				<Border x:Name="PlayersLabel" IsHitTestVisible="False">
-					<Label Content="本日のプレイヤー" />
-				</Border>
-				<GridSplitter
-					Grid.Column="1"
-					HorizontalAlignment="Stretch"
-					Background="Transparent"
-					IsHitTestVisible="True" />
-				<Border
-					x:Name="PersonalBestLabel"
-					Grid.Column="2"
-					IsHitTestVisible="False">
-					<Label Content="自己ベスト" />
-				</Border>
-				<Border
-					x:Name="ScoreLabel"
-					Grid.Column="3"
-					IsHitTestVisible="False">
-					<Label Content="本日ベスト" Foreground="OrangeRed" />
-				</Border>
-			</Grid>
+
+			<Label
+				x:Name="StageName"
+				Padding="5"
+				HorizontalAlignment="Stretch"
+				VerticalAlignment="Center"
+				HorizontalContentAlignment="Center"
+				VerticalContentAlignment="Center"
+				Background="{StaticResource MahApps.Brushes.Gray9}"
+				Content="{Binding Stage.Value, UpdateSourceTrigger=PropertyChanged, FallbackValue=---}"
+				FontSize="14"
+				FontWeight="Bold"
+				IsHitTestVisible="False" />
 
 			<!--  プレイヤー一覧  -->
-			<ListBox
+			<ListView
 				x:Name="PlayersControl"
 				Grid.Row="1"
 				HorizontalContentAlignment="Stretch"
 				VerticalContentAlignment="Center"
-				dd:DragDrop.IsDragSource="True"
-				dd:DragDrop.IsDropTarget="True"
-				dd:DragDrop.UseDefaultDragAdorner="True"
 				AlternationCount="2"
+				IsHitTestVisible="False"
 				ItemsSource="{Binding Players}">
+				<ListView.Resources>
+					<Style x:Key="HeaderText" TargetType="{x:Type TextBlock}">
+						<Setter Property="HorizontalAlignment" Value="Center" />
+						<Setter Property="VerticalAlignment" Value="Center" />
+						<Setter Property="FontSize" Value="15" />
+						<Setter Property="FontWeight" Value="Bold" />
+						<Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.Gray2}" />
+					</Style>
 
-				<ListBox.ItemsPanel>
+
+				</ListView.Resources>
+
+				<ListView.ItemsPanel>
 					<ItemsPanelTemplate>
 						<StackPanel>
 							<i:Interaction.Behaviors>
-								<i:FluidMoveBehavior AppliesTo="Children" Duration="0:0:0.2">
+								<i:FluidMoveBehavior AppliesTo="Children" Duration="0:0:0.5">
 									<i:FluidMoveBehavior.EaseY>
 										<PowerEase EasingMode="EaseInOut" />
 									</i:FluidMoveBehavior.EaseY>
@@ -125,91 +109,64 @@
 							</i:Interaction.Behaviors>
 						</StackPanel>
 					</ItemsPanelTemplate>
-				</ListBox.ItemsPanel>
+				</ListView.ItemsPanel>
 
-				<!--  アイテムの背景をトリガーで設定（選択・行ごとなど）：ItemContainerStyle  -->
-				<ListBox.ItemContainerStyle>
-					<Style TargetType="{x:Type ListBoxItem}">
-						<Setter Property="FocusVisualStyle" Value="{x:Null}" />
-						<Setter Property="Template">
-							<Setter.Value>
-								<ControlTemplate TargetType="{x:Type ListBoxItem}">
-									<Border Background="{TemplateBinding Background}">
-										<ContentPresenter />
-									</Border>
-								</ControlTemplate>
-							</Setter.Value>
-						</Setter>
-						<Style.Triggers>
+				<ListView.View>
+					<GridView>
+						<GridViewColumn>
+							<GridViewColumn.Header>
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Style="{StaticResource HeaderText}" Text="プレイヤー" />
+								</StackPanel>
+							</GridViewColumn.Header>
 
-							<Trigger Property="ListBox.AlternationIndex" Value="0">
-								<Setter Property="Background" Value="#FEFEFE" />
-							</Trigger>
-							<Trigger Property="ListBox.AlternationIndex" Value="1">
-								<Setter Property="Background" Value="White" />
-							</Trigger>
-							<MultiTrigger>
-								<MultiTrigger.Conditions>
-									<Condition Property="Selector.IsSelectionActive" Value="True" />
-									<Condition Property="IsSelected" Value="True" />
-								</MultiTrigger.Conditions>
-								<Setter Property="Background" Value="#f0f0FF" />
-							</MultiTrigger>
-						</Style.Triggers>
-					</Style>
-				</ListBox.ItemContainerStyle>
+							<GridViewColumn.CellTemplate>
+								<DataTemplate>
+									<Viewbox x:Name="PlayerNameViewBox" StretchDirection="DownOnly">
+										<Label
+											x:Name="PlayerNameLabel"
+											VerticalContentAlignment="Center"
+											Content="{Binding Name.Value}"
+											FontSize="15"
+											FontWeight="Bold"
+											Foreground="Black" />
+									</Viewbox>
+								</DataTemplate>
+							</GridViewColumn.CellTemplate>
+						</GridViewColumn>
+						<GridViewColumn>
+							<GridViewColumn.Header>
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Style="{StaticResource HeaderText}" Text="スコア" />
+								</StackPanel>
+							</GridViewColumn.Header>
 
-				<!--  ListBoxの外枠（スクロールバーなど）：Litbox.Template  -->
-				<ListBox.Template>
-					<ControlTemplate TargetType="ListBox">
-						<ScrollViewer Focusable="False">
-							<ScrollViewer.Resources>
-								<sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">10</sys:Double>
-							</ScrollViewer.Resources>
-							<ItemsPresenter />
-						</ScrollViewer>
-					</ControlTemplate>
-				</ListBox.Template>
+							<GridViewColumn.CellTemplate>
+								<DataTemplate>
+									<Viewbox x:Name="PlayerNameViewBox" StretchDirection="DownOnly">
+										<Label
+											x:Name="PlayerNameLabel"
+											VerticalContentAlignment="Center"
+											Content="{Binding Score.Value}"
+											FontSize="18"
+											FontWeight="Bold"
+											Foreground="Black" />
+									</Viewbox>
+								</DataTemplate>
+							</GridViewColumn.CellTemplate>
+						</GridViewColumn>
+					</GridView>
+				</ListView.View>
 
-				<!--  アイテムテンプレート  -->
-				<ListBox.ItemTemplate>
+				<!--  アイテムテンプレート
+				<ListView.ItemTemplate>
 					<DataTemplate>
 						<Grid x:Name="ItemGrid" Background="Transparent">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto" MinWidth="160" />
-								<ColumnDefinition Width="Auto" />
-								<ColumnDefinition Width="Auto" />
-								<ColumnDefinition Width="*" />
-							</Grid.ColumnDefinitions>
-							<!--  アイテム内コントロールのスタイルリソース  -->
-							<Grid.Resources>
-								<!--  プレイヤーチェンジボタンスタイル  -->
-								<Style BasedOn="{StaticResource MaterialDesignFloatingActionSecondaryLightButton}" TargetType="{x:Type Button}">
-									<Setter Property="Margin" Value="5,0" />
-									<Setter Property="Padding" Value="0" />
-									<Setter Property="Width" Value="30" />
-									<Setter Property="Height" Value="30" />
-									<Setter Property="FontSize" Value="18" />
-									<Setter Property="FontWeight" Value="Bold" />
-								</Style>
-								<!--  スコア文字スタイル  -->
-								<Style TargetType="{x:Type TextBlock}">
-									<Setter Property="VerticalAlignment" Value="Center" />
-									<Setter Property="HorizontalAlignment" Value="Center" />
-									<Setter Property="Margin" Value="0,5" />
-									<Setter Property="FontSize" Value="18" />
-									<Setter Property="FontWeight" Value="Bold" />
-								</Style>
-							</Grid.Resources>
-
-							<!--  プレイヤー名  -->
-							<Grid x:Name="PlayerNameGrid" Width="{Binding ActualWidth, ElementName=PlayersLabel, Mode=OneWay}">
+							<Grid x:Name="PlayerNameGrid" >
 								<Grid.ColumnDefinitions>
 									<ColumnDefinition Width="Auto" MinWidth="45" />
 									<ColumnDefinition Width="*" />
 								</Grid.ColumnDefinitions>
-
-								<!--  プレイヤーアイコン  -->
 								<Border
 									x:Name="CurrentPlayerIcon1"
 									Width="30"
@@ -251,7 +208,6 @@
 									</Border.Visibility>
 								</Border>
 
-								<!--  プレイヤー名文字（ViewBox入り）  -->
 								<Viewbox
 									x:Name="PlayerNameViewBox"
 									Grid.Column="1"
@@ -265,95 +221,14 @@
 										Foreground="Black" />
 								</Viewbox>
 							</Grid>
-
-							<!--  1P/2Pボタンをポップアップで表示する  -->
-							<!--  HorizontalOffset="{Binding ActualWidth, ElementName=PlayersLabel, Mode=OneWay}"  -->
-							<Popup
-								x:Name="PlayerSelectPopup"
-								AllowsTransparency="True"
-								HorizontalOffset="0"
-								Placement="Left"
-								PlacementRectangle="45,-5,200,10"
-								PlacementTarget="{Binding ElementName=PlayerNameGrid}"
-								PopupAnimation="Fade"
-								VerticalOffset="0">
-								<Border
-									Padding="0,5"
-									Background="#40605570"
-									BorderBrush="#A0404040"
-									BorderThickness="2"
-									CornerRadius="10">
-									<StackPanel x:Name="ChangeButtonPanel" Orientation="Horizontal">
-										<Button x:Name="Player1ChangeButton" Content="1P">
-											<i:Interaction.Triggers>
-												<i:EventTrigger EventName="Click">
-													<ri:EventToReactiveCommand Command="{Binding DataContext.Player1ChangeCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
-												</i:EventTrigger>
-											</i:Interaction.Triggers>
-										</Button>
-										<Button x:Name="Player2ChangeButton" Content="2P">
-											<i:Interaction.Triggers>
-												<i:EventTrigger EventName="Click">
-													<ri:EventToReactiveCommand Command="{Binding DataContext.Player2ChangeCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
-												</i:EventTrigger>
-											</i:Interaction.Triggers>
-										</Button>
-									</StackPanel>
-								</Border>
-							</Popup>
-
-							<!--  自己ベスト  -->
-							<Border Grid.Column="1" Width="{Binding ActualWidth, ElementName=PersonalBestLabel, Mode=OneWay}">
-								<TextBlock Foreground="DarkGray" Text="{Binding PersonalBest.Value}" />
-							</Border>
-							<!--  本日ベスト  -->
-							<Border Grid.Column="2" Width="{Binding ActualWidth, ElementName=ScoreLabel, Mode=OneWay}">
-								<i:Interaction.Triggers>
-									<i:EventTrigger EventName="MouseDown">
-										<ri:EventToReactiveCommand Command="{Binding DataContext.SetScoreCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
-									</i:EventTrigger>
-								</i:Interaction.Triggers>
-
+							<Border Grid.Column="2" >
 								<TextBlock Text="{Binding Score.Value}" />
 							</Border>
-
-							<!--  プレイヤー別のコントロール  -->
-							<StackPanel
-								x:Name="ChangeButtonPanel_"
-								Grid.Column="3"
-								Orientation="Horizontal"
-								Visibility="Collapsed">
-								<Button x:Name="Player1ChangeButton_" Content="1P">
-									<i:Interaction.Triggers>
-										<i:EventTrigger EventName="Click">
-											<ri:EventToReactiveCommand Command="{Binding DataContext.Player1ChangeCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
-										</i:EventTrigger>
-									</i:Interaction.Triggers>
-								</Button>
-								<Button x:Name="Player2ChangeButton_" Content="2P">
-									<i:Interaction.Triggers>
-										<i:EventTrigger EventName="Click">
-											<ri:EventToReactiveCommand Command="{Binding DataContext.Player2ChangeCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
-										</i:EventTrigger>
-									</i:Interaction.Triggers>
-								</Button>
-							</StackPanel>
 						</Grid>
-						<DataTemplate.Triggers>
-							<Trigger Property="IsMouseOver" Value="false">
-								<Setter TargetName="PlayerSelectPopup" Property="IsOpen" Value="False" />
-								<Setter TargetName="PlayerNameLabel" Property="Foreground" Value="Black" />
-							</Trigger>
-							<Trigger Property="IsMouseOver" Value="true">
-								<Setter TargetName="PlayerSelectPopup" Property="IsOpen" Value="True" />
-								<Setter TargetName="PlayerNameLabel" Property="Foreground" Value="DarkBlue" />
-							</Trigger>
-
-						</DataTemplate.Triggers>
-
 					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox>
+				</ListView.ItemTemplate>
+		-->
+			</ListView>
 		</Grid>
 		<!--#endregion-->
 

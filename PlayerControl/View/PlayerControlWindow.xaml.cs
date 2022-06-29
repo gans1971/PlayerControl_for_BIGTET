@@ -107,5 +107,13 @@ namespace PlayerControl.View
 				e.Handled = true;
 			}
 		}
+
+		private void PlayerControlWindow_Loaded(object sender, System.Windows.RoutedEventArgs e)
+		{
+			var ScoreBoardWindow = new ScoreBoardWindow();
+			ScoreBoardWindow.DataContext = this.DataContext;
+			ScoreBoardWindow.Visibility = System.Windows.Visibility.Visible;
+			ScoreBoardWindow.Show();
+		}
 	}
 }
