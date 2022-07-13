@@ -1,6 +1,7 @@
 ﻿using Prism.Mvvm;
 using Reactive.Bindings;
 using System;
+using System.Diagnostics;
 
 namespace PlayerControl.Model
 {
@@ -32,8 +33,8 @@ namespace PlayerControl.Model
 	{
 		public StreamControlParam()
 		{
-			// timestamp = DateTimeOffset.Now.ToUnixTimeSeconds().ToString();
 			timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString();
+			Debug.WriteLine($"TimeStump:{timestamp}");
 		}
 		public String pCountry1 { get; set; } = "blk";
 		public String pCountry2 { get; set; } = "blk";
