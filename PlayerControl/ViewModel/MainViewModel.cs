@@ -8,12 +8,14 @@ using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using Servicies;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace PlayerControl.ViewModels
 {
@@ -40,6 +42,9 @@ namespace PlayerControl.ViewModels
 
 		public ReactiveCollection<PlayerModel> Players { get; } = new ReactiveCollection<PlayerModel>();
 		public ReactiveCollection<PlayerModel> PlayersHistory { get; } = new ReactiveCollection<PlayerModel>();
+
+		public CollectionViewSource PlayersViewSource { get; set; } = new CollectionViewSource();
+
 		#endregion
 
 		#region ReactiveCommand
@@ -64,9 +69,8 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public MainViewModel()
 		{
-			var assmAttr = new AssemblyAttribute();
-
 			// アプリタイトルを設定
+			var assmAttr = new AssemblyAttribute();
 			var asm = Assembly.GetExecutingAssembly();
 			try
 			{
@@ -103,6 +107,11 @@ namespace PlayerControl.ViewModels
 				// プレイヤー履歴を初期化
 				InitPlayersHistory();
 
+				// スコアボード用ViewSourceを設定
+				PlayersViewSource.Source = Players;
+				PlayersViewSource.SortDescriptions.Clear();
+				PlayersViewSource.SortDescriptions.Add(new SortDescription("Score.Value", ListSortDirection.Descending));
+				PlayersViewSource.IsLiveSortingRequested = true;	// 自動ソートフラグ
 			}).AddTo(Disposable);
 
 			// アプリ終了前コマンド
@@ -116,7 +125,6 @@ namespace PlayerControl.ViewModels
 				SaveStreamControlJson(true);
 
 			}).AddTo(Disposable);
-
 
 			// プレイヤー編集コマンド
 			EditPlayersListCommand = new ReactiveCommand();

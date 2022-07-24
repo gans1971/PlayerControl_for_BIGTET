@@ -31,9 +31,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Manual\**" />
 	  <Compile Remove="Resources\**" />
+	  <EmbeddedResource Remove="Manual\**" />
 	  <EmbeddedResource Remove="Resources\**" />
+	  <None Remove="Manual\**" />
 	  <None Remove="Resources\**" />
+	  <Page Remove="Manual\**" />
 	  <Page Remove="Resources\**" />
 	</ItemGroup>
 
@@ -69,14 +73,10 @@
 	<ItemGroup>
 		<Folder Include="Servicies\" />
 		<Folder Include="Styles\" />
-		<Folder Include="Manual\" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <None Include="..\.gitignore" Link=".gitignore" />
-	  <None Include="..\Manual\PlayerControlForBIGTET_InstCard_v0.3.1.pdf" Link="Manual\PlayerControlForBIGTET_InstCard_v0.3.1.pdf" />
-	  <None Include="..\Manual\PlayerControlForBIGTET_QuickReference_v0.3.1.pptx" Link="Manual\PlayerControlForBIGTET_QuickReference_v0.3.1.pptx" />
-	  <None Include="..\Manual\PlayerControlForBIGTET_Setup.pdf" Link="Manual\PlayerControlForBIGTET_Setup.pdf" />
 	  <None Include="..\README.md" Link="README.md">
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>

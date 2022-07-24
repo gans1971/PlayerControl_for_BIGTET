@@ -84,7 +84,7 @@
 				VerticalContentAlignment="Center"
 				AlternationCount="2"
 				IsHitTestVisible="False"
-				ItemsSource="{Binding Players}">
+				ItemsSource="{Binding PlayersViewSource.View}">
 				<ListView.Resources>
 					<Style x:Key="HeaderText" TargetType="{x:Type TextBlock}">
 						<Setter Property="HorizontalAlignment" Value="Center" />
@@ -232,30 +232,6 @@
 		</Grid>
 		<!--#endregion-->
 
-
-		<!--#region ツールグリッド TODO:機能実装-->
-		<Grid
-			x:Name="ToolGrid"
-			Grid.Row="3"
-			Margin="5"
-			Visibility="Collapsed">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="Auto" />
-				<ColumnDefinition Width="Auto" />
-			</Grid.ColumnDefinitions>
-			<Button
-				Grid.Column="1"
-				Command="{Binding OpenGameEventSettingCommand}"
-				Content="イベント設定" />
-			<Button
-				Grid.Column="2"
-				Margin="5,0,0,0"
-				Command="{Binding AboutBoxCommand}"
-				Content="About"
-				Cursor="Hand" />
-		</Grid>
-		<!--#endregion-->
 
 		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->
 		<!--  参考：http://nineworks2.blog.fc2.com/blog-entry-117.html  -->
