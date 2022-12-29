@@ -110,10 +110,11 @@ namespace PlayerControl.View
 
 		private void PlayerControlWindow_Loaded(object sender, System.Windows.RoutedEventArgs e)
 		{
-			var ScoreBoardWindow = new ScoreBoardWindow();
+#if false //スコアボードWindow表示（実装中のため外す）
 			ScoreBoardWindow.DataContext = this.DataContext;
 			ScoreBoardWindow.Visibility = System.Windows.Visibility.Visible;
 			ScoreBoardWindow.Show();
+#endif
 		}
 	}
 }
