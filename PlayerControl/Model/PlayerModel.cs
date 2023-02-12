@@ -16,7 +16,8 @@ namespace PlayerControl.Model
         public ReactivePropertySlim<String> Name { get; } = new ReactivePropertySlim<string>(String.Empty);
         public ReactivePropertySlim<int> PersonalBest { get; } = new ReactivePropertySlim<int>(0);
         public ReactivePropertySlim<int> Score { get; } = new ReactivePropertySlim<int>(0);
-        public ReactivePropertySlim<DateTime> LastAccess { get; } = new ReactivePropertySlim<DateTime>(DateTime.MinValue);
+		public ReactivePropertySlim<int> Score_Second { get; } = new ReactivePropertySlim<int>(0);
+		public ReactivePropertySlim<DateTime> LastAccess { get; } = new ReactivePropertySlim<DateTime>(DateTime.MinValue);
 		public ReactivePropertySlim<bool> IsPlayerNameInEditMode { get; } = new ReactivePropertySlim<bool>(false);
 
 		public PlayerModel()

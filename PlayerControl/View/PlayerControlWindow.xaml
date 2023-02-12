@@ -18,7 +18,7 @@
 	Title="{Binding AppTitle.Value}"
 	Width="390"
 	Height="220"
-	MinWidth="380"
+	MinWidth="360"
 	MinHeight="200"
 	Dialog:DialogParticipation.Register="{Binding}"
 	BorderThickness="1"
@@ -397,8 +397,8 @@
 						</Grid>
 
 						<!--  表示スコア  -->
-						<Border Grid.Column="1" Margin="10,0">
-							<StackPanel Orientation="Horizontal">
+						<Border Grid.Column="1" Margin="5,0">
+							<StackPanel x:Name="Score1_Label" Orientation="Horizontal">
 								<StackPanel.Resources>
 									<Style
 										x:Key="ScoreTextBoxStyle"
@@ -414,8 +414,16 @@
 										<Setter Property="MaxLength" Value="4" />
 										<Setter Property="bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus" Value="True" />
 									</Style>
+									<Style TargetType="{x:Type Label}">
+										<Setter Property="Foreground" Value="#FF858585" />
+										<Setter Property="FontSize" Value="10" />
+										<Setter Property="FontFamily" Value="Arial" />
+										<Setter Property="VerticalContentAlignment" Value="Center" />
+									</Style>
 								</StackPanel.Resources>
+								<Label x:Name="Lv_Label1" Content="Lv" />
 								<TextBox
+									x:Name="Score1"
 									CommandManager.PreviewExecuted="ScoreTextBox_PreviewExecuted"
 									GotKeyboardFocus="ScoreTextBox_GotKeyboardFocus"
 									PreviewTextInput="ScoreTextBox_PreviewTextInput"
@@ -473,6 +481,7 @@
 		<Border
 			x:Name="InitHelpGrid"
 			Grid.Row="2"
+			d:IsHidden="True"
 			Background="#F0e0e0e0"
 			Visibility="{Binding Players.Count, Converter={StaticResource Int0VisibilityConverter}, ConverterParameter=Invert}">
 			<Grid HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -517,8 +526,6 @@
 			<Label Content="1Pにセット" />
 			<md:PackIcon Kind="ArrowRightBox" />
 			<Label Content="2Pにセット" />
-			<md:PackIcon Kind="KeyboardSpace" />
-			<Label Content="スコア入力" />
 		</StackPanel>
 
 		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->

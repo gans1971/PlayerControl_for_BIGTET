@@ -92,11 +92,11 @@ namespace PlayerControl.ViewModels
 					}
 				}
 			}
-			catch
+			catch (Exception ex)
 			{
+				Debug.WriteLine($"[GetScoreText]Exception {ex.ToString()}");
 				// アセンブリ情報（タイトルバー表示）が取れない場合はなにもせずデフォルト名を表示する
 			}
-
 
 			// アプリ開始コマンド
 			LoadedCommand = new ReactiveCommand();
@@ -285,7 +285,14 @@ namespace PlayerControl.ViewModels
 		{
 			if (datacontext is PlayerModel player)
 			{
-				Clipboard.SetText($"{player.Name}\t{player.Score}");
+				try
+				{
+					Clipboard.SetText($"{player.Name}\t{player.Score}");
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"Exception SetPlayerInfoToClipboard:{ex.ToString()}");
+				}
 			}
 		}
 
@@ -550,8 +557,10 @@ namespace PlayerControl.ViewModels
 							stagestr = $"<font size={adjustSize}>" + stagestr + "</font>";
 						}
 					}
-					catch
-					{ // 例外発生時はスルー
+					catch (Exception ex)
+					{
+						Debug.WriteLine($"[Stage NewLine Replace + FontSize Adjust]Exception {ex.ToString()}");
+						// 例外発生時はスルー
 					}
 				}
 				StreamControlData.stage = stagestr;
@@ -602,8 +611,9 @@ namespace PlayerControl.ViewModels
 				// int 値を文字列に変換
 				scoreStr = score.ToString();
 			}
-			catch
+			catch (Exception ex)
 			{
+				Debug.WriteLine($"[GetScoreText]Exception {ex.ToString()}");
 				// 例外発生時は空文字を返す
 			}
 			return scoreStr;
