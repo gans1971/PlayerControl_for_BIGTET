@@ -5,6 +5,12 @@ using System.Diagnostics;
 
 namespace PlayerControl.Model
 {
+	public enum ScoreMode
+	{
+		Single = 0,
+		Mixture = 1,
+	}
+
 	public class PlayerModel : BindableBase
     {
         public ReactivePropertySlim<String> Name { get; } = new ReactivePropertySlim<string>(String.Empty);
@@ -12,7 +18,6 @@ namespace PlayerControl.Model
         public ReactivePropertySlim<int> Score { get; } = new ReactivePropertySlim<int>(0);
         public ReactivePropertySlim<DateTime> LastAccess { get; } = new ReactivePropertySlim<DateTime>(DateTime.MinValue);
 		public ReactivePropertySlim<bool> IsPlayerNameInEditMode { get; } = new ReactivePropertySlim<bool>(false);
-
 
 		public PlayerModel()
         {

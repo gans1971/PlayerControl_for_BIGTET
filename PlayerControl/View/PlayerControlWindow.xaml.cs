@@ -1,5 +1,6 @@
 ﻿using MahApps.Metro.Controls;
 using PlayerControl.ViewModels;
+using System;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Controls;
@@ -115,6 +116,26 @@ namespace PlayerControl.View
 			ScoreBoardWindow.Visibility = System.Windows.Visibility.Visible;
 			ScoreBoardWindow.Show();
 #endif
+		}
+
+		/// <summary>
+		/// ステージ文字列入力テキストボックのキー入力前処理
+		/// Alt + Enter で改行を可能にする
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void StageName_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (sender is TextBox textBox)
+			{
+				if (Keyboard.Modifiers == ModifierKeys.Alt && Keyboard.IsKeyDown(Key.Enter))
+				{
+					var caretIndex = textBox.CaretIndex;
+					textBox.Text = textBox.Text.Insert(caretIndex, Environment.NewLine);
+					textBox.CaretIndex = caretIndex + Environment.NewLine.Length; 
+					e.Handled = true;
+				}
+			}
 		}
 	}
 }

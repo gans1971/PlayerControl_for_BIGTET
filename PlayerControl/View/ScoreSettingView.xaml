@@ -70,7 +70,7 @@
 					FontFamily="Arial"
 					FontSize="20"
 					GotKeyboardFocus="TextBox_GotKeyboardFocus"
-					MaxLength="3"
+					MaxLength="4"
 					PreviewTextInput="TextBox_PreviewTextInput">
 					<md:TextFieldAssist.CharacterCounterStyle>
 						<Style TargetType="TextBlock" />

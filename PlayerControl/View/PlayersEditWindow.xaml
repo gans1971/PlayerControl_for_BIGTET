@@ -11,7 +11,7 @@
 	xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 	xmlns:ri="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
 	xmlns:v="clr-namespace:PlayerControl.View"
-	Title="プレイヤーリスト設定"
+	Title="プレイヤー追加・削除・修正"
 	Width="320"
 	Height="480"
 	MinWidth="420"
@@ -262,7 +262,7 @@
 					<ColumnDefinition Width="Auto" />
 				</Grid.ColumnDefinitions>
 
-				<Grid x:Name="EventSettingGrid">
+				<Grid x:Name="SettingGrid">
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="Auto" />
@@ -297,7 +297,7 @@
 					HorizontalAlignment="Left"
 					VerticalAlignment="Center"
 					Click="OkButton_Click"
-					Content="OK (_W)"
+					Content="閉じる (_C)"
 					Cursor="Hand" />
 			</Grid>
 		</Border>

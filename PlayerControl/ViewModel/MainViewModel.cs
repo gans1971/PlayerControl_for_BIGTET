@@ -37,6 +37,7 @@ namespace PlayerControl.ViewModels
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<String> Stage { get; } = new ReactivePropertySlim<String>(String.Empty);
+		public ReactivePropertySlim<ScoreMode> MatchScoreMode { get; } = new ReactivePropertySlim<ScoreMode>(ScoreMode.Single);
 		public ReactivePropertySlim<SnackbarMessageQueue> PlayerEditSnackbarMessageQueue { get; } = new ReactivePropertySlim<SnackbarMessageQueue>(new SnackbarMessageQueue());
 		public ReactivePropertySlim<String> DefaultCountry { get; } = new ReactivePropertySlim<String>("blk");
 
@@ -111,7 +112,7 @@ namespace PlayerControl.ViewModels
 				PlayersViewSource.Source = Players;
 				PlayersViewSource.SortDescriptions.Clear();
 				PlayersViewSource.SortDescriptions.Add(new SortDescription("Score.Value", ListSortDirection.Descending));
-				PlayersViewSource.IsLiveSortingRequested = true;	// 自動ソートフラグ
+				PlayersViewSource.IsLiveSortingRequested = true;    // 自動ソートフラグ
 			}).AddTo(Disposable);
 
 			// アプリ終了前コマンド
@@ -522,21 +523,51 @@ namespace PlayerControl.ViewModels
 				// Jsonクラスに値をセット(CurrentPlayerがnullの場合は初期値のまま保存）
 				var StreamControlData = new StreamControlParam();
 
-				// イベント名をセット
-				StreamControlData.stage = Stage.Value;
+				// イベント名をセット（改行コードを</br> に置換）
+				var stagestr = Stage.Value;
+				var StageLineCount = 0;   // 改行の数
+				if (!String.IsNullOrEmpty(Stage.Value))
+				{
+					try
+					{
+						var temp = stagestr;
+						StageLineCount = temp.Split(Environment.NewLine).Length;
+						// 改行コードを</br>に置換
+						stagestr = Stage.Value.Replace(Environment.NewLine, "</br>");
+
+						if (StageLineCount > 1)
+						{
+							// 行数に応じて文字サイズを調整
+							var adjustSize = 0;
+							if (StageLineCount == 2)
+							{
+								adjustSize = -1;
+							}
+							else
+							{
+								adjustSize = -2;
+							}
+							stagestr = $"<font size={adjustSize}>" + stagestr + "</font>";
+						}
+					}
+					catch
+					{ // 例外発生時はスルー
+					}
+				}
+				StreamControlData.stage = stagestr;
 
 				// プレイヤー１情報
 				if (CurrentPlayer1.Value != null)
 				{
 					StreamControlData.pName1 = CurrentPlayer1.Value.Name.Value;
-					StreamControlData.pScore1 = CurrentPlayer1.Value.Score.Value.ToString();
+					StreamControlData.pScore1 = GetScoreText(CurrentPlayer1.Value.Score.Value);
 					StreamControlData.pCountry1 = DefaultCountry.Value;
 				}
 				// プレイヤー２情報
 				if (CurrentPlayer2.Value != null)
 				{
 					StreamControlData.pName2 = CurrentPlayer2.Value.Name.Value;
-					StreamControlData.pScore2 = CurrentPlayer2.Value.Score.Value.ToString();
+					StreamControlData.pScore2 = GetScoreText(CurrentPlayer2.Value.Score.Value);
 					StreamControlData.pCountry2 = DefaultCountry.Value;
 				}
 				// タイムスタンプを初期化する場合
@@ -559,17 +590,31 @@ namespace PlayerControl.ViewModels
 		}
 
 		/// <summary>
+		/// スコア値（int）からJSONに保存する文字列を生成する
+		/// </summary>
+		/// <param name="score"></param>
+		/// <returns></returns>
+		private String GetScoreText(int score)
+		{
+			var scoreStr = String.Empty;
+			try
+			{
+				// int 値を文字列に変換
+				scoreStr = score.ToString();
+			}
+			catch
+			{
+				// 例外発生時は空文字を返す
+			}
+			return scoreStr;
+		}
+
+		/// <summary>
 		/// プレイヤー履歴リストを初期化する
+		/// TODO: 直前のリストを復元 or CSVから読込み or 履歴から選択
 		/// </summary>
 		public void InitPlayersHistory()
 		{
-#if DEBUG
-			// TODO:ファイルから読み込む
-			PlayersHistory.Add(new PlayerModel("ガンズ", 664, 425));
-			PlayersHistory.Add(new PlayerModel("GAF", 942, 656));
-			PlayersHistory.Add(new PlayerModel("いざよい", 999, 702));
-			PlayersHistory.Add(new PlayerModel("ピエロ", 720, 512));
-#endif
 		}
 	}
 }

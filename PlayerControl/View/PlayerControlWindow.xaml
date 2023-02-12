@@ -13,13 +13,12 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 	xmlns:ri="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
-	xmlns:sys="clr-namespace:System;assembly=mscorlib"
 	xmlns:v="clr-namespace:PlayerControl.View"
 	xmlns:vm="clr-namespace:PlayerControl.ViewModels"
 	Title="{Binding AppTitle.Value}"
 	Width="390"
 	Height="220"
-	MinWidth="390"
+	MinWidth="380"
 	MinHeight="200"
 	Dialog:DialogParticipation.Register="{Binding}"
 	BorderThickness="1"
@@ -103,6 +102,8 @@
 		<converters:ObjectMatchVisibilityConverter x:Key="ObjectMatchVisibilityConverter" />
 		<converters:StringBoolConverter x:Key="StringBoolConverter" />
 		<converters:StringEmptyToZeroConverter x:Key="StringEmptyToZeroConverter" />
+		<converters:Int0VisibilityConverter x:Key="Int0VisibilityConverter" />
+
 		<!--#endregion-->
 	</mah:MetroWindow.Resources>
 
@@ -114,43 +115,36 @@
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 
-		<!--#region イベント名-->
-		<Grid x:Name="EventSettingGrid" Margin="5,5,5,0">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto" />
-				<ColumnDefinition Width="*" />
-			</Grid.ColumnDefinitions>
-			<Label
-				Margin="0,0,0,5"
-				VerticalAlignment="Center"
-				VerticalContentAlignment="Center"
-				Content="Stage:"
-				FontSize="14"
-				FontWeight="Bold"
-				Foreground="{StaticResource MahApps.Brushes.Gray2}"
-				IsHitTestVisible="False" />
+		<!--#region ステージ設定-->
+		<Grid x:Name="StageSettingGrid" Margin="0,5,5,0">
 			<TextBox
 				x:Name="StageName"
 				Grid.Column="1"
-				Margin="5,0,0,5"
+				Margin="5,0,0,0"
+				Padding="5,0"
 				VerticalAlignment="Center"
 				VerticalContentAlignment="Center"
 				mah:TextBoxHelper.ButtonCommand="{Binding SetStageCommand}"
 				mah:TextBoxHelper.TextButton="True"
+				mah:TextBoxHelper.Watermark="Stage を入力してください…　 決定［Enter］ 改行［Alt + Enter］"
 				Cursor="Arrow"
-				FontSize="14"
-				FontWeight="Bold"
-				MaxLength="32"
+				FontFamily="Yu Gothic UI"
+				FontSize="12"
+				MaxLength="80"
+				PreviewKeyDown="StageName_PreviewKeyDown"
 				Style="{StaticResource MahApps.Styles.TextBox.Button}"
-				Text="{Binding Stage.Value, UpdateSourceTrigger=PropertyChanged}">
+				Text="{Binding Stage.Value, UpdateSourceTrigger=PropertyChanged}"
+				TextWrapping="Wrap">
 				<TextBox.InputBindings>
 					<KeyBinding Command="{Binding SetStageCommand}" Gesture="Enter" />
 				</TextBox.InputBindings>
 				<mah:TextBoxHelper.ButtonContent>
-					<md:PackIcon
-						HorizontalAlignment="Center"
-						VerticalAlignment="Center"
-						Kind="KeyboardReturn" />
+					<StackPanel Orientation="Horizontal">
+						<md:PackIcon
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"
+							Kind="KeyboardReturn" />
+					</StackPanel>
 				</mah:TextBoxHelper.ButtonContent>
 
 			</TextBox>
@@ -161,16 +155,15 @@
 		<DockPanel
 			x:Name="ToolDockPanel"
 			Grid.Row="1"
-			Margin="5,0,0,5"
+			Margin="5,2.5,0,5"
 			LastChildFill="False">
 			<DockPanel.Resources>
 				<Style BasedOn="{StaticResource MaterialDesignFlatLightBgButton}" TargetType="{x:Type Button}">
 					<Setter Property="Margin" Value="0,0,5,0" />
-					<Setter Property="Padding" Value="5,0" />
+					<Setter Property="Padding" Value="2.5,0" />
 					<Setter Property="HorizontalContentAlignment" Value="Center" />
 					<Setter Property="VerticalContentAlignment" Value="Center" />
-					<Setter Property="FontSize" Value="12" />
-					<Setter Property="Height" Value="25" />
+					<Setter Property="Height" Value="22.5" />
 					<Setter Property="Cursor" Value="Hand" />
 				</Style>
 				<Style TargetType="md:PackIcon">
@@ -180,7 +173,7 @@
 				</Style>
 				<Style TargetType="TextBlock">
 					<Setter Property="FontSize" Value="12" />
-					<Setter Property="Margin" Value="5,0" />
+					<Setter Property="Margin" Value="2.5,0" />
 					<Setter Property="Foreground" Value="{StaticResource MaterialDesignLightForeground}" />
 				</Style>
 			</DockPanel.Resources>
@@ -189,14 +182,19 @@
 				<StackPanel Orientation="Horizontal">
 					<md:PackIcon Kind="AccountMultiple" />
 					<TextBlock>
-						プレイヤーリスト(<Underline>P</Underline>
-						)</TextBlock>
+						<Run Text="プレイヤー追加・削除(" />
+						<Underline>
+							<Run Text="P" />
+						</Underline>
+						<Run Text=")" />
+					</TextBlock>
 				</StackPanel>
 			</Button>
 			<Button Command="{Binding PlayerExchangeCommand}">
 				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="1P" />
 					<md:PackIcon Kind="SwapHorizontal" />
-					<TextBlock Text="入替え" />
+					<TextBlock Text="2P" />
 				</StackPanel>
 			</Button>
 			<Button Command="{Binding PlayerClearCommand}" CommandParameter="Player1">
@@ -355,7 +353,6 @@
 									<Setter Property="Margin" Value="5,0,0,0" />
 								</Style>
 							</Grid.Resources>
-
 							<!--  プレイヤーアイコン(1P/2P)  -->
 							<Border
 								x:Name="CurrentPlayerIcon1"
@@ -401,21 +398,30 @@
 
 						<!--  表示スコア  -->
 						<Border Grid.Column="1" Margin="10,0">
-							<TextBox
-								MinWidth="50"
-								MinHeight="15"
-								VerticalAlignment="Center"
-								HorizontalContentAlignment="Right"
-								VerticalContentAlignment="Center"
-								bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus="True"
-								CommandManager.PreviewExecuted="ScoreTextBox_PreviewExecuted"
-								Cursor="IBeam"
-								FontSize="14"
-								GotKeyboardFocus="ScoreTextBox_GotKeyboardFocus"
-								MaxLength="3"
-								PreviewTextInput="ScoreTextBox_PreviewTextInput"
-								Style="{StaticResource MahApps.Styles.TextBox}"
-								Text="{Binding Score.Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringEmptyToZeroConverter}}" />
+							<StackPanel Orientation="Horizontal">
+								<StackPanel.Resources>
+									<Style
+										x:Key="ScoreTextBoxStyle"
+										BasedOn="{StaticResource MahApps.Styles.TextBox}"
+										TargetType="{x:Type TextBox}">
+										<Setter Property="VerticalAlignment" Value="Center" />
+										<Setter Property="HorizontalContentAlignment" Value="Right" />
+										<Setter Property="HorizontalContentAlignment" Value="Right" />
+										<Setter Property="MinWidth" Value="45" />
+										<Setter Property="MinHeight" Value="15" />
+										<Setter Property="Cursor" Value="IBeam" />
+										<Setter Property="FontSize" Value="14" />
+										<Setter Property="MaxLength" Value="4" />
+										<Setter Property="bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus" Value="True" />
+									</Style>
+								</StackPanel.Resources>
+								<TextBox
+									CommandManager.PreviewExecuted="ScoreTextBox_PreviewExecuted"
+									GotKeyboardFocus="ScoreTextBox_GotKeyboardFocus"
+									PreviewTextInput="ScoreTextBox_PreviewTextInput"
+									Style="{StaticResource ScoreTextBoxStyle}"
+									Text="{Binding Score.Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringEmptyToZeroConverter}}" />
+							</StackPanel>
 						</Border>
 
 						<!--  1P/2P 設定ボタン  -->
@@ -443,8 +449,6 @@
 									</Style.Triggers>
 								</Style>
 							</StackPanel.Resources>
-
-
 							<Button x:Name="Player1ChangeButton" Content="1P">
 								<i:Interaction.Triggers>
 									<i:EventTrigger EventName="Click">
@@ -465,6 +469,23 @@
 			</ListBox.ItemTemplate>
 		</ListBox>
 		<!--#endregion-->
+
+		<Border
+			x:Name="InitHelpGrid"
+			Grid.Row="2"
+			Background="#F0e0e0e0"
+			Visibility="{Binding Players.Count, Converter={StaticResource Int0VisibilityConverter}, ConverterParameter=Invert}">
+			<Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+				<Label
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"
+					Content="👆 プレイヤーを追加してください"
+					FontFamily="Yu Gothic UI Semibold"
+					FontSize="16" />
+			</Grid>
+		</Border>
+
+
 
 		<!--  ヒント表示  -->
 		<StackPanel

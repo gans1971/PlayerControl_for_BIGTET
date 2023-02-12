@@ -1,7 +1,4 @@
 ﻿using MahApps.Metro.Controls;
-using PlayerControl.ViewModels;
-using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace PlayerControl.View
 {
