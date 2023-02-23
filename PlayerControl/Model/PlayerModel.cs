@@ -14,7 +14,8 @@ namespace PlayerControl.Model
 	public class PlayerModel : BindableBase
     {
         public ReactivePropertySlim<String> Name { get; } = new ReactivePropertySlim<string>(String.Empty);
-        public ReactivePropertySlim<int> PersonalBest { get; } = new ReactivePropertySlim<int>(0);
+		public ReactivePropertySlim<String> Twitter { get; } = new ReactivePropertySlim<string>(String.Empty);
+		public ReactivePropertySlim<int> PersonalBest { get; } = new ReactivePropertySlim<int>(0);
         public ReactivePropertySlim<int> Score { get; } = new ReactivePropertySlim<int>(0);
 		public ReactivePropertySlim<int> Score_Second { get; } = new ReactivePropertySlim<int>(0);
 		public ReactivePropertySlim<DateTime> LastAccess { get; } = new ReactivePropertySlim<DateTime>(DateTime.MinValue);
@@ -24,9 +25,10 @@ namespace PlayerControl.Model
         {
 			// ※ 引数なしの場合、LastAccess は初期値（MinValue）のままにしておく
         }
-        public PlayerModel(String name, int personalbest, int score )
+        public PlayerModel(String name, String twitter, int personalbest, int score )
         {
             Name.Value = name;
+			Twitter.Value = twitter;
             PersonalBest.Value = personalbest;
             Score.Value = score;
             LastAccess.Value = DateTime.Now;
@@ -48,6 +50,8 @@ namespace PlayerControl.Model
 		public String pName2 { get; set; } = String.Empty;
 		public String pScore1 { get; set; } = String.Empty;
 		public String pScore2 { get; set; } = String.Empty;
+		public String pTwitter1 { get; set; } = String.Empty;
+		public String pTwitter2 { get; set; } = String.Empty;
 		public String stage { get; set; } = String.Empty;
 		public String timestamp { get; set; } = "0";
 	}

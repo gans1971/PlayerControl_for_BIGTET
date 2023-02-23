@@ -14,8 +14,8 @@
 	Title="プレイヤー追加・削除・修正"
 	Width="320"
 	Height="480"
-	MinWidth="420"
-	MinHeight="320"
+	MinWidth="460"
+	MinHeight="250"
 	BorderThickness="1"
 	IsWindowDraggable="True"
 	SaveWindowPosition="True"
@@ -80,6 +80,7 @@
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
 			<Grid.Resources />
+			<!--  プレイヤー名入力  -->
 			<TextBox
 				x:Name="AddPlayerName"
 				Padding="10,5"
@@ -100,7 +101,6 @@
 						Gesture="Enter" />
 				</TextBox.InputBindings>
 			</TextBox>
-
 			<Button
 				x:Name="AddButton"
 				Grid.Column="2"
@@ -134,6 +134,7 @@
 		<!--  同じ名前が登録されているときに表示する警告スナックバー  -->
 		<md:Snackbar
 			Grid.Row="1"
+			VerticalAlignment="Top"
 			Background="{StaticResource MahApps.Brushes.Accent3}"
 			FontSize="12"
 			MessageQueue="{Binding PlayerEditSnackbarMessageQueue.Value}" />
@@ -183,13 +184,14 @@
 							<ColumnDefinition Width="Auto" />
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
 						<Grid.Resources>
 							<Style BasedOn="{StaticResource MaterialDesignFlatLightButton}" TargetType="Button">
 								<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 							</Style>
-
 						</Grid.Resources>
+						<!--  プレイヤー名/サブ文字編集ボタン  -->
 						<Button
 							x:Name="PlayerNameEditButton"
 							Margin="5,0,0,0"
@@ -198,39 +200,38 @@
 							<md:PackIcon
 								Width="18"
 								Height="18"
+								Foreground="{StaticResource MaterialDesignToolForeground}"
 								Kind="PencilOutline" />
 						</Button>
 
 						<!--  プレイヤー名文字  -->
-						<Grid Grid.Column="1">
-							<TextBlock
-								x:Name="PlayerNameLabel"
-								Margin="2"
-								Padding="5,0"
-								VerticalAlignment="Center"
-								FontSize="14"
-								FontWeight="Bold"
-								Foreground="{StaticResource MahApps.Brushes.Gray1}"
-								Text="{Binding Name.Value}"
-								Visibility="Visible" />
-							<Grid x:Name="PlayerNameEditGrid" Visibility="Collapsed">
-								<TextBox
-									Margin="2"
-									HorizontalContentAlignment="Left"
-									VerticalContentAlignment="Center"
-									FontSize="14"
-									FontWeight="Bold"
-									LostFocus="PlayerNameTextBox_LostFocus"
-									LostKeyboardFocus="PlayerNameTextBox_LostFocus"
-									PreviewKeyDown="PlayerNameTextBox_PreviewKeyDown"
-									Text="{Binding Name.Value}" />
-							</Grid>
-						</Grid>
+						<TextBlock
+							x:Name="PlayerNameLabel"
+							Grid.Column="1"
+							Margin="2,2,0,2"
+							Padding="5,0"
+							VerticalAlignment="Center"
+							FontSize="14"
+							FontWeight="Bold"
+							Foreground="{StaticResource MahApps.Brushes.Gray1}"
+							Text="{Binding Name.Value}" />
+
+						<!--  サブ文字（twitter)  -->
+						<TextBlock
+							x:Name="TwitterLabel"
+							Grid.Column="2"
+							Margin="2,5,0,2"
+							Padding="5,0"
+							VerticalAlignment="Center"
+							FontSize="13"
+							FontWeight="Bold"
+							Foreground="{StaticResource MahApps.Brushes.Accent}"
+							Text="{Binding Twitter.Value}" />
 
 						<!--  プレイヤー削除コントロール  -->
 						<Button
 							x:Name="PlayerRemoveButton"
-							Grid.Column="2"
+							Grid.Column="3"
 							Margin="5,0"
 							Padding="0"
 							Style="{StaticResource MaterialDesignFlatLightButton}">
@@ -242,12 +243,6 @@
 							<md:PackIcon Width="18" Kind="Close" />
 						</Button>
 					</Grid>
-					<DataTemplate.Triggers>
-						<DataTrigger Binding="{Binding IsPlayerNameInEditMode.Value}" Value="True">
-							<Setter TargetName="PlayerNameLabel" Property="Visibility" Value="Collapsed" />
-							<Setter TargetName="PlayerNameEditGrid" Property="Visibility" Value="Visible" />
-						</DataTrigger>
-					</DataTemplate.Triggers>
 				</DataTemplate>
 			</ListBox.ItemTemplate>
 

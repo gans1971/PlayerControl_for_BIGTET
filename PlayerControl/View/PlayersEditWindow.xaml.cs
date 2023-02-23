@@ -29,12 +29,6 @@ namespace PlayerControl.View
 				vm.InputPlayerName(fe.DataContext);
 				e.Handled = true;
 			}
-			//if (sender is FrameworkElement fe && fe.DataContext is PlayerModel player)
-			//{
-			//	player.IsPlayerNameInEditMode.Value = true;
-			//	e.Handled = true;
-			//}
-
 		}
 
 		private void PlayerNameTextBox_PreviewKeyDown(object sender, KeyEventArgs e)

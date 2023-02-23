@@ -126,7 +126,7 @@
 				VerticalContentAlignment="Center"
 				mah:TextBoxHelper.ButtonCommand="{Binding SetStageCommand}"
 				mah:TextBoxHelper.TextButton="True"
-				mah:TextBoxHelper.Watermark="Stage を入力してください…　 決定［Enter］ 改行［Alt + Enter］"
+				mah:TextBoxHelper.Watermark="Stage を入力… 改行［Alt + Enter］決定［Enter］"
 				Cursor="Arrow"
 				FontFamily="Yu Gothic UI"
 				FontSize="12"
@@ -385,14 +385,23 @@
 								Grid.Column="1"
 								HorizontalAlignment="Left"
 								StretchDirection="DownOnly">
-								<Label
-									x:Name="PlayerNameLabel"
-									HorizontalContentAlignment="Left"
-									VerticalContentAlignment="Center"
-									Content="{Binding Name.Value}"
-									FontSize="13"
-									FontWeight="Bold"
-									Foreground="Black" />
+								<StackPanel Orientation="Horizontal">
+									<Label
+										x:Name="PlayerNameLabel"
+										HorizontalContentAlignment="Left"
+										VerticalContentAlignment="Center"
+										Content="{Binding Name.Value}"
+										FontSize="13"
+										FontWeight="Bold"
+										Foreground="Black" />
+									<Label
+										x:Name="PlayerTwitterLabel"
+										HorizontalContentAlignment="Left"
+										VerticalContentAlignment="Center"
+										Content="{Binding Twitter.Value}"
+										FontSize="11"
+										Foreground="{StaticResource MahApps.Brushes.Accent}" />
+								</StackPanel>
 							</Viewbox>
 						</Grid>
 
@@ -415,9 +424,10 @@
 										<Setter Property="bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus" Value="True" />
 									</Style>
 									<Style TargetType="{x:Type Label}">
-										<Setter Property="Foreground" Value="#FF858585" />
+										<Setter Property="Foreground" Value="#606060" />
 										<Setter Property="FontSize" Value="10" />
 										<Setter Property="FontFamily" Value="Arial" />
+										<Setter Property="Padding" Value="0,0,2,0" />
 										<Setter Property="VerticalContentAlignment" Value="Center" />
 									</Style>
 								</StackPanel.Resources>
@@ -436,15 +446,16 @@
 						<StackPanel
 							x:Name="ChangeButtonPanel"
 							Grid.Column="2"
-							MinWidth="70"
+							MinWidth="60"
 							Orientation="Horizontal"
 							Visibility="Visible">
 							<StackPanel.Resources>
-								<Style BasedOn="{StaticResource MaterialDesignFloatingActionMiniSecondaryLightButton}" TargetType="{x:Type Button}">
+								<Style BasedOn="{StaticResource MaterialDesignRaisedDarkButton}" TargetType="{x:Type Button}">
 									<Setter Property="VerticalAlignment" Value="Center" />
+									<Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="20" />
 									<Setter Property="HorizontalAlignment" Value="Center" />
 									<Setter Property="FontSize" Value="11" />
-									<Setter Property="Margin" Value="10,2,0,2" />
+									<Setter Property="Margin" Value="5,2,0,2" />
 									<Setter Property="Padding" Value="0" />
 									<Setter Property="Width" Value="22" />
 									<Setter Property="Height" Value="22" />

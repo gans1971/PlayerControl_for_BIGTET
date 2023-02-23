@@ -17,13 +17,20 @@ namespace PlayerControl.View
 		public static readonly DependencyProperty EditNameProperty =
 			DependencyProperty.Register("EditName", typeof(String),
 			typeof(PlayerSettingView), new PropertyMetadata(String.Empty));
-
 		public String EditName
 		{
 			get { return (String)GetValue(EditNameProperty); }
 			set { SetValue(EditNameProperty, value); }
 		}
 
+		public static readonly DependencyProperty EditTwitterProperty =
+			DependencyProperty.Register("EditTwitter", typeof(String),
+			typeof(PlayerSettingView), new PropertyMetadata(String.Empty));
+		public String EditTwitter
+		{
+			get { return (String)GetValue(EditTwitterProperty); }
+			set { SetValue(EditTwitterProperty, value); }
+		}
 
 
 		public PlayerSettingView()

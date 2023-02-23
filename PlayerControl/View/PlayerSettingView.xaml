@@ -25,11 +25,12 @@
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
 			<TextBox
 				x:Name="EditPlayerName"
-				Margin="0,20"
+				Margin="0,10"
 				Padding="10,5"
 				VerticalContentAlignment="Center"
 				md:HintAssist.Background="White"
@@ -52,8 +53,30 @@
 				</TextBox.Text>
 			</TextBox>
 
+			<TextBox
+				x:Name="EditTwitterStr"
+				Grid.Row="1"
+				Margin="0,15"
+				Padding="10,5"
+				VerticalContentAlignment="Center"
+				md:HintAssist.Background="White"
+				md:HintAssist.FloatingOffset="0,-20"
+				md:HintAssist.FloatingScale="1.0"
+				md:HintAssist.Hint="サブ情報入力(任意)"
+				md:HintAssist.IsFloating="True"
+				FontSize="14"
+				FontWeight="Bold"
+				Style="{StaticResource MaterialDesignOutlinedTextBox}">
+				<TextBox.Text>
+					<Binding
+						Path="EditTwitter"
+						RelativeSource="{RelativeSource AncestorType=v:PlayerSettingView}"
+						UpdateSourceTrigger="PropertyChanged" />
+				</TextBox.Text>
+			</TextBox>
+
 			<!--  ボタンエリア  -->
-			<Grid Grid.Row="1" HorizontalAlignment="Stretch">
+			<Grid Grid.Row="2" HorizontalAlignment="Stretch">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="*" MinWidth="100" />
 					<ColumnDefinition Width="*" MinWidth="100" />
@@ -70,25 +93,21 @@
 				<Button
 					x:Name="OkButton"
 					Command="{x:Static md:DialogHost.CloseDialogCommand}"
+					Content="OK(_O)"
 					IsEnabled="{Binding Text, Converter={StaticResource StringBoolConverter}, ElementName=EditPlayerName}">
 					<Button.CommandParameter>
 						<system:Boolean>True</system:Boolean>
 					</Button.CommandParameter>
-					<StackPanel Orientation="Horizontal">
-						<TextBlock VerticalAlignment="Center" Text="OK" />
-					</StackPanel>
 				</Button>
 				<Button
 					x:Name="CancelButton"
 					Grid.Column="1"
 					Margin="10,0,0,0"
-					Command="{x:Static md:DialogHost.CloseDialogCommand}">
+					Command="{x:Static md:DialogHost.CloseDialogCommand}"
+					Content="キャンセル(_C)">
 					<Button.CommandParameter>
 						<system:Boolean>False</system:Boolean>
 					</Button.CommandParameter>
-					<StackPanel Orientation="Horizontal">
-						<TextBlock Text="キャンセル" />
-					</StackPanel>
 				</Button>
 			</Grid>
 		</Grid>

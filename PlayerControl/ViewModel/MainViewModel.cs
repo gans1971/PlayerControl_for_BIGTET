@@ -198,6 +198,10 @@ namespace PlayerControl.ViewModels
 				{
 					var name = textBox.Text;
 					var trimName = name.Trim();
+
+					//TODO!!Twitter
+					var trimTwitter = String.Empty;
+
 					if (!String.IsNullOrEmpty(trimName))
 					{
 						// 同じ名前のユーザーがいないかチェック
@@ -212,7 +216,7 @@ namespace PlayerControl.ViewModels
 						// ユーザーを追加
 						else
 						{
-							Players.Add(new PlayerModel(trimName, 0, 0));
+							Players.Add(new PlayerModel(trimName, trimTwitter, 0, 0));
 							SaveStreamControlJson();
 							textBox.Text = String.Empty;
 						}
@@ -287,7 +291,8 @@ namespace PlayerControl.ViewModels
 			{
 				try
 				{
-					Clipboard.SetText($"{player.Name}\t{player.Score}");
+					var setText = $"{player.Name}\t{player.Score}";
+					Clipboard.SetText(setText);
 				}
 				catch (Exception ex)
 				{
@@ -384,7 +389,8 @@ namespace PlayerControl.ViewModels
 				{
 					var view = new PlayerSettingView()
 					{
-						EditName = player.Name.Value
+						EditName = player.Name.Value,
+						EditTwitter = player.Twitter.Value,
 					};
 
 					var result = await DialogHost.Show(view, "PlayersEditDialog");
@@ -395,8 +401,8 @@ namespace PlayerControl.ViewModels
 						// 同じ名前のユーザーがいないかチェック
 						var sameNamePlayer = SearchPlayer(trimName);
 
-						// 同じ名前がすでに存在した場合
-						if (sameNamePlayer != null)
+						// 自分自身以外で!、同じ名前が存在した場合
+						if (sameNamePlayer != null && sameNamePlayer != player)
 						{
 							// 警告を出す
 							PlayerEditSnackbarMessageQueue.Value.Enqueue($"[{trimName}]同じ名前が登録されています");
@@ -406,6 +412,11 @@ namespace PlayerControl.ViewModels
 						{
 							player.Name.Value = trimName;
 						}
+						// twitterを更新（特にチェックなし）
+						player.Twitter.Value = view.EditTwitter;
+
+						// JSON更新
+						SaveStreamControlJson();
 					}
 				}
 			}
@@ -414,7 +425,6 @@ namespace PlayerControl.ViewModels
 				Debug.WriteLine($"Exception ScoreImput:{ex.ToString()}");
 			}
 		}
-
 
 		/// <summary>
 		/// プレイヤーリストの中から同じ名前のプレイヤーを探す
@@ -542,14 +552,17 @@ namespace PlayerControl.ViewModels
 						// 改行コードを</br>に置換
 						stagestr = Stage.Value.Replace(Environment.NewLine, "</br>");
 
+						// 改行が存在する場合はフォントサイズを調整
 						if (StageLineCount > 1)
 						{
 							// 行数に応じて文字サイズを調整
 							var adjustSize = 0;
+							// 2行
 							if (StageLineCount == 2)
 							{
 								adjustSize = -1;
 							}
+							// 3行以上
 							else
 							{
 								adjustSize = -2;
@@ -569,6 +582,7 @@ namespace PlayerControl.ViewModels
 				if (CurrentPlayer1.Value != null)
 				{
 					StreamControlData.pName1 = CurrentPlayer1.Value.Name.Value;
+					StreamControlData.pTwitter1 = CurrentPlayer1.Value.Twitter.Value;
 					StreamControlData.pScore1 = GetScoreText(CurrentPlayer1.Value.Score.Value);
 					StreamControlData.pCountry1 = DefaultCountry.Value;
 				}
@@ -576,6 +590,7 @@ namespace PlayerControl.ViewModels
 				if (CurrentPlayer2.Value != null)
 				{
 					StreamControlData.pName2 = CurrentPlayer2.Value.Name.Value;
+					StreamControlData.pTwitter2 = CurrentPlayer2.Value.Twitter.Value;
 					StreamControlData.pScore2 = GetScoreText(CurrentPlayer2.Value.Score.Value);
 					StreamControlData.pCountry2 = DefaultCountry.Value;
 				}
@@ -610,6 +625,10 @@ namespace PlayerControl.ViewModels
 			{
 				// int 値を文字列に変換
 				scoreStr = score.ToString();
+				if(score > 999)
+				{
+					scoreStr = $"<font size=4>" + scoreStr + "</font>";
+				}
 			}
 			catch (Exception ex)
 			{
