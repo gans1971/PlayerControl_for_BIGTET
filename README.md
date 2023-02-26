@@ -1,10 +1,11 @@
 # PlayerControl for BIGTET
 
+※ Ver0.3.1 のイメージ映像
 ![capture](https://user-images.githubusercontent.com/87809679/175765945-74904b8b-928e-4ebb-9bda-f8c4e2a612a2.gif)
 ***カーソルキー上下で選択・左右で1P/2Pを設定・スペースキーでスコア入力***
 
+※ 以下はVer 0.3.1 の資料です（最新版用マニュアルは作成中）
 ![InstCard](Images/InstCard.png)
-
 - [**インストカード PDF (A5版) ダウンロード**](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf)
 - [**セットアップ方法 PDF (A5版) ダウンロード**](/Manual/PlayerControlForBIGTET_Setup.pdf)
 
