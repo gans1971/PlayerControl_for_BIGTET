@@ -16,6 +16,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using Windows.Media.PlayTo;
 
 namespace PlayerControl.ViewModels
 {
@@ -37,7 +38,7 @@ namespace PlayerControl.ViewModels
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<String> Stage { get; } = new ReactivePropertySlim<String>(String.Empty);
-		public ReactivePropertySlim<ScoreMode> MatchScoreMode { get; } = new ReactivePropertySlim<ScoreMode>(ScoreMode.Single);
+		public ReactivePropertySlim<ScoreMode> CurrentScoreMode { get; } = new ReactivePropertySlim<ScoreMode>(ScoreMode.Single);
 		public ReactivePropertySlim<SnackbarMessageQueue> PlayerEditSnackbarMessageQueue { get; } = new ReactivePropertySlim<SnackbarMessageQueue>(new SnackbarMessageQueue());
 		public ReactivePropertySlim<String> DefaultCountry { get; } = new ReactivePropertySlim<String>("blk");
 
@@ -45,7 +46,6 @@ namespace PlayerControl.ViewModels
 		public ReactiveCollection<PlayerModel> PlayersHistory { get; } = new ReactiveCollection<PlayerModel>();
 
 		public CollectionViewSource PlayersViewSource { get; set; } = new CollectionViewSource();
-
 		#endregion
 
 		#region ReactiveCommand
@@ -583,7 +583,7 @@ namespace PlayerControl.ViewModels
 				{
 					StreamControlData.pName1 = CurrentPlayer1.Value.Name.Value;
 					StreamControlData.pTwitter1 = CurrentPlayer1.Value.Twitter.Value;
-					StreamControlData.pScore1 = GetScoreText(CurrentPlayer1.Value.Score.Value);
+					StreamControlData.pScore1 = GetScoreText(CurrentPlayer1.Value);
 					StreamControlData.pCountry1 = DefaultCountry.Value;
 				}
 				// プレイヤー２情報
@@ -591,7 +591,7 @@ namespace PlayerControl.ViewModels
 				{
 					StreamControlData.pName2 = CurrentPlayer2.Value.Name.Value;
 					StreamControlData.pTwitter2 = CurrentPlayer2.Value.Twitter.Value;
-					StreamControlData.pScore2 = GetScoreText(CurrentPlayer2.Value.Score.Value);
+					StreamControlData.pScore2 = GetScoreText(CurrentPlayer2.Value);
 					StreamControlData.pCountry2 = DefaultCountry.Value;
 				}
 				// タイムスタンプを初期化する場合
@@ -618,8 +618,19 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		/// <param name="score"></param>
 		/// <returns></returns>
-		private String GetScoreText(int score)
+		private String GetScoreText(PlayerModel player)
 		{
+			if( player == null)
+			{
+				return String.Empty;
+			}
+
+			// スコア値を計算（Mixtureモードなら２つのスコアの合計）
+			var score = player.Score.Value;
+			if( CurrentScoreMode.Value == ScoreMode.Mixture)
+			{
+				score += player.Score_Second.Value;
+			}
 			var scoreStr = String.Empty;
 			try
 			{

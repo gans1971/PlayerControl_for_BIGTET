@@ -1,13 +1,21 @@
-﻿using Prism.Mvvm;
+﻿using Converters;
+using Prism.Mvvm;
 using Reactive.Bindings;
 using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Security.AccessControl;
+using System.Xml.Linq;
 
 namespace PlayerControl.Model
 {
+	[TypeConverter(typeof(EnumDisplayTypeConverter))]
 	public enum ScoreMode
 	{
+		[Display(Name = "シングル")]
 		Single = 0,
+		[Display(Name = "ノーマル + 20G")]
 		Mixture = 1,
 	}
 
@@ -33,26 +41,5 @@ namespace PlayerControl.Model
             Score.Value = score;
             LastAccess.Value = DateTime.Now;
         }
-
-
-	}
-
-	public class StreamControlParam
-	{
-		public StreamControlParam()
-		{
-			timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString();
-			Debug.WriteLine($"TimeStump:{timestamp}");
-		}
-		public String pCountry1 { get; set; } = "blk";
-		public String pCountry2 { get; set; } = "blk";
-		public String pName1 { get; set; } = String.Empty;
-		public String pName2 { get; set; } = String.Empty;
-		public String pScore1 { get; set; } = String.Empty;
-		public String pScore2 { get; set; } = String.Empty;
-		public String pTwitter1 { get; set; } = String.Empty;
-		public String pTwitter2 { get; set; } = String.Empty;
-		public String stage { get; set; } = String.Empty;
-		public String timestamp { get; set; } = "0";
 	}
 }

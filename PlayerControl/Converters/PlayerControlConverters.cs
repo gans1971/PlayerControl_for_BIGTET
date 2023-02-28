@@ -1,30 +1,51 @@
-﻿using System;
+﻿using PlayerControl.Model;
+using System;
 using System.Windows.Data;
 
 namespace Converters
 {
-	public class PlayerControlConverters
+	#region スコアのラベル文字列をモード別に返すコンバーター
+	public class Score_Second_LavelConverter : IValueConverter
 	{
-		public class IsBestScoreUpdateConverter : IMultiValueConverter
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
-			public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			if (value is ScoreMode mode)
 			{
-				if (values[0] is int selfBest)
+				switch (mode)
 				{
-					if (values[0] is int score)
-					{
-						if (selfBest < score)
-						{
-							return true;
-						}
-					}
+					case ScoreMode.Mixture:
+						return "20G";
+					default:
+						return "LV";
 				}
-				return false;
 			}
-			public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
-			{
-				throw new NotImplementedException("ConvertBack Not Supported");
-			}
+			return value;
+		}
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			throw new NotImplementedException("ConvertBack Not Supported");
 		}
 	}
+	public class Score_LavelConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			if (value is ScoreMode mode)
+			{
+				switch (mode)
+				{
+					case ScoreMode.Mixture:
+						return "Nor";
+					default:
+						return "LV";
+				}
+			}
+			return value;
+		}
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			throw new NotImplementedException("ConvertBack Not Supported");
+		}
+	}
+	#endregion
 }

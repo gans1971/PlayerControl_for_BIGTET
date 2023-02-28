@@ -8,17 +8,19 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:dd="urn:gong-wpf-dragdrop"
 	xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+	xmlns:m="clr-namespace:PlayerControl.Model"
 	xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
 	xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 	xmlns:ri="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
+	xmlns:sys="clr-namespace:System;assembly=mscorlib"
 	xmlns:v="clr-namespace:PlayerControl.View"
 	xmlns:vm="clr-namespace:PlayerControl.ViewModels"
 	Title="{Binding AppTitle.Value}"
-	Width="390"
+	Width="420"
 	Height="220"
-	MinWidth="360"
+	MinWidth="420"
 	MinHeight="200"
 	Dialog:DialogParticipation.Register="{Binding}"
 	BorderThickness="1"
@@ -103,13 +105,15 @@
 		<converters:StringBoolConverter x:Key="StringBoolConverter" />
 		<converters:StringEmptyToZeroConverter x:Key="StringEmptyToZeroConverter" />
 		<converters:Int0VisibilityConverter x:Key="Int0VisibilityConverter" />
-
+		<converters:Score_Second_LavelConverter x:Key="Score_Second_LavelConverter" />
+		<converters:Score_LavelConverter x:Key="Score_LavelConverter" />
+		<converters:EnumMatchToVisibilityConverter x:Key="EnumMatchToVisibilityConverter" />
 		<!--#endregion-->
 	</mah:MetroWindow.Resources>
 
 	<Grid x:Name="LayoutRoot" FocusManager.FocusedElement="{Binding ElementName=PlayersListBox}">
 		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" MinHeight="40" />
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 			<RowDefinition Height="Auto" />
@@ -117,12 +121,24 @@
 
 		<!--#region ステージ設定-->
 		<Grid x:Name="StageSettingGrid" Margin="0,5,5,0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+			<ComboBox
+				x:Name="ScoreModeComboBox"
+				Grid.Column="1"
+				MinWidth="100"
+				Margin="5,0,0,0"
+				Padding="2,5"
+				materialDesign:HintAssist.Hint="スコアモード"
+				ItemsSource="{Binding Source={converters:EnumBindingSource {x:Type m:ScoreMode}}}"
+				SelectedValue="{Binding CurrentScoreMode.Value, Mode=TwoWay}"
+				Style="{StaticResource MaterialDesignFilledComboBox}" />
 			<TextBox
 				x:Name="StageName"
-				Grid.Column="1"
 				Margin="5,0,0,0"
 				Padding="5,0"
-				VerticalAlignment="Center"
 				VerticalContentAlignment="Center"
 				mah:TextBoxHelper.ButtonCommand="{Binding SetStageCommand}"
 				mah:TextBoxHelper.TextButton="True"
@@ -155,7 +171,7 @@
 		<DockPanel
 			x:Name="ToolDockPanel"
 			Grid.Row="1"
-			Margin="5,2.5,0,5"
+			Margin="5,5,0,5"
 			LastChildFill="False">
 			<DockPanel.Resources>
 				<Style BasedOn="{StaticResource MaterialDesignFlatLightBgButton}" TargetType="{x:Type Button}">
@@ -163,7 +179,7 @@
 					<Setter Property="Padding" Value="2.5,0" />
 					<Setter Property="HorizontalContentAlignment" Value="Center" />
 					<Setter Property="VerticalContentAlignment" Value="Center" />
-					<Setter Property="Height" Value="22.5" />
+					<Setter Property="Height" Value="25" />
 					<Setter Property="Cursor" Value="Hand" />
 				</Style>
 				<Style TargetType="md:PackIcon">
@@ -323,13 +339,41 @@
 			<!--  アイテムテンプレート  -->
 			<ListBox.ItemTemplate>
 				<DataTemplate>
-					<Grid x:Name="ItemGrid" Background="Transparent">
+					<Grid
+						x:Name="ItemGrid"
+						MinHeight="26"
+						Background="Transparent">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="Auto" />
 							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
+						<Grid.Resources>
+							<Style
+								x:Key="ScoreTextBoxStyle"
+								BasedOn="{StaticResource MahApps.Styles.TextBox}"
+								TargetType="{x:Type TextBox}">
+								<Setter Property="VerticalAlignment" Value="Center" />
+								<Setter Property="InputMethod.IsInputMethodEnabled" Value="False" />
+								<Setter Property="HorizontalContentAlignment" Value="Right" />
+								<Setter Property="HorizontalContentAlignment" Value="Right" />
+								<Setter Property="MinWidth" Value="45" />
+								<Setter Property="MinHeight" Value="15" />
+								<Setter Property="Cursor" Value="IBeam" />
+								<Setter Property="FontSize" Value="14" />
+								<Setter Property="MaxLength" Value="4" />
+								<Setter Property="bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus" Value="True" />
+							</Style>
+							<Style TargetType="{x:Type Label}">
+								<Setter Property="Foreground" Value="#101010" />
+								<Setter Property="FontSize" Value="11" />
+								<Setter Property="FontFamily" Value="Arial" />
+								<Setter Property="Padding" Value="0,0,2,0" />
+								<Setter Property="VerticalContentAlignment" Value="Center" />
+							</Style>
 
+						</Grid.Resources>
 						<!--  プレイヤー名  -->
 						<Grid x:Name="PlayerNameGrid">
 							<Grid.ColumnDefinitions>
@@ -405,33 +449,10 @@
 							</Viewbox>
 						</Grid>
 
-						<!--  表示スコア  -->
+						<!--  表示スコア1  -->
 						<Border Grid.Column="1" Margin="5,0">
 							<StackPanel x:Name="Score1_Label" Orientation="Horizontal">
-								<StackPanel.Resources>
-									<Style
-										x:Key="ScoreTextBoxStyle"
-										BasedOn="{StaticResource MahApps.Styles.TextBox}"
-										TargetType="{x:Type TextBox}">
-										<Setter Property="VerticalAlignment" Value="Center" />
-										<Setter Property="HorizontalContentAlignment" Value="Right" />
-										<Setter Property="HorizontalContentAlignment" Value="Right" />
-										<Setter Property="MinWidth" Value="45" />
-										<Setter Property="MinHeight" Value="15" />
-										<Setter Property="Cursor" Value="IBeam" />
-										<Setter Property="FontSize" Value="14" />
-										<Setter Property="MaxLength" Value="4" />
-										<Setter Property="bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus" Value="True" />
-									</Style>
-									<Style TargetType="{x:Type Label}">
-										<Setter Property="Foreground" Value="#606060" />
-										<Setter Property="FontSize" Value="10" />
-										<Setter Property="FontFamily" Value="Arial" />
-										<Setter Property="Padding" Value="0,0,2,0" />
-										<Setter Property="VerticalContentAlignment" Value="Center" />
-									</Style>
-								</StackPanel.Resources>
-								<Label x:Name="Lv_Label1" Content="Lv" />
+								<Label x:Name="Lv_Label1" Content="{Binding DataContext.CurrentScoreMode.Value, Converter={StaticResource Score_LavelConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
 								<TextBox
 									x:Name="Score1"
 									CommandManager.PreviewExecuted="ScoreTextBox_PreviewExecuted"
@@ -442,10 +463,27 @@
 							</StackPanel>
 						</Border>
 
+						<!--  表示スコア2  -->
+						<Border
+							Grid.Column="2"
+							Margin="5,0"
+							Visibility="{Binding DataContext.CurrentScoreMode.Value, Converter={StaticResource EnumMatchToVisibilityConverter}, ConverterParameter=Mixture, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}">
+							<StackPanel x:Name="Score2_Label" Orientation="Horizontal">
+								<Label x:Name="Lv_Label2" Content="{Binding DataContext.CurrentScoreMode.Value, Converter={StaticResource Score_Second_LavelConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
+								<TextBox
+									x:Name="Score2"
+									CommandManager.PreviewExecuted="ScoreTextBox_PreviewExecuted"
+									GotKeyboardFocus="ScoreTextBox_GotKeyboardFocus"
+									PreviewTextInput="ScoreTextBox_PreviewTextInput"
+									Style="{StaticResource ScoreTextBoxStyle}"
+									Text="{Binding Score_Second.Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringEmptyToZeroConverter}}" />
+							</StackPanel>
+						</Border>
+
 						<!--  1P/2P 設定ボタン  -->
 						<StackPanel
 							x:Name="ChangeButtonPanel"
-							Grid.Column="2"
+							Grid.Column="3"
 							MinWidth="60"
 							Orientation="Horizontal"
 							Visibility="Visible">
@@ -505,15 +543,13 @@
 			</Grid>
 		</Border>
 
-
-
 		<!--  ヒント表示  -->
-		<StackPanel
-			x:Name="HintPanel"
+		<DockPanel
+			x:Name="StatusBar"
 			Grid.Row="3"
 			Margin="5,0"
-			Orientation="Horizontal">
-			<StackPanel.Resources>
+			LastChildFill="False">
+			<DockPanel.Resources>
 				<Style TargetType="{x:Type Label}">
 					<Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.Gray2}" />
 					<Setter Property="Margin" Value="0,0,5,0" />
@@ -527,18 +563,26 @@
 					<Setter Property="Margin" Value="0,0,0,0" />
 					<Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.Gray3}" />
 				</Style>
+			</DockPanel.Resources>
 
-			</StackPanel.Resources>
+			<StackPanel
+				x:Name="HintPanel"
+				DockPanel.Dock="Left"
+				Orientation="Horizontal">
+				<md:PackIcon Kind="ArrowUpBox" />
+				<md:PackIcon Kind="ArrowDownBox" />
+				<Label Content="Player選択" />
+				<md:PackIcon Kind="ArrowLeftBox" />
+				<Label Content="1Pセット" />
+				<md:PackIcon Kind="ArrowRightBox" />
+				<Label Content="2Pセット" />
+			</StackPanel>
+			<StackPanel
+				Margin="5,0,0,0"
+				DockPanel.Dock="Right"
+				Orientation="Horizontal" />
 
-			<md:PackIcon Kind="ArrowUpBox" />
-			<md:PackIcon Kind="ArrowDownBox" />
-			<Label Content="プレイヤー選択" />
-			<md:PackIcon Kind="ArrowLeftBox" />
-			<Label Content="1Pにセット" />
-			<md:PackIcon Kind="ArrowRightBox" />
-			<Label Content="2Pにセット" />
-		</StackPanel>
-
+		</DockPanel>
 		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->
 		<!--  参考：http://nineworks2.blog.fc2.com/blog-entry-117.html  -->
 		<materialDesign:DialogHost

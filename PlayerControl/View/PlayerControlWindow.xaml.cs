@@ -1,4 +1,5 @@
 ﻿using MahApps.Metro.Controls;
+using PlayerControl.Model;
 using PlayerControl.ViewModels;
 using System;
 using System.Text.RegularExpressions;
@@ -6,6 +7,7 @@ using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace PlayerControl.View
 {
@@ -14,9 +16,12 @@ namespace PlayerControl.View
 	/// </summary>
 	public partial class PlayerControlWindow : MetroWindow
 	{
+		public Array ScoreModeEnumValues { get; private set; }
+
 		public PlayerControlWindow()
 		{
 			InitializeComponent();
+			ScoreModeEnumValues = Enum.GetValues(typeof(ScoreMode));
 		}
 
 		/// <summary>
@@ -126,7 +131,7 @@ namespace PlayerControl.View
 		/// <param name="e"></param>
 		private void StageName_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
-			if (sender is TextBox textBox)
+			if (sender is System.Windows.Controls.TextBox textBox)
 			{
 				if (Keyboard.Modifiers == ModifierKeys.Alt && Keyboard.IsKeyDown(Key.Enter))
 				{
