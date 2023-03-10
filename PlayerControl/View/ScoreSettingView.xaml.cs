@@ -1,5 +1,7 @@
-﻿using System.Globalization;
+﻿using PlayerControl.Model;
+using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -10,8 +12,18 @@ namespace PlayerControl.View
 	/// </summary>
 	public partial class ScoreSettingView : UserControl
 	{
-		public ScoreSettingView()
+		public static readonly DependencyProperty CurrentScoreModeProperty =
+			DependencyProperty.Register("CurrentScoreMode", typeof(ScoreMode),	typeof(ScoreSettingView), new PropertyMetadata(ScoreMode.Single));
+		public ScoreMode CurrentScoreMode
 		{
+			get { return (ScoreMode)GetValue(CurrentScoreModeProperty); }
+			set { SetValue(CurrentScoreModeProperty, value); }
+		}
+
+		public ScoreSettingView(ScoreMode _currentMode)
+		{
+			// 現在の編集モードを記録
+			CurrentScoreMode = _currentMode;
 			InitializeComponent();
 		}
 

@@ -355,7 +355,8 @@ namespace PlayerControl.ViewModels
 					// 下記行を入れないとアニメーション中にキー操作すると元ダイアログにフォーカスが移動してしまう
 					System.Windows.Input.Keyboard.ClearFocus();
 
-					var view = new ScoreSettingView()
+					// スコア設定Viewを表示
+					var view = new ScoreSettingView(CurrentScoreMode.Value)
 					{
 						DataContext = player
 					};
