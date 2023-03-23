@@ -7,6 +7,7 @@
 	xmlns:converters="clr-namespace:Converters"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:dd="urn:gong-wpf-dragdrop"
+	xmlns:ei="http://schemas.microsoft.com/xaml/behaviors"
 	xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
 	xmlns:m="clr-namespace:PlayerControl.Model"
 	xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
@@ -55,8 +56,8 @@
 					</i:EventTrigger>
 				</i:Interaction.Triggers>
 				<md:PackIcon
-					Width="22"
-					Height="22"
+					Width="18"
+					Height="18"
 					Kind="InformationOutline" />
 			</Button>
 		</mah:WindowCommands>
@@ -72,11 +73,9 @@
 		<KeyBinding Command="{Binding SaveJsonCommand}" Gesture="Ctrl+S" />
 		<!--#endregion-->
 	</mah:MetroWindow.InputBindings>
-
-	<!--
-		TODO:設定画面で切り替えられるようにする
-		Topmost ="True"
-	-->
+	<mah:MetroWindow.Background>
+		<SolidColorBrush x:Name="WindowBackground" Color="White" />
+	</mah:MetroWindow.Background>
 
 	<!--#region データコンテキスト-->
 	<mah:MetroWindow.DataContext>
@@ -86,17 +85,6 @@
 			</vm:MainViewModel.PlayerControlDialogCoordinator>
 		</vm:MainViewModel>
 	</mah:MetroWindow.DataContext>
-	<!--#endregion-->
-
-	<!--#region Windowのイベントトリガ-->
-	<i:Interaction.Triggers>
-		<i:EventTrigger EventName="Loaded">
-			<i:InvokeCommandAction Command="{Binding LoadedCommand}" />
-		</i:EventTrigger>
-		<i:EventTrigger EventName="Closing">
-			<i:InvokeCommandAction Command="{Binding ClosingCommand}" />
-		</i:EventTrigger>
-	</i:Interaction.Triggers>
 	<!--#endregion-->
 
 	<mah:MetroWindow.Resources>
@@ -110,6 +98,18 @@
 		<converters:EnumMatchToVisibilityConverter x:Key="EnumMatchToVisibilityConverter" />
 		<!--#endregion-->
 	</mah:MetroWindow.Resources>
+
+
+	<!--#region Windowのイベントトリガ-->
+	<i:Interaction.Triggers>
+		<i:EventTrigger EventName="Loaded">
+			<i:InvokeCommandAction Command="{Binding LoadedCommand}" />
+		</i:EventTrigger>
+		<i:EventTrigger EventName="Closing">
+			<i:InvokeCommandAction Command="{Binding ClosingCommand}" />
+		</i:EventTrigger>
+	</i:Interaction.Triggers>
+
 
 	<Grid x:Name="LayoutRoot" FocusManager.FocusedElement="{Binding ElementName=PlayersListBox}">
 		<Grid.RowDefinitions>
@@ -125,6 +125,7 @@
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
+			<!--  (スコアモード実装中 > V0.3.x では無効化)  -->
 			<ComboBox
 				x:Name="ScoreModeComboBox"
 				Grid.Column="1"
@@ -134,21 +135,34 @@
 				materialDesign:HintAssist.Hint="スコアモード"
 				ItemsSource="{Binding Source={converters:EnumBindingSource {x:Type m:ScoreMode}}}"
 				SelectedValue="{Binding CurrentScoreMode.Value, Mode=TwoWay}"
-				Style="{StaticResource MaterialDesignFilledComboBox}" />
-			<TextBox
-				x:Name="StageName"
-				Margin="5,0,0,0"
-				Padding="5,0"
-				VerticalContentAlignment="Center"
+				Style="{StaticResource MaterialDesignFilledComboBox}"
+				Visibility="Collapsed" />
+
+
+			<!--
+				※ MahApps版TextBox使用メモ
+				mah:TextBoxHelper.UseFloatingWatermark="True"
 				mah:TextBoxHelper.ButtonCommand="{Binding SetStageCommand}"
 				mah:TextBoxHelper.TextButton="True"
-				mah:TextBoxHelper.Watermark="Stage を入力… 改行［Alt + Enter］決定［Enter］"
+				mah:TextBoxHelper.Watermark="Stage 設定：改行［Alt + Enter］/ 決定［Enter］"
+				Style="{StaticResource MahApps.Styles.TextBox.Button}"
+			-->
+			<TextBox
+				x:Name="StageName"
+				Margin="5,5,0,0"
+				Padding="5,0"
+				VerticalContentAlignment="Center"
+				md:HintAssist.Background="White"
+				md:HintAssist.FloatingOffset="0,-10"
+				md:HintAssist.FloatingScale="0.7"
+				md:HintAssist.Hint="Stage入力（改行［Alt+Enter］/ 決定［Enter］）"
+				md:HintAssist.IsFloating="True"
 				Cursor="Arrow"
 				FontFamily="Yu Gothic UI"
 				FontSize="12"
-				MaxLength="80"
+				FontWeight="Bold"
 				PreviewKeyDown="StageName_PreviewKeyDown"
-				Style="{StaticResource MahApps.Styles.TextBox.Button}"
+				Style="{StaticResource MaterialDesignOutlinedTextBox}"
 				Text="{Binding Stage.Value, UpdateSourceTrigger=PropertyChanged}"
 				TextWrapping="Wrap">
 				<TextBox.InputBindings>
@@ -220,6 +234,7 @@
 				<TextBlock Text="2P クリア" />
 			</Button>
 			<Button
+				Padding="5,0"
 				Command="{Binding SaveJsonCommand}"
 				DockPanel.Dock="Right"
 				ToolTip="設定を保存（手動）">
@@ -527,6 +542,7 @@
 		</ListBox>
 		<!--#endregion-->
 
+		<!--#region ユーザー０名時に表示するヘルプ-->
 		<Border
 			x:Name="InitHelpGrid"
 			Grid.Row="2"
@@ -542,8 +558,9 @@
 					FontSize="16" />
 			</Grid>
 		</Border>
+		<!--#endregion-->
 
-		<!--  ヒント表示  -->
+		<!--#region ヒントバー-->
 		<DockPanel
 			x:Name="StatusBar"
 			Grid.Row="3"
@@ -553,12 +570,12 @@
 				<Style TargetType="{x:Type Label}">
 					<Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.Gray2}" />
 					<Setter Property="Margin" Value="0,0,5,0" />
-					<Setter Property="FontSize" Value="12" />
+					<Setter Property="FontSize" Value="11" />
 					<Setter Property="FontWeight" Value="Bold" />
 				</Style>
 				<Style TargetType="md:PackIcon">
-					<Setter Property="Width" Value="22" />
-					<Setter Property="Height" Value="22" />
+					<Setter Property="Width" Value="20" />
+					<Setter Property="Height" Value="20" />
 					<Setter Property="VerticalAlignment" Value="Center" />
 					<Setter Property="Margin" Value="0,0,0,0" />
 					<Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.Gray3}" />
@@ -571,7 +588,7 @@
 				Orientation="Horizontal">
 				<md:PackIcon Kind="ArrowUpBox" />
 				<md:PackIcon Kind="ArrowDownBox" />
-				<Label Content="Player選択" />
+				<Label Content="プレイヤー選択" />
 				<md:PackIcon Kind="ArrowLeftBox" />
 				<Label Content="1Pセット" />
 				<md:PackIcon Kind="ArrowRightBox" />
@@ -583,6 +600,8 @@
 				Orientation="Horizontal" />
 
 		</DockPanel>
+		<!--#endregion-->
+
 		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->
 		<!--  参考：http://nineworks2.blog.fc2.com/blog-entry-117.html  -->
 		<materialDesign:DialogHost
@@ -590,5 +609,42 @@
 			d:IsHidden="True"
 			CloseOnClickAway="False"
 			Identifier="PlayerControlWindowDialog" />
+		<VisualStateManager.VisualStateGroups>
+			<VisualStateGroup x:Name="WindowStates">
+				<VisualState x:Name="NormalState">
+					<Storyboard>
+						<ColorAnimation
+							Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+							To="LightGray"
+							Duration="0:0:0.5" />
+					</Storyboard>
+				</VisualState>
+				<VisualState x:Name="HighlightedState">
+					<Storyboard>
+						<ColorAnimation
+							Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+							To="Yellow"
+							Duration="0:0:0.5" />
+					</Storyboard>
+				</VisualState>
+			</VisualStateGroup>
+		</VisualStateManager.VisualStateGroups>
 	</Grid>
+	<!--#endregion-->
+
+	<!--#region JSONが更新された時に発生するアニメーション-->
+	<VisualStateManager.VisualStateGroups>
+		<VisualStateGroup x:Name="CommandStates">
+			<VisualState x:Name="Normal" />
+			<VisualState x:Name="Executing">
+				<Storyboard>
+					<ColorAnimation
+						Storyboard.TargetName="WindowBackground"
+						Storyboard.TargetProperty="Color"
+						To="#E0C010"
+						Duration="0:0:0.3" />
+				</Storyboard>
+			</VisualState>
+		</VisualStateGroup>
+	</VisualStateManager.VisualStateGroups>
 </mah:MetroWindow>

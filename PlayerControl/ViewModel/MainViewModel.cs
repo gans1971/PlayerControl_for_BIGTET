@@ -16,7 +16,6 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using Windows.Media.PlayTo;
 
 namespace PlayerControl.ViewModels
 {
@@ -229,6 +228,8 @@ namespace PlayerControl.ViewModels
 			SaveJsonCommand.Subscribe(_ =>
 			{
 				SaveStreamControlJson();
+				VisualStateManager.GoToElementState(App.Current.MainWindow, "Executing", true);
+
 			}).AddTo(Disposable);
 
 			// Stage文字列をJSONに保存するコマンド
@@ -621,14 +622,14 @@ namespace PlayerControl.ViewModels
 		/// <returns></returns>
 		private String GetScoreText(PlayerModel player)
 		{
-			if( player == null)
+			if (player == null)
 			{
 				return String.Empty;
 			}
 
 			// スコア値を計算（Mixtureモードなら２つのスコアの合計）
 			var score = player.Score.Value;
-			if( CurrentScoreMode.Value == ScoreMode.Mixture)
+			if (CurrentScoreMode.Value == ScoreMode.Mixture)
 			{
 				score += player.Score_Second.Value;
 			}
@@ -637,7 +638,7 @@ namespace PlayerControl.ViewModels
 			{
 				// int 値を文字列に変換
 				scoreStr = score.ToString();
-				if(score > 999)
+				if (score > 999)
 				{
 					scoreStr = $"<font size=4>" + scoreStr + "</font>";
 				}

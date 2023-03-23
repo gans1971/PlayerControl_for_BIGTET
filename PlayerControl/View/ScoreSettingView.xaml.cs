@@ -53,7 +53,7 @@ namespace PlayerControl.View
 		public override ValidationResult Validate(object value, CultureInfo cultureInfo)
 		{
 			return string.IsNullOrWhiteSpace((value ?? "").ToString())
-				? new ValidationResult(false, "スコアを入力してください")
+				? new ValidationResult(false, "レベルを入力してください")
 				: ValidationResult.ValidResult;
 		}
 	}

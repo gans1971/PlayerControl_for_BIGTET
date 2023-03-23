@@ -83,12 +83,11 @@
 				Margin="5">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
 				<Grid.Resources>
 					<Style BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}" TargetType="{x:Type TextBox}">
-						<Setter Property="Width" Value="90" />
+						<Setter Property="Width" Value="Auto" />
 						<Setter Property="VerticalContentAlignment" Value="Bottom" />
 						<Setter Property="bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus" Value="True" />
 						<Setter Property="md:ValidationAssist.FontSize" Value="10" />
@@ -126,10 +125,11 @@
 						</KeyBinding>
 					</TextBox.InputBindings>
 				</TextBox>
-				<!--  スコアテキスト2  -->
+				<!--  スコアテキスト2  (スコアモード実装完了までオミット)-->
 				<TextBox
 					x:Name="ScoreTextBox2"
 					Grid.Column="2"
+					Visibility="Collapsed"
 					md:HintAssist.Hint="Level"
 					CommandManager.PreviewExecuted="TextBox_PreviewExecuted"
 					GotKeyboardFocus="TextBox_GotKeyboardFocus"
