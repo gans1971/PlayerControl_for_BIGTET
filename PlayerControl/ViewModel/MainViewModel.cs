@@ -228,7 +228,10 @@ namespace PlayerControl.ViewModels
 			SaveJsonCommand.Subscribe(_ =>
 			{
 				SaveStreamControlJson();
-				VisualStateManager.GoToElementState(App.Current.MainWindow, "Executing", true);
+
+				// TODO:下記でVSMを変更できるがもとに戻らない
+				// SaveStreamControlJson() を別スレッドにするしか無い？
+				// VisualStateManager.GoToElementState(App.Current.MainWindow, "Executing", true);
 
 			}).AddTo(Disposable);
 
