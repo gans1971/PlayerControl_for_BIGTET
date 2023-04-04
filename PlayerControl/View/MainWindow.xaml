@@ -1,5 +1,5 @@
 ﻿<mah:MetroWindow
-	x:Class="PlayerControl.View.PlayerControlWindow"
+	x:Class="PlayerControl.View.MainWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
@@ -9,6 +9,7 @@
 	xmlns:dd="urn:gong-wpf-dragdrop"
 	xmlns:ei="http://schemas.microsoft.com/xaml/behaviors"
 	xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+	xmlns:local="clr-namespace:PlayerControl"
 	xmlns:m="clr-namespace:PlayerControl.Model"
 	xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
 	xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
@@ -18,16 +19,17 @@
 	xmlns:sys="clr-namespace:System;assembly=mscorlib"
 	xmlns:v="clr-namespace:PlayerControl.View"
 	xmlns:vm="clr-namespace:PlayerControl.ViewModels"
+	x:Name="metroWindow"
 	Title="{Binding AppTitle.Value}"
 	Width="420"
 	Height="220"
 	MinWidth="420"
-	MinHeight="200"
+	MinHeight="180"
 	Dialog:DialogParticipation.Register="{Binding}"
 	BorderThickness="1"
 	GlowBrush="{DynamicResource AccentColorBrush}"
 	IsWindowDraggable="True"
-	Loaded="PlayerControlWindow_Loaded"
+	Loaded="MainWindow_Loaded"
 	SaveWindowPosition="True"
 	ShowMaxRestoreButton="False"
 	ShowMinButton="False"
@@ -62,8 +64,9 @@
 			</Button>
 		</mah:WindowCommands>
 	</mah:MetroWindow.RightWindowCommands>
+
+	<!--#region ショートカット-->
 	<mah:MetroWindow.InputBindings>
-		<!--#region ショートカット-->
 		<KeyBinding Command="{Binding EditPlayersListCommand}" Gesture="Alt+P" />
 		<KeyBinding
 			Key="P"
@@ -71,11 +74,8 @@
 			Gesture="Ctrl+P"
 			Modifiers="Alt" />
 		<KeyBinding Command="{Binding SaveJsonCommand}" Gesture="Ctrl+S" />
-		<!--#endregion-->
 	</mah:MetroWindow.InputBindings>
-	<mah:MetroWindow.Background>
-		<SolidColorBrush x:Name="WindowBackground" Color="White" />
-	</mah:MetroWindow.Background>
+	<!--#endregion-->
 
 	<!--#region データコンテキスト-->
 	<mah:MetroWindow.DataContext>
@@ -87,6 +87,7 @@
 	</mah:MetroWindow.DataContext>
 	<!--#endregion-->
 
+	<!--#region MainWindow リソース-->
 	<mah:MetroWindow.Resources>
 		<!--#region コンバーター-->
 		<converters:ObjectMatchVisibilityConverter x:Key="ObjectMatchVisibilityConverter" />
@@ -97,10 +98,20 @@
 		<converters:Score_LavelConverter x:Key="Score_LavelConverter" />
 		<converters:EnumMatchToVisibilityConverter x:Key="EnumMatchToVisibilityConverter" />
 		<!--#endregion-->
+
+		<!--#region Storyboard-->
+		<Storyboard x:Key="colorAnimation">
+			<ColorAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
+				<EasingColorKeyFrame KeyTime="00:00:00" Value="White" />
+				<EasingColorKeyFrame KeyTime="00:00:00.2000000" Value="#FFE32A2A" />
+				<EasingColorKeyFrame KeyTime="00:00:00.5000000" Value="White" />
+			</ColorAnimationUsingKeyFrames>
+		</Storyboard>
+		<!--#endregion-->
 	</mah:MetroWindow.Resources>
+	<!--#endregion-->
 
-
-	<!--#region Windowのイベントトリガ-->
+	<!--#region Windowのトリガー-->
 	<i:Interaction.Triggers>
 		<i:EventTrigger EventName="Loaded">
 			<i:InvokeCommandAction Command="{Binding LoadedCommand}" />
@@ -108,10 +119,30 @@
 		<i:EventTrigger EventName="Closing">
 			<i:InvokeCommandAction Command="{Binding ClosingCommand}" />
 		</i:EventTrigger>
+		<!--  JSON保存時刻の更新アニメーション  -->
+		<ei:DataTrigger
+			Binding="{Binding OutputJsonTime.Value, Mode=OneWay}"
+			Comparison="NotEqual"
+			Value="{x:Static sys:DateTime.MinValue}">
+			<!--<i:Interaction.Behaviors>
+				<i:ConditionBehavior>
+					<i:ConditionalExpression>
+						<i:ComparisonCondition  Operator="NotEqual"/>
+					</i:ConditionalExpression>
+				</i:ConditionBehavior>
+			</i:Interaction.Behaviors>-->
+			<ei:DataTrigger.Actions>
+				<ei:ControlStoryboardAction ControlStoryboardOption="Play" Storyboard="{StaticResource colorAnimation}" />
+			</ei:DataTrigger.Actions>
+		</ei:DataTrigger>
 	</i:Interaction.Triggers>
+	<!--#endregion-->
 
-
-	<Grid x:Name="LayoutRoot" FocusManager.FocusedElement="{Binding ElementName=PlayersListBox}">
+	<!--#region LayoutRoot-->
+	<Grid
+		x:Name="LayoutRoot"
+		Background="White"
+		FocusManager.FocusedElement="{Binding ElementName=PlayersListBox}">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" MinHeight="40" />
 			<RowDefinition Height="Auto" />
@@ -125,28 +156,6 @@
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
-			<!--  (スコアモード実装中 > V0.3.x では無効化)  -->
-			<ComboBox
-				x:Name="ScoreModeComboBox"
-				Grid.Column="1"
-				MinWidth="100"
-				Margin="5,0,0,0"
-				Padding="2,5"
-				materialDesign:HintAssist.Hint="スコアモード"
-				ItemsSource="{Binding Source={converters:EnumBindingSource {x:Type m:ScoreMode}}}"
-				SelectedValue="{Binding CurrentScoreMode.Value, Mode=TwoWay}"
-				Style="{StaticResource MaterialDesignFilledComboBox}"
-				Visibility="Collapsed" />
-
-
-			<!--
-				※ MahApps版TextBox使用メモ
-				mah:TextBoxHelper.UseFloatingWatermark="True"
-				mah:TextBoxHelper.ButtonCommand="{Binding SetStageCommand}"
-				mah:TextBoxHelper.TextButton="True"
-				mah:TextBoxHelper.Watermark="Stage 設定：改行［Alt + Enter］/ 決定［Enter］"
-				Style="{StaticResource MahApps.Styles.TextBox.Button}"
-			-->
 			<TextBox
 				x:Name="StageName"
 				Margin="5,5,0,0"
@@ -176,8 +185,20 @@
 							Kind="KeyboardReturn" />
 					</StackPanel>
 				</mah:TextBoxHelper.ButtonContent>
-
 			</TextBox>
+			<!--  ↓ スコアモード実装途中 （Ver 0.3.x では無効化)  -->
+			<ComboBox
+				x:Name="ScoreModeComboBox"
+				Grid.Column="1"
+				MinWidth="100"
+				Margin="5,0,0,0"
+				Padding="2,5"
+				materialDesign:HintAssist.Hint="スコアモード"
+				ItemsSource="{Binding Source={converters:EnumBindingSource {x:Type m:ScoreMode}}}"
+				SelectedValue="{Binding CurrentScoreMode.Value, Mode=TwoWay}"
+				Style="{StaticResource MaterialDesignFilledComboBox}"
+				Visibility="Collapsed" />
+			<!--  ↑ (スコアモード実装途中)  -->
 		</Grid>
 		<!--#endregion-->
 
@@ -597,8 +618,9 @@
 			<StackPanel
 				Margin="5,0,0,0"
 				DockPanel.Dock="Right"
-				Orientation="Horizontal" />
-
+				Orientation="Horizontal">
+				<TextBlock Text="{Binding OutputJsonTime.Value}" />
+			</StackPanel>
 		</DockPanel>
 		<!--#endregion-->
 
@@ -608,7 +630,7 @@
 			Grid.RowSpan="4"
 			d:IsHidden="True"
 			CloseOnClickAway="False"
-			Identifier="PlayerControlWindowDialog" />
+			Identifier="MainWindowDialog" />
 		<VisualStateManager.VisualStateGroups>
 			<VisualStateGroup x:Name="WindowStates">
 				<VisualState x:Name="NormalState">
@@ -631,20 +653,4 @@
 		</VisualStateManager.VisualStateGroups>
 	</Grid>
 	<!--#endregion-->
-
-	<!--#region JSONが更新された時に発生するアニメーション-->
-	<VisualStateManager.VisualStateGroups>
-		<VisualStateGroup x:Name="CommandStates">
-			<VisualState x:Name="Normal" />
-			<VisualState x:Name="Executing">
-				<Storyboard>
-					<ColorAnimation
-						Storyboard.TargetName="WindowBackground"
-						Storyboard.TargetProperty="Color"
-						To="#E0C010"
-						Duration="0:0:0.3" />
-				</Storyboard>
-			</VisualState>
-		</VisualStateGroup>
-	</VisualStateManager.VisualStateGroups>
 </mah:MetroWindow>

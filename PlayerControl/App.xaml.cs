@@ -14,9 +14,15 @@ namespace PlayerControl
 		}
 		private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
+			var senderStr = "[sender null]";
+			if( sender != null)
+			{
+				senderStr = sender.ToString();
+			}
+
 			MessageBox.Show(
 				"CurrentDomain_UnhandledException() error\n" +
-				sender.ToString() + "→" + e.ExceptionObject.ToString(),
+				 senderStr + "→" + e.ExceptionObject.ToString(),
 				"アプリケーション例外が発生",
 				  MessageBoxButton.OK,
 				MessageBoxImage.Error);

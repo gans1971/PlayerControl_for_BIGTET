@@ -32,7 +32,7 @@ namespace PlayerControl.ViewModels
 		#region ReactiveProperty
 		public ReactivePropertySlim<String> AppTitle { get; } = new ReactivePropertySlim<String>("Player Control for BIGTET");
 		public ReactivePropertySlim<String> OutputJsonPath { get; } = new ReactivePropertySlim<String>();
-
+		public ReactivePropertySlim<DateTime> OutputJsonTime { get; } = new ReactivePropertySlim<DateTime>(DateTime.MinValue);
 		public ReactivePropertySlim<PlayerModel> SelectedPlayer { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
@@ -40,7 +40,6 @@ namespace PlayerControl.ViewModels
 		public ReactivePropertySlim<ScoreMode> CurrentScoreMode { get; } = new ReactivePropertySlim<ScoreMode>(ScoreMode.Single);
 		public ReactivePropertySlim<SnackbarMessageQueue> PlayerEditSnackbarMessageQueue { get; } = new ReactivePropertySlim<SnackbarMessageQueue>(new SnackbarMessageQueue());
 		public ReactivePropertySlim<String> DefaultCountry { get; } = new ReactivePropertySlim<String>("blk");
-
 		public ReactiveCollection<PlayerModel> Players { get; } = new ReactiveCollection<PlayerModel>();
 		public ReactiveCollection<PlayerModel> PlayersHistory { get; } = new ReactiveCollection<PlayerModel>();
 
@@ -63,6 +62,7 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand ToClipboardCommand { get; }
 		public ReactiveCommand CloseModalWindowCommand { get; }
 		#endregion
+
 
 		/// <summary>
 		/// コンストラクタ
@@ -275,7 +275,7 @@ namespace PlayerControl.ViewModels
 					{
 						DataContext = this
 					};
-					var result = await DialogHost.Show(view, "PlayerControlWindowDialog");
+					var result = await DialogHost.Show(view, "MainWindowDialog");
 				}
 				catch (Exception ex)
 				{
@@ -364,7 +364,7 @@ namespace PlayerControl.ViewModels
 					{
 						DataContext = player
 					};
-					var result = await DialogHost.Show(view, "PlayerControlWindowDialog");
+					var result = await DialogHost.Show(view, "MainWindowDialog");
 					if (result is bool dlgResult && dlgResult)
 					{
 						// 現在選択中のユーザーのスコアを更新した場合
@@ -449,7 +449,7 @@ namespace PlayerControl.ViewModels
 		}
 
 		/// <summary>
-		/// PlayerControlWindow 初期化時にコールされる初期化処理
+		/// MainWindow 初期化時にコールされる初期化処理
 		/// </summary>
 		public void Initialize()
 		{
@@ -609,6 +609,9 @@ namespace PlayerControl.ViewModels
 				{
 					sw.Write(json);
 				}
+				// 保存時刻を更新
+				OutputJsonTime.Value = DateTime.Now;
+
 				return true;
 			}
 			catch (Exception ex)

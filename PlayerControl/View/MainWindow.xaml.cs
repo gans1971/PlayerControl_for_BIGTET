@@ -12,13 +12,13 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 namespace PlayerControl.View
 {
 	/// <summary>
-	/// Interaction logic for PlayerControlWindow.xaml
+	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class PlayerControlWindow : MetroWindow
+	public partial class MainWindow : MetroWindow
 	{
 		public Array ScoreModeEnumValues { get; private set; }
 
-		public PlayerControlWindow()
+		public MainWindow()
 		{
 			InitializeComponent();
 			ScoreModeEnumValues = Enum.GetValues(typeof(ScoreMode));
@@ -114,13 +114,8 @@ namespace PlayerControl.View
 			}
 		}
 
-		private void PlayerControlWindow_Loaded(object sender, System.Windows.RoutedEventArgs e)
+		private void MainWindow_Loaded(object sender, System.Windows.RoutedEventArgs e)
 		{
-#if false //スコアボードWindow表示（実装中のため外す）
-			ScoreBoardWindow.DataContext = this.DataContext;
-			ScoreBoardWindow.Visibility = System.Windows.Visibility.Visible;
-			ScoreBoardWindow.Show();
-#endif
 		}
 
 		/// <summary>
