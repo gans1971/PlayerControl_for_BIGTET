@@ -35,9 +35,11 @@ namespace Converters
 				switch (mode)
 				{
 					case ScoreMode.Mixture:
-						return "Nor";
-					default:
-						return "LV";
+						return "NOR";
+                    case ScoreMode.Single:                        ;
+                        return "LEVEL";
+                    default:
+						return "SCORE";
 				}
 			}
 			return value;

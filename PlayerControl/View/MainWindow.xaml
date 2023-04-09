@@ -347,12 +347,25 @@
                     <Setter Property="ContextMenu">
                         <Setter.Value>
                             <ContextMenu>
+                                <MenuItem Header="スコア・サブ情報を入力">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="Click">
+                                            <ri:EventToReactiveCommand Command="{Binding PlacementTarget.Tag.ScoreSettingCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                    <MenuItem.Icon>
+                                        <md:PackIcon Kind="Counter" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
                                 <MenuItem Header="1Pへセット">
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="Click">
                                             <ri:EventToReactiveCommand Command="{Binding PlacementTarget.Tag.Player1ChangeCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                         </i:EventTrigger>
                                     </i:Interaction.Triggers>
+                                    <MenuItem.Icon>
+                                        <md:PackIcon Kind="Numeric1Box" />
+                                    </MenuItem.Icon>
                                 </MenuItem>
                                 <MenuItem Header="2Pへセット">
                                     <i:Interaction.Triggers>
@@ -360,8 +373,12 @@
                                             <ri:EventToReactiveCommand Command="{Binding PlacementTarget.Tag.Player2ChangeCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                         </i:EventTrigger>
                                     </i:Interaction.Triggers>
+                                    <MenuItem.Icon>
+                                        <md:PackIcon Kind="Numeric2Box" />
+                                    </MenuItem.Icon>
                                 </MenuItem>
-                                <MenuItem Header="名前+スコア ⇨クリップボード">
+                                <Separator />
+                                <MenuItem Header="クリップボードへ名前とスコアを追加">
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="Click">
                                             <ri:EventToReactiveCommand Command="{Binding PlacementTarget.Tag.ToClipboardCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
@@ -442,7 +459,7 @@
                             </Style>
 
                         </Grid.Resources>
-                        <!--  プレイヤー名  -->
+                        <!--  プレイヤー1人分のGrid  -->
                         <Grid x:Name="PlayerNameGrid">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" MinWidth="30" />
@@ -498,6 +515,7 @@
                                 HorizontalAlignment="Left"
                                 StretchDirection="DownOnly">
                                 <StackPanel Orientation="Horizontal">
+                                    <!--  プレイヤー名  -->
                                     <Label
                                         x:Name="PlayerNameLabel"
                                         HorizontalContentAlignment="Left"
@@ -506,8 +524,10 @@
                                         FontSize="13"
                                         FontWeight="Bold"
                                         Foreground="Black" />
+                                    <!--  サブ情報  -->
                                     <Label
                                         x:Name="PlayerTwitterLabel"
+                                        Margin="10,0,0,0"
                                         HorizontalContentAlignment="Left"
                                         VerticalContentAlignment="Center"
                                         Content="{Binding Twitter.Value}"
@@ -646,13 +666,16 @@
                 <Label Content="1Pセット" />
                 <md:PackIcon Kind="ArrowRightBox" />
                 <Label Content="2Pセット" />
+                <md:PackIcon Kind="KeyboardSpace" />
+                <Label Content="スコア/サブ情報入力" />
             </StackPanel>
 
             <!--  DEBUG用：JSON出力時刻  -->
             <StackPanel
                 Margin="5,0,0,0"
                 DockPanel.Dock="Right"
-                Orientation="Horizontal">
+                Orientation="Horizontal"
+                Visibility="Collapsed">
                 <TextBlock VerticalAlignment="Center" Text="{Binding OutputJsonTime.Value, StringFormat={}{0:HH時mm分ss.f秒}}" />
             </StackPanel>
         </DockPanel>

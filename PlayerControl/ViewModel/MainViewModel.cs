@@ -49,7 +49,8 @@ namespace PlayerControl.ViewModels
 		#region ReactiveCommand
 		public ReactiveCommand Player1ChangeCommand { get; }
 		public ReactiveCommand Player2ChangeCommand { get; }
-		public ReactiveCommand AboutBoxCommand { get; }
+        public ReactiveCommand ScoreSettingCommand { get; }
+        public ReactiveCommand AboutBoxCommand { get; }
 		public ReactiveCommand LoadedCommand { get; }
 		public ReactiveCommand ClosingCommand { get; }
 		public ReactiveCommand EditPlayersListCommand { get; }
@@ -63,8 +64,7 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand CloseModalWindowCommand { get; }
 		#endregion
 
-
-		/// <summary>
+        		/// <summary>
 		/// コンストラクタ
 		/// </summary>
 		public MainViewModel()
@@ -133,8 +133,18 @@ namespace PlayerControl.ViewModels
 				EditPlayersList();
 			}).AddTo(Disposable);
 
-			// プレイヤー1切り替えコマンド
-			Player1ChangeCommand = new ReactiveCommand();
+            // スコア・サブ情報（twitterなど）編集コマンド　
+            ScoreSettingCommand = new ReactiveCommand();
+            ScoreSettingCommand.Subscribe(x =>
+            {
+                if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && fe.DataContext is PlayerModel player)
+                {
+                    PlayerScoreSetting(player);
+                }
+            }).AddTo(Disposable);
+
+            // プレイヤー1切り替えコマンド
+            Player1ChangeCommand = new ReactiveCommand();
 			Player1ChangeCommand.Subscribe(x =>
 			{
 				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && fe.DataContext is PlayerModel player)
@@ -198,7 +208,7 @@ namespace PlayerControl.ViewModels
 					var name = textBox.Text;
 					var trimName = name.Trim();
 
-					//TODO!!Twitter
+					// サブ情報は空の状態で追加する（再編集画面で設定）
 					var trimTwitter = String.Empty;
 
 					if (!String.IsNullOrEmpty(trimName))
@@ -228,11 +238,6 @@ namespace PlayerControl.ViewModels
 			SaveJsonCommand.Subscribe(_ =>
 			{
 				SaveStreamControlJson();
-
-				// TODO:下記でVSMを変更できるがもとに戻らない
-				// SaveStreamControlJson() を別スレッドにするしか無い？
-				// VisualStateManager.GoToElementState(App.Current.MainWindow, "Executing", true);
-
 			}).AddTo(Disposable);
 
 			// Stage文字列をJSONに保存するコマンド
@@ -345,11 +350,12 @@ namespace PlayerControl.ViewModels
 
 		}
 
-		/// <summary>
-		/// スコア入力コントロールを表示する
-		/// </summary>
-		/// <param name="datacontext"></param>
-		async public void InputScore(object datacontext)
+        /// <summary>
+        /// スコア入力コントロールを表示する（サブ情報も編集可能にする）
+        /// ※ MainWindow専用
+        /// </summary>
+        /// <param name="datacontext"></param>
+        async public void PlayerScoreSetting(object datacontext)
 		{
 			try
 			{
@@ -381,11 +387,46 @@ namespace PlayerControl.ViewModels
 			}
 		}
 
-		/// <summary>
-		/// プレイヤー名ダイアログでプレイヤー名を入力する
-		/// </summary>
-		/// <param name="datacontext"></param>
-		async public void InputPlayerName(object datacontext)
+        /// <summary>
+        /// プレイヤーサブ情報(twitter等)を入力
+        /// ※ MainWindow専用
+        /// </summary>
+        /// <param name="datacontext"></param>
+        async public void EditTwitter(object datacontext)
+        {
+            try
+            {
+                // イベント発火元コントロールのDataContextからVMを取得して更新
+                if (datacontext is PlayerModel player)
+                {
+                    // 下記行を入れないとアニメーション中にキー操作すると元ダイアログにフォーカスが移動してしまう
+                    System.Windows.Input.Keyboard.ClearFocus();
+
+                    // スコア設定Viewを表示
+                    var view = new TwitterSettingView()
+                    {
+                        DataContext = player
+                    };
+                    var result = await DialogHost.Show(view, "MainWindowDialog");
+                    if (result is bool dlgResult && dlgResult)
+                    {
+                        SaveStreamControlJson();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception EditTwitter:{ex.ToString()}");
+            }
+        }
+
+
+        /// <summary>
+        /// プレイヤー名ダイアログでプレイヤー名を入力する
+        /// ※ PlayersEdit専用
+        /// </summary>
+        /// <param name="datacontext"></param>
+        async public void InputPlayerName(object datacontext)
 		{
 			try
 			{

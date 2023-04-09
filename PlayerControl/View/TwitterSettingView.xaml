@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="PlayerControl.View.PlayerSettingView"
+    x:Class="PlayerControl.View.TwitterSettingView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:bh="clr-namespace:Behavior"
@@ -29,36 +29,9 @@
             </Grid.RowDefinitions>
 
             <StackPanel Orientation="Vertical">
-
-                <TextBox
-                    x:Name="EditPlayerName"
-                    Margin="0,10"
-                    Padding="10,5"
-                    VerticalContentAlignment="Center"
-                    md:HintAssist.Background="#fafafa"
-                    md:HintAssist.FloatingOffset="0,-20"
-                    md:HintAssist.FloatingScale="1.0"
-                    md:HintAssist.Hint="プレイヤー名入力"
-                    md:HintAssist.IsFloating="True"
-                    md:TextFieldAssist.HasClearButton="True"
-                    FontSize="14"
-                    FontWeight="Bold"
-                    Style="{StaticResource MaterialDesignOutlinedTextBox}">
-                    <TextBox.Text>
-                        <Binding
-                            Path="EditName"
-                            RelativeSource="{RelativeSource AncestorType=v:PlayerSettingView}"
-                            UpdateSourceTrigger="PropertyChanged">
-                            <Binding.ValidationRules>
-                                <v:NotEmptyPlayerNameValidationRule ValidatesOnTargetUpdated="True" />
-                            </Binding.ValidationRules>
-                        </Binding>
-                    </TextBox.Text>
-                </TextBox>
-
                 <TextBox
                     x:Name="EditTwitterStr"
-                    Margin="0,25,0,15"
+                    Margin="0,10"
                     Padding="10,5"
                     VerticalContentAlignment="Center"
                     md:HintAssist.Background="#fafafa"
