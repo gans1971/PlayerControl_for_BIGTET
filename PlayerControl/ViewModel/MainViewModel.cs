@@ -37,12 +37,12 @@ namespace PlayerControl.ViewModels
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<String> Stage { get; } = new ReactivePropertySlim<String>(String.Empty);
+		public ReactivePropertySlim<String> ScoreLabel { get; } = new ReactivePropertySlim<String>(String.Empty);
+		
 		public ReactivePropertySlim<ScoreMode> CurrentScoreMode { get; } = new ReactivePropertySlim<ScoreMode>(ScoreMode.Single);
 		public ReactivePropertySlim<SnackbarMessageQueue> PlayerEditSnackbarMessageQueue { get; } = new ReactivePropertySlim<SnackbarMessageQueue>(new SnackbarMessageQueue());
 		public ReactivePropertySlim<String> DefaultCountry { get; } = new ReactivePropertySlim<String>("blk");
 		public ReactiveCollection<PlayerModel> Players { get; } = new ReactiveCollection<PlayerModel>();
-		public ReactiveCollection<PlayerModel> PlayersHistory { get; } = new ReactiveCollection<PlayerModel>();
-
 		public CollectionViewSource PlayersViewSource { get; set; } = new CollectionViewSource();
 		#endregion
 
@@ -60,6 +60,8 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand<string> PlayerClearCommand { get; }
 		public ReactiveCommand SaveJsonCommand { get; }
 		public ReactiveCommand SetStageCommand { get; }
+		public ReactiveCommand ClearStageCommand { get; }
+		public ReactiveCommand ClearScoreLabelCommand { get; }
 		public ReactiveCommand ToClipboardCommand { get; }
 		public ReactiveCommand CloseModalWindowCommand { get; }
 		#endregion
@@ -122,6 +124,7 @@ namespace PlayerControl.ViewModels
 				CurrentPlayer1.Value = _emptyPlayer;
 				CurrentPlayer2.Value = _emptyPlayer;
 				Stage.Value = String.Empty;
+				ScoreLabel.Value = String.Empty;
 				SaveStreamControlJson(true);
 
 			}).AddTo(Disposable);
@@ -246,6 +249,23 @@ namespace PlayerControl.ViewModels
 			{
 				SaveStreamControlJson();
 			}).AddTo(Disposable);
+
+			// Stage文字列をクリアしてJSONを更新するコマンド
+			ClearStageCommand = new ReactiveCommand();
+			ClearStageCommand.Subscribe(_ =>
+			{
+				Stage.Value = String.Empty;
+				SaveStreamControlJson();
+			}).AddTo(Disposable);
+
+			// スコアラベルクリアしてJSONを更新するコマンド
+			ClearScoreLabelCommand = new ReactiveCommand();
+			ClearScoreLabelCommand.Subscribe(_ =>
+			{
+				ScoreLabel.Value = String.Empty;
+				SaveStreamControlJson();
+			}).AddTo(Disposable);
+
 
 			// クリップボードにユーザー名とスコアを貼り付けるコマンド
 			ToClipboardCommand = new ReactiveCommand();
@@ -669,7 +689,7 @@ namespace PlayerControl.ViewModels
 		/// <returns></returns>
 		private String GetScoreText(PlayerModel player)
 		{
-			if (player == null)
+			if (player == null || String.IsNullOrEmpty(player.Name.Value))
 			{
 				return String.Empty;
 			}
@@ -681,14 +701,23 @@ namespace PlayerControl.ViewModels
 				score += player.Score_Second.Value;
 			}
 			var scoreStr = String.Empty;
+			var labelStr = String.Empty;
+
 			try
 			{
-				// int 値を文字列に変換
-				scoreStr = score.ToString();
-				if (score > 999)
+				// スコアラベルが存在する場合はサイズを調整
+				if( !String.IsNullOrEmpty(ScoreLabel.Value))
 				{
-					scoreStr = $"<font size=4>" + scoreStr + "</font>";
+					labelStr = $"<font size=-1 color=\"white\">{ScoreLabel.Value}</font></br>";
 				}
+				// 桁数に合わせてスコアのフォントサイズ調整
+				// 3桁は"5" 4桁は"4"
+				int scoreSize = 5;
+				if (score > 999 || !String.IsNullOrEmpty(labelStr))
+				{
+					scoreSize--;
+				}
+				scoreStr = $"{labelStr}<font size={scoreSize}>{score.ToString()}</font>";
 			}
 			catch (Exception ex)
 			{

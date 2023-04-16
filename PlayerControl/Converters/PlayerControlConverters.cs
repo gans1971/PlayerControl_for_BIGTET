@@ -30,19 +30,18 @@ namespace Converters
 	{
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
-			if (value is ScoreMode mode)
+			if (value is String label)
 			{
-				switch (mode)
+				if( String.IsNullOrEmpty(label) )
 				{
-					case ScoreMode.Mixture:
-						return "NOR";
-                    case ScoreMode.Single:                        ;
-                        return "LEVEL";
-                    default:
-						return "SCORE";
+					return "Score";
+				}
+				else
+				{
+					return label;
 				}
 			}
-			return value;
+			return String.Empty;
 		}
 		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
