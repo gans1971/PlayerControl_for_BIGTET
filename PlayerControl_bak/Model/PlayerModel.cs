@@ -7,6 +7,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PlayerControl.Model
 {
+
+
 	public class PlayerModel : BindableBase
 	{
 		public ReactivePropertySlim<String> Name { get; } = new ReactivePropertySlim<string>(String.Empty);

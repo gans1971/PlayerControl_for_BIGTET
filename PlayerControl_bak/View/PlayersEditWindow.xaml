@@ -1,0 +1,316 @@
+﻿<mah:MetroWindow
+    x:Class="PlayerControl.View.PlayersEditWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dd="urn:gong-wpf-dragdrop"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+    xmlns:ri="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
+    xmlns:v="clr-namespace:PlayerControl.View"
+    Title="プレイヤー追加・削除・修正"
+    Width="320"
+    Height="480"
+    MinWidth="460"
+    MinHeight="250"
+    BorderThickness="1"
+    IsWindowDraggable="True"
+    SaveWindowPosition="True"
+    ShowMaxRestoreButton="True"
+    ShowMinButton="False"
+    TitleBarHeight="25"
+    TitleCharacterCasing="Normal"
+    Topmost="True"
+    mc:Ignorable="d">
+    <mah:MetroWindow.TitleTemplate>
+        <DataTemplate>
+            <TextBlock
+                Margin="5,-1,5,0"
+                VerticalAlignment="Center"
+                FontFamily="{DynamicResource HeaderFontFamily}"
+                FontSize="{DynamicResource WindowTitleFontSize}"
+                Text="{TemplateBinding Content}"
+                TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+    </mah:MetroWindow.TitleTemplate>
+
+    <mah:MetroWindow.Resources>
+        <converters:StringBoolConverter x:Key="StringBoolConverter" />
+        <converters:ObjectMatchVisibilityConverter x:Key="ObjectMatchVisibilityConverter" />
+    </mah:MetroWindow.Resources>
+
+    <Window.InputBindings>
+        <!--#region プレイヤーリスト設定ウィンドウを閉じるショートカット(CTRL+W or ESC）-->
+        <KeyBinding
+            Command="{Binding CloseModalWindowCommand}"
+            CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
+            Gesture="Ctrl+W" />
+        <KeyBinding
+            Command="{Binding CloseModalWindowCommand}"
+            CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
+            Gesture="Escape" />
+        <!--#endregion-->
+    </Window.InputBindings>
+
+    <Grid x:Name="LayoutRoot" FocusManager.FocusedElement="{Binding ElementName=AddPlayerName}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.Resources>
+            <Style BasedOn="{StaticResource MaterialDesignFlatLightBgButton}" TargetType="{x:Type Button}">
+                <Setter Property="Padding" Value="15,0" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Height" Value="30" />
+                <Setter Property="Cursor" Value="Hand" />
+            </Style>
+        </Grid.Resources>
+
+        <!--#region ツールグリッド-->
+        <Grid x:Name="ToolGrid" Margin="5,15,5,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.Resources />
+            <!--  プレイヤー名入力  -->
+            <TextBox
+                x:Name="AddPlayerName"
+                Padding="10,5"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                md:HintAssist.Background="White"
+                md:HintAssist.FloatingOffset="0,-20"
+                md:HintAssist.FloatingScale="1.0"
+                md:HintAssist.Hint="プレイヤー名入力（Enter で追加）"
+                md:HintAssist.IsFloating="True"
+                FontSize="13"
+                FontWeight="Bold"
+                Style="{StaticResource MaterialDesignOutlinedTextBox}">
+                <TextBox.InputBindings>
+                    <KeyBinding
+                        Command="{Binding AddPlayerCommand}"
+                        CommandParameter="{Binding ElementName=AddPlayerName}"
+                        Gesture="Enter" />
+                </TextBox.InputBindings>
+            </TextBox>
+            <Button
+                x:Name="AddButton"
+                Grid.Column="2"
+                MinHeight="40"
+                Margin="5,0,0,0"
+                Padding="10,0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Command="{Binding AddPlayerCommand}"
+                CommandParameter="{Binding ElementName=AddPlayerName}"
+                IsEnabled="{Binding Text, Converter={StaticResource StringBoolConverter}, ElementName=AddPlayerName}"
+                Style="{StaticResource MaterialDesignFlatLightBgButton}"
+                ToolTip="プレイヤーを追加">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <md:PackIcon
+                        Width="18"
+                        Height="16"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Kind="KeyboardReturn" />
+                    <TextBlock Grid.Row="1" Text="追加" />
+                </Grid>
+            </Button>
+        </Grid>
+        <!--#endregion-->
+
+        <!--  同じ名前が登録されているときに表示する警告スナックバー  -->
+        <md:Snackbar
+            Grid.Row="1"
+            VerticalAlignment="Top"
+            Background="{StaticResource MahApps.Brushes.Accent3}"
+            FontSize="12"
+            MessageQueue="{Binding PlayerEditSnackbarMessageQueue.Value}" />
+
+        <!--#region プレイヤーコントロールグループ-->
+        <!--  ※覚書： https://mvrck.jp/documents/dotnet/wpf/itemscontrol-template/  -->
+        <v:PlayersListBox
+            x:Name="PlayersListBox"
+            Grid.Row="2"
+            Margin="0,5"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Center"
+            dd:DragDrop.DropScrollingMode="VerticalOnly"
+            dd:DragDrop.IsDragSource="True"
+            dd:DragDrop.IsDropTarget="True"
+            dd:DragDrop.MinimumVerticalDragDistance="5"
+            dd:DragDrop.ShowAlwaysDropTargetAdorner="True"
+            dd:DragDrop.UseDefaultDragAdorner="False"
+            BorderBrush="{StaticResource MahApps.Brushes.Gray7}"
+            BorderThickness="0,1"
+            ItemsSource="{Binding Operation.Players}"
+            Style="{StaticResource MaterialDesignCardsListBox}">
+            <i:Interaction.Behaviors>
+                <v:ScrollIntoViewForListBox />
+            </i:Interaction.Behaviors>
+
+            <!--  ItemsPanelテンプレート（垂直スタックパネル）  -->
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel>
+                        <i:Interaction.Behaviors>
+                            <i:FluidMoveBehavior AppliesTo="Children" Duration="0:0:0.1">
+                                <i:FluidMoveBehavior.EaseY>
+                                    <PowerEase EasingMode="EaseOut" Power="3" />
+                                </i:FluidMoveBehavior.EaseY>
+                            </i:FluidMoveBehavior>
+                        </i:Interaction.Behaviors>
+                    </WrapPanel>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+
+            <!--  ItemContainerStyle スタイル-->
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem" BasedOn="{StaticResource MaterialDesignCardsListBoxItem}">
+                    <Setter Property="Margin" Value="5" />
+                </Style>
+            </ListBox.ItemContainerStyle>
+
+            <!--  アイテムテンプレート  -->
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid x:Name="ItemGrid">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.Resources>
+                            <Style BasedOn="{StaticResource MaterialDesignFlatLightButton}" TargetType="Button">
+                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            </Style>
+                        </Grid.Resources>
+                        <!--  プレイヤー名/サブ文字編集ボタン  -->
+                        <Button
+                            x:Name="PlayerNameEditButton"
+                            Margin="5,0,0,0"
+                            Padding="5,0"
+                            Click="PlayerNameEditButton_Click">
+                            <md:PackIcon
+                                Width="18"
+                                Height="18"
+                                Foreground="{StaticResource MaterialDesignToolForeground}"
+                                Kind="PencilOutline" />
+                        </Button>
+
+                        <!--  プレイヤー名文字  -->
+                        <TextBlock
+                            x:Name="PlayerNameLabel"
+                            Grid.Column="1"
+                            Margin="2,2,0,2"
+                            Padding="5,0"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource MahApps.Brushes.Gray1}"
+                            Text="{Binding Name.Value}" />
+
+                        <!--  サブ文字（twitter)  -->
+                        <TextBlock
+                            x:Name="TwitterLabel"
+                            Grid.Column="2"
+                            Margin="2,5,0,2"
+                            Padding="5,0"
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource MahApps.Brushes.Accent}"
+                            Text="{Binding Twitter.Value}" />
+
+                        <!--  プレイヤー削除コントロール  -->
+                        <Button
+                            x:Name="PlayerRemoveButton"
+                            Grid.Column="3"
+                            Margin="5,0"
+                            Padding="0"
+                            Style="{StaticResource MaterialDesignFlatLightButton}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Click">
+                                    <ri:EventToReactiveCommand Command="{Binding DataContext.RemovePlayerCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                            <md:PackIcon Width="18" Kind="Close" />
+                        </Button>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+
+        </v:PlayersListBox>
+        <!--#endregion-->
+
+        <!--#region Country文字列設定-->
+        <Border Grid.Row="3" Padding="5,10,5,5">
+            <Grid x:Name="FooterGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Grid x:Name="SettingGrid">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Margin="5,0"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{StaticResource MahApps.Brushes.Gray3}"
+                        IsHitTestVisible="False"
+                        Text="Default Country :" />
+                    <TextBox
+                        x:Name="StageName"
+                        Grid.Column="1"
+                        MinWidth="80"
+                        MinHeight="20"
+                        Margin="0,2,0,0"
+                        Padding="5,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        BorderBrush="{StaticResource MahApps.Brushes.Accent4}"
+                        Cursor="Arrow"
+                        FontSize="12"
+                        MaxLength="10"
+                        Style="{StaticResource MahApps.Styles.TextBox}"
+                        Text="{Binding DefaultCountry.Value, UpdateSourceTrigger=LostFocus}" />
+                </Grid>
+
+                <Button
+                    Grid.Column="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Click="OkButton_Click"
+                    Content="閉じる (_C)"
+                    Cursor="Hand" />
+            </Grid>
+        </Border>
+        <!--#endregion-->
+
+        <!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->
+        <!--  参考：http://nineworks2.blog.fc2.com/blog-entry-117.html  -->
+        <md:DialogHost
+            Grid.RowSpan="4"
+            d:IsHidden="True"
+            CloseOnClickAway="True"
+            Identifier="PlayersEditDialog" />
+    </Grid>
+</mah:MetroWindow>
