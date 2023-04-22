@@ -21,10 +21,25 @@ namespace PlayerControl.View
 			set { SetValue(CurrentScoreModeProperty, value); }
 		}
 
-		public ScoreSettingView(ScoreMode _currentMode)
+		public static readonly DependencyProperty ScoreLabelText1Property =
+			DependencyProperty.Register("ScoreLabelText1", typeof(String), typeof(ScoreSettingView), new PropertyMetadata(String.Empty));
+		public String ScoreLabelText1
 		{
-			// 現在の編集モードを記録
+			get { return (String)GetValue(ScoreLabelText1Property); }
+			set { SetValue(ScoreLabelText1Property, value); }
+		}
+
+		/// <summary>
+		/// コンストラクタ
+		/// </summary>
+		/// <param name="_currentMode">スコアモード TODO:Ver0.3.x未実装</param>
+		/// <param name="_scoreLabel1">スコアラベルに表示する文字列</param>
+		public ScoreSettingView(ScoreMode _currentMode, String _scoreLabel1)
+		{
+			// 引数で指定されたUI設定を反映
 			CurrentScoreMode = _currentMode;
+			ScoreLabelText1 = _scoreLabel1;
+
 			InitializeComponent();
 
 			// スコアテキストボックスにフォーカスを当てる
@@ -72,7 +87,6 @@ namespace PlayerControl.View
 				e.Handled = true;
 			}
 		}
-
 	}
 
 	public class NotEmptyValidationRule : ValidationRule
@@ -80,7 +94,7 @@ namespace PlayerControl.View
 		public override ValidationResult Validate(object value, CultureInfo cultureInfo)
 		{
 			return string.IsNullOrWhiteSpace((value ?? "").ToString())
-				? new ValidationResult(false, "レベルを入力してください")
+				? new ValidationResult(false, $"スコアを入力してください")
 				: ValidationResult.ValidResult;
 		}
 	}

@@ -176,9 +176,9 @@
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
 
-            <!--  ItemContainerStyle スタイル-->
+            <!--  ItemContainerStyle スタイル  -->
             <ListBox.ItemContainerStyle>
-                <Style TargetType="ListBoxItem" BasedOn="{StaticResource MaterialDesignCardsListBoxItem}">
+                <Style BasedOn="{StaticResource MaterialDesignCardsListBoxItem}" TargetType="ListBoxItem">
                     <Setter Property="Margin" Value="5" />
                 </Style>
             </ListBox.ItemContainerStyle>

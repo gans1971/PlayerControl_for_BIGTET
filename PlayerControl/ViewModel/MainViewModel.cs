@@ -23,35 +23,39 @@ namespace PlayerControl.ViewModels
 	{
 		private const String _htmlSourceFile = "scoreboard.html";
 		private const String _jsonFileName = "streamcontrol.json";
-		private const String _backupJsonFileName = "Backup.json";
+		private const String _backupJsonFileName = "LastOperationBackup.json";
 
 		// CurrentPlayerをクリアするためのインスタンス
 		private PlayerModel _emptyPlayer { get; } = new PlayerModel();
 
+		#region Viewと連携するUI用プロパティ
 		public IDialogCoordinator PlayerControlDialogCoordinator { get; set; } = new DialogCoordinator();
-
-		#region ReactiveProperty
-		public ReactivePropertySlim<String> AppTitle { get; } = new ReactivePropertySlim<String>("Player Control for BIGTET");
+		public ReactivePropertySlim<SnackbarMessageQueue> PlayerEditSnackbarMessageQueue { get; } = new ReactivePropertySlim<SnackbarMessageQueue>(new SnackbarMessageQueue());
+		public CollectionViewSource PlayersViewSource { get; set; } = new CollectionViewSource();
 		public ReactivePropertySlim<String> OutputJsonPath { get; } = new ReactivePropertySlim<String>();
 		public ReactivePropertySlim<DateTime> OutputJsonTime { get; } = new ReactivePropertySlim<DateTime>(DateTime.MinValue);
 		public ReactivePropertySlim<PlayerModel> SelectedPlayer { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
-		public ReactivePropertySlim<String> Stage { get; } = new ReactivePropertySlim<String>(String.Empty);
-		public ReactivePropertySlim<String> ScoreLabel { get; } = new ReactivePropertySlim<String>(String.Empty);
-		
-		public ReactivePropertySlim<ScoreMode> CurrentScoreMode { get; } = new ReactivePropertySlim<ScoreMode>(ScoreMode.Single);
-		public ReactivePropertySlim<SnackbarMessageQueue> PlayerEditSnackbarMessageQueue { get; } = new ReactivePropertySlim<SnackbarMessageQueue>(new SnackbarMessageQueue());
+		public ReactivePropertySlim<String> AppTitle { get; } = new ReactivePropertySlim<String>("PlayerControl");
 		public ReactivePropertySlim<String> DefaultCountry { get; } = new ReactivePropertySlim<String>("blk");
-		public ReactiveCollection<PlayerModel> Players { get; } = new ReactiveCollection<PlayerModel>();
-		public CollectionViewSource PlayersViewSource { get; set; } = new CollectionViewSource();
+
+		// TODO: Ver0.3.x 未実装：スコアモード対応時に使用する
+		public ReactivePropertySlim<ScoreMode> CurrentScoreMode { get; } = new ReactivePropertySlim<ScoreMode>(ScoreMode.Single);
+		#endregion
+
+		#region バックアップ対象となる Property
+		private OperationModel _operation { get; } = new OperationModel();
+		public ReactiveProperty<String> Stage { get; } 
+		public ReactiveProperty<String> ScoreLabel { get; } 
+		public ReadOnlyReactiveCollection<PlayerModel> Players { get; } 
 		#endregion
 
 		#region ReactiveCommand
 		public ReactiveCommand Player1ChangeCommand { get; }
 		public ReactiveCommand Player2ChangeCommand { get; }
-        public ReactiveCommand ScoreSettingCommand { get; }
-        public ReactiveCommand AboutBoxCommand { get; }
+		public ReactiveCommand ScoreSettingCommand { get; }
+		public ReactiveCommand AboutBoxCommand { get; }
 		public ReactiveCommand LoadedCommand { get; }
 		public ReactiveCommand ClosingCommand { get; }
 		public ReactiveCommand EditPlayersListCommand { get; }
@@ -67,11 +71,16 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand CloseModalWindowCommand { get; }
 		#endregion
 
-        		/// <summary>
+		/// <summary>
 		/// コンストラクタ
 		/// </summary>
 		public MainViewModel()
 		{
+			// Model-VM 連携
+			this.Players = _operation.Players.ToReadOnlyReactiveCollection().AddTo(Disposable);
+			this.Stage = _operation.ToReactivePropertyAsSynchronized(m => m.Stage).AddTo(Disposable);
+			this.ScoreLabel = _operation.ToReactivePropertyAsSynchronized(m => m.ScoreLabel).AddTo(Disposable);
+
 			// アプリタイトルを設定
 			var assmAttr = new AssemblyAttribute();
 			var asm = Assembly.GetExecutingAssembly();
@@ -124,8 +133,7 @@ namespace PlayerControl.ViewModels
 				// StreamControl Jsonファイルを初期化（タイムスタンプも初期化）
 				CurrentPlayer1.Value = _emptyPlayer;
 				CurrentPlayer2.Value = _emptyPlayer;
-				Stage.Value = String.Empty;
-				ScoreLabel.Value = String.Empty;
+				_operation.Clear();
 				SaveStreamControlJson(true);
 
 			}).AddTo(Disposable);
@@ -137,18 +145,18 @@ namespace PlayerControl.ViewModels
 				EditPlayersList();
 			}).AddTo(Disposable);
 
-            // スコア・サブ情報（twitterなど）編集コマンド　
-            ScoreSettingCommand = new ReactiveCommand();
-            ScoreSettingCommand.Subscribe(x =>
-            {
-                if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && fe.DataContext is PlayerModel player)
-                {
-                    PlayerScoreSetting(player);
-                }
-            }).AddTo(Disposable);
+			// スコア・サブ情報（twitterなど）編集コマンド　
+			ScoreSettingCommand = new ReactiveCommand();
+			ScoreSettingCommand.Subscribe(x =>
+			{
+				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && fe.DataContext is PlayerModel player)
+				{
+					PlayerScoreSetting(player);
+				}
+			}).AddTo(Disposable);
 
-            // プレイヤー1切り替えコマンド
-            Player1ChangeCommand = new ReactiveCommand();
+			// プレイヤー1切り替えコマンド
+			Player1ChangeCommand = new ReactiveCommand();
 			Player1ChangeCommand.Subscribe(x =>
 			{
 				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && fe.DataContext is PlayerModel player)
@@ -174,7 +182,7 @@ namespace PlayerControl.ViewModels
 				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe &&
 					fe.DataContext is PlayerModel player)
 				{
-					Players.Remove(player);
+					_operation.Players.Remove(player);
 				}
 			}).AddTo(Disposable);
 
@@ -229,7 +237,7 @@ namespace PlayerControl.ViewModels
 						// ユーザーを追加
 						else
 						{
-							Players.Add(new PlayerModel(trimName, trimTwitter, 0, 0));
+							_operation.Players.Add(new PlayerModel(trimName, trimTwitter, 0, 0));
 							SaveStreamControlJson();
 							textBox.Text = String.Empty;
 						}
@@ -371,12 +379,12 @@ namespace PlayerControl.ViewModels
 
 		}
 
-        /// <summary>
-        /// スコア入力コントロールを表示する（サブ情報も編集可能にする）
-        /// ※ MainWindow専用
-        /// </summary>
-        /// <param name="datacontext"></param>
-        async public void PlayerScoreSetting(object datacontext)
+		/// <summary>
+		/// スコア入力コントロールを表示する（サブ情報も編集可能にする）
+		/// ※ MainWindow専用
+		/// </summary>
+		/// <param name="datacontext"></param>
+		async public void PlayerScoreSetting(object datacontext)
 		{
 			try
 			{
@@ -387,7 +395,7 @@ namespace PlayerControl.ViewModels
 					System.Windows.Input.Keyboard.ClearFocus();
 
 					// スコア設定Viewを表示
-					var view = new ScoreSettingView(CurrentScoreMode.Value)
+					var view = new ScoreSettingView(CurrentScoreMode.Value, ScoreLabel.Value)
 					{
 						DataContext = player
 					};
@@ -408,46 +416,46 @@ namespace PlayerControl.ViewModels
 			}
 		}
 
-        /// <summary>
-        /// プレイヤーサブ情報(twitter等)を入力
-        /// ※ MainWindow専用
-        /// </summary>
-        /// <param name="datacontext"></param>
-        async public void EditTwitter(object datacontext)
-        {
-            try
-            {
-                // イベント発火元コントロールのDataContextからVMを取得して更新
-                if (datacontext is PlayerModel player)
-                {
-                    // 下記行を入れないとアニメーション中にキー操作すると元ダイアログにフォーカスが移動してしまう
-                    System.Windows.Input.Keyboard.ClearFocus();
+		/// <summary>
+		/// プレイヤーサブ情報(twitter等)を入力
+		/// ※ MainWindow専用
+		/// </summary>
+		/// <param name="datacontext"></param>
+		async public void EditTwitter(object datacontext)
+		{
+			try
+			{
+				// イベント発火元コントロールのDataContextからVMを取得して更新
+				if (datacontext is PlayerModel player)
+				{
+					// 下記行を入れないとアニメーション中にキー操作すると元ダイアログにフォーカスが移動してしまう
+					System.Windows.Input.Keyboard.ClearFocus();
 
-                    // スコア設定Viewを表示
-                    var view = new TwitterSettingView()
-                    {
-                        DataContext = player
-                    };
-                    var result = await DialogHost.Show(view, "MainWindowDialog");
-                    if (result is bool dlgResult && dlgResult)
-                    {
-                        SaveStreamControlJson();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception EditTwitter:{ex.ToString()}");
-            }
-        }
+					// スコア設定Viewを表示
+					var view = new TwitterSettingView()
+					{
+						DataContext = player
+					};
+					var result = await DialogHost.Show(view, "MainWindowDialog");
+					if (result is bool dlgResult && dlgResult)
+					{
+						SaveStreamControlJson();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Exception EditTwitter:{ex.ToString()}");
+			}
+		}
 
 
-        /// <summary>
-        /// プレイヤー名ダイアログでプレイヤー名を入力する
-        /// ※ PlayersEdit専用
-        /// </summary>
-        /// <param name="datacontext"></param>
-        async public void InputPlayerName(object datacontext)
+		/// <summary>
+		/// プレイヤー名ダイアログでプレイヤー名を入力する
+		/// ※ PlayersEdit専用
+		/// </summary>
+		/// <param name="datacontext"></param>
+		async public void InputPlayerName(object datacontext)
 		{
 			try
 			{
@@ -515,42 +523,33 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public void Initialize()
 		{
-			// TODO:プレイヤーリストを読み込む
+			// TODO:プレイヤー履歴を読み込む
 			InitPlayersHistory();
 		}
 
 		/// <summary>
-		/// ソースHTMLファイルが存在するパスを取得
-		/// 実行ファイルの親フォルダをたどる
+		/// プレイヤーリストやステージ名などをバックアップする
+		/// OperationModel 内のプロパティをJSONに保存する
 		/// </summary>
-		/// <returns></returns>
-		private String GetStreamControlPath()
+		private void BackupPlayersData()
 		{
-			// 実行ファイルのパスを取得 ※ .NET5以降では Assenmbly.Locationは空を返すので使用しないこと
-			var di = new DirectoryInfo(AppContext.BaseDirectory);
-			while (true)
+			try
 			{
-				if (di == null)
-				{
-					break;
-				}
-				var parent = di.Parent;
-				if (parent == null)
-				{
-					break;
-				}
+				// 実行ファイルのパス + Jsonファイル名 ※ .NET5以降では Assenmbly.Locationは空を返すので使用しないこと
+				var savepath = System.IO.Path.Combine(AppContext.BaseDirectory, _backupJsonFileName);
 
-				var checkPath = Path.Combine(parent.FullName, _htmlSourceFile);
+				var jsonStr = JsonConvert.SerializeObject(_operation);
 
-				if (System.IO.File.Exists(checkPath))
+				using (var sw = new StreamWriter(savepath, false, Encoding.UTF8))
 				{
-					// ソースHTMLが存在するパスがみつかった
-					return parent.FullName;
+					sw.Write(jsonStr);
 				}
-				// 親をたどる
-				di = di.Parent;
 			}
-			return String.Empty;
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"[Initialize]Exception {ex.ToString()}");
+			}
+
 		}
 
 		/// <summary>
@@ -674,6 +673,9 @@ namespace PlayerControl.ViewModels
 				// 保存時刻を更新
 				OutputJsonTime.Value = DateTime.Now;
 
+				// 保存情報をバックアップ（強制終了時の復元用）
+				BackupPlayersData();
+
 				return true;
 			}
 			catch (Exception ex)
@@ -681,6 +683,40 @@ namespace PlayerControl.ViewModels
 				Debug.WriteLine($"[SaveStreamControlJson]Exception {ex.ToString()}");
 			}
 			return false;
+		}
+
+		/// <summary>
+		/// ソースHTMLファイルが存在するパスを取得
+		/// 実行ファイルの親フォルダをたどる
+		/// </summary>
+		/// <returns></returns>
+		private String GetStreamControlPath()
+		{
+			// 実行ファイルのパスを取得 ※ .NET5以降では Assenmbly.Locationは空を返すので使用しないこと
+			var di = new DirectoryInfo(AppContext.BaseDirectory);
+			while (true)
+			{
+				if (di == null)
+				{
+					break;
+				}
+				var parent = di.Parent;
+				if (parent == null)
+				{
+					break;
+				}
+
+				var checkPath = Path.Combine(parent.FullName, _htmlSourceFile);
+
+				if (System.IO.File.Exists(checkPath))
+				{
+					// ソースHTMLが存在するパスがみつかった
+					return parent.FullName;
+				}
+				// 親をたどる
+				di = di.Parent;
+			}
+			return String.Empty;
 		}
 
 		/// <summary>
@@ -707,7 +743,7 @@ namespace PlayerControl.ViewModels
 			try
 			{
 				// スコアラベルが存在する場合はサイズを調整
-				if( !String.IsNullOrEmpty(ScoreLabel.Value))
+				if (!String.IsNullOrEmpty(ScoreLabel.Value))
 				{
 					labelStr = $"<font size=-1 color=\"white\">{ScoreLabel.Value}</font></br>";
 				}

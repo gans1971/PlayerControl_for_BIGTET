@@ -1,9 +1,7 @@
-﻿using Converters;
-using Prism.Mvvm;
-using Reactive.Bindings;
+﻿using Prism.Mvvm;
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace PlayerControl.Model
 {
@@ -11,19 +9,25 @@ namespace PlayerControl.Model
 	/// ステージおよびユーザー情報に関するModel
 	/// ※　StreamControl.json保存時にバックアップする 強制終了時にはこのファイルから状態を復元する
 	/// </summary>
-	public class OperationModel : BindableBase
+	public class OperationModel : BindableBase, INotifyPropertyChanged
 	{
-		public ReactivePropertySlim<String> Stage { get; } = new ReactivePropertySlim<String>(String.Empty);
-		public ReactivePropertySlim<String> ScoreLabel { get; } = new ReactivePropertySlim<String>(String.Empty);
-		public ReactiveCollection<PlayerModel> Players { get; } = new ReactiveCollection<PlayerModel>();
+		// publicプロパティがJSONで保存される
+		private String _stage = String.Empty;
+		public String Stage { get => _stage; set => SetProperty(ref _stage, value); }
+
+		private String _scoreLabel = String.Empty;
+		public String ScoreLabel { get => _scoreLabel; set => SetProperty(ref _scoreLabel, value); }
+
+		public ObservableCollection<PlayerModel> Players = new ObservableCollection<PlayerModel>();
+
 		public OperationModel()
 		{
 			Clear();
 		}
 		public void Clear()
 		{
-			Stage.Value = String.Empty;
-			ScoreLabel.Value = String.Empty;
+			Stage = String.Empty;
+			ScoreLabel = String.Empty;
 			Players.Clear();
 		}
 	}

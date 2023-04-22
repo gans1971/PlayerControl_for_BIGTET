@@ -1,4 +1,5 @@
 ﻿using Converters;
+using Newtonsoft.Json;
 using Prism.Mvvm;
 using Reactive.Bindings;
 using System;
@@ -7,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PlayerControl.Model
 {
-	public class PlayerModel : BindableBase
+	public class PlayerModel : BindableBase, INotifyPropertyChanged
 	{
 		public ReactivePropertySlim<String> Name { get; } = new ReactivePropertySlim<string>(String.Empty);
 		public ReactivePropertySlim<String> Twitter { get; } = new ReactivePropertySlim<string>(String.Empty);
@@ -15,6 +16,8 @@ namespace PlayerControl.Model
 		public ReactivePropertySlim<int> Score { get; } = new ReactivePropertySlim<int>(0);
 		public ReactivePropertySlim<int> Score_Second { get; } = new ReactivePropertySlim<int>(0);
 		public ReactivePropertySlim<DateTime> LastAccess { get; } = new ReactivePropertySlim<DateTime>(DateTime.MinValue);
+
+		[JsonIgnore]
 		public ReactivePropertySlim<bool> IsPlayerNameInEditMode { get; } = new ReactivePropertySlim<bool>(false);
 
 		public PlayerModel()
