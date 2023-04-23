@@ -1,7 +1,7 @@
 # PlayerControl for BIGTET
 
-※ Ver0.3.1 のイメージ映像
-![capture](https://user-images.githubusercontent.com/87809679/175765945-74904b8b-928e-4ebb-9bda-f8c4e2a612a2.gif)
+※ Ver0.3.4 操作イメージ映像
+![capture](https://user-images.githubusercontent.com/7456610/233826620-a6e47a2f-7f84-4cbc-bcd4-ca7977387932.gif)
 ***カーソルキー上下で選択・左右で1P/2Pを設定・スペースキーでスコア入力***
 
 ※ 以下はVer 0.3.1 の資料です（最新版用マニュアルは作成中）

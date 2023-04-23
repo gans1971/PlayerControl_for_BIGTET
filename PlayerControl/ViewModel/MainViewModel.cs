@@ -621,6 +621,16 @@ namespace PlayerControl.ViewModels
 		{
 			try
 			{
+				// Stage名とScoreLabel文字列を正規化
+				if(!String.IsNullOrEmpty(ScoreLabel.Value))
+				{
+					ScoreLabel.Value = ScoreLabel.Value.Trim();
+				}
+				if (!String.IsNullOrEmpty(Stage.Value))
+				{
+					Stage.Value = Stage.Value.Trim();
+				}
+
 				// StreamControlのHTMLテンプレートパスを初期化
 				if (!Directory.Exists(OutputJsonPath.Value))
 				{
@@ -803,10 +813,12 @@ namespace PlayerControl.ViewModels
 
 			try
 			{
+				var scoreLabelTrim = ScoreLabel.Value.Trim();
+
 				// スコアラベルが存在する場合はサイズを調整
-				if (!String.IsNullOrEmpty(ScoreLabel.Value))
+				if (!String.IsNullOrEmpty(scoreLabelTrim))
 				{
-					labelStr = $"<font size=-1 color=\"white\">{ScoreLabel.Value}</font></br>";
+					labelStr = $"<font size=-1 color=\"white\">{scoreLabelTrim}</font></br>";
 				}
 				// 桁数に合わせてスコアのフォントサイズ調整
 				// 3桁は"5" 4桁は"4"
