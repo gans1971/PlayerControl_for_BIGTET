@@ -1,9 +1,11 @@
 # PlayerControl for BIGTET
+テトリス ザ・グランドマスタービッグモード（通称ビグテト）配信サポートアプリ
+
+※ 対応テンプレート<[**SHIG : ウメブラSP向けテンプレート 数字版** (StreamControl-for-UMBR)](http://shigaming.com/2018/11/30/streamcontroltemplate2019/)> 
 
 ## 最新トピック(2023/04/24)
 - プレイヤーサブ情報（Twitterアカウント等）対応
 - スコアラベル（スコアの上に文字を表示）対応
-- アプリ（OSを含む）強制終了後、次回起動時に設定を復元
 - Ver0.3.4 操作イメージ
 ![capture](https://user-images.githubusercontent.com/7456610/233826620-a6e47a2f-7f84-4cbc-bcd4-ca7977387932.gif)
 ***カーソルキー上下で選択・左右で1P/2Pを設定・スペースキーでスコア入力***
@@ -14,16 +16,14 @@
 
 ## 概要・特徴
 
-- 対戦型ゲーム配信サポートツール <[**StreamControl**](http://streamcontroljapan.blog.jp/)> 互換 Windows アプリ
+- 対戦型ゲーム配信サポートツール <[**StreamControl**](http://streamcontroljapan.blog.jp/)> 互換
   - StreamControl との共存・同時使用が可能
-- テトリス ザ・グランドマスタービッグモード（通称ビグテト）配信サポート用
-- 対応テンプレート<[**SHIG : ウメブラSP向けテンプレート 数字版** (StreamControl-for-UMBR)](http://shigaming.com/2018/11/30/streamcontroltemplate2019/)> 
-- プレイヤーが頻繁に入れ替わるフリープレイイベントやローリングマッチを想定- 
+- プレイヤーが頻繁に入れ替わるフリープレイイベントやローリングマッチを想定
   - プレイヤーを一括登録
   - カーソルキーで プレイヤー選択 と 1P/2Pセット を操作可能
   - スコアは4桁半角数字のみ入力可能
   - 保存ボタンのクリック不要で即反映
-  - アプリケーション or OS 強制終了した場合、次回起動時に入力情報を自動復元
+- アプリケーション or OS 強制終了した場合、次回起動時に入力情報を自動復元
 
 ## ダウンロード
 
@@ -31,7 +31,7 @@
 
 ## 動作環境
 
-- Windows10 / 11
+- Windows10 (1809以降)  /  11
   - 追加ランタイム不要（.NET6 自己完結型アプリ）
   - StreamControl 用 StreamControl-for-UMBR テンプレートがセットアップされている環境
 
