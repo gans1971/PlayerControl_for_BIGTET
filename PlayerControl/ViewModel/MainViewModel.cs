@@ -51,10 +51,10 @@ namespace PlayerControl.ViewModels
 		#region バックアップ対象となる Property (_operation モデルと連携する)
 		public ReactiveProperty<String> Stage { get; }
 		public ReactiveProperty<String> ScoreLabel { get; }
-
+		// ※ ReadOnlyReactivePropertyを使うと、gong-wpf-dragdrop を使った順番操作時に例外が発生する（ReadOnly非対応）
+		// ここでは OperationModel の _players プロパティのインスタンスを直接参照する
+		// _players()はPrivateなので、参照・追加・削除などのアクセスはOperationModelのメソッドを介して行う
 		public ObservableCollection<PlayerModel> Players { get => _operation.GetPlayers(); }
-//		public ObservableCollection<PlayerModel> Players { get => _operation.GetPlayers(); set => SetProperty(ref _players, value); }
-		//		public ReadOnlyReactiveCollection<PlayerModel> Players { get; }
 		#endregion
 
 		#region ReactiveCommand
@@ -83,17 +83,17 @@ namespace PlayerControl.ViewModels
 		public MainViewModel()
 		{
 			// OperationModelを初期化
-			var restore = RestoreBackupPlayersData();	// バックアップファイルがある場合
-			if(restore!=null)
+			var restore = RestoreBackupPlayersData();   // バックアップファイルがある場合
+			if (restore != null)
 			{
 				_operation = restore;
 			}
 			else
 			{
-				_operation=new OperationModel();
+				_operation = new OperationModel();
 			}
 
-			// Model-VM 連携
+			// Model-VM 連携（※ Players プロパティはOperationModelの_playerを直接参照 詳細は Players プロパティの定義部に記載）
 			this.Stage = _operation.ToReactivePropertyAsSynchronized(m => m.Stage).AddTo(Disposable);
 			this.ScoreLabel = _operation.ToReactivePropertyAsSynchronized(m => m.ScoreLabel).AddTo(Disposable);
 
@@ -589,7 +589,7 @@ namespace PlayerControl.ViewModels
 				{
 					var jsonStr = File.ReadAllText(loadpath);
 					var deserializedObjects = JsonConvert.DeserializeObject<OperationModel>(jsonStr);
-					if( deserializedObjects!=null)
+					if (deserializedObjects != null)
 					{
 						return deserializedObjects;
 					}
