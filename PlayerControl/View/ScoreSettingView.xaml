@@ -130,7 +130,7 @@
 					md:HintAssist.Hint="サブ情報入力(任意)"
 					md:TextFieldAssist.HasClearButton="True"
 					Cursor="IBeam"
-					Text="{Binding Twitter}" />
+					Text="{Binding Twitter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
 			</StackPanel>
 		</Grid>

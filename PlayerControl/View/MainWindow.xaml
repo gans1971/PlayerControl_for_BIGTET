@@ -49,7 +49,7 @@
 	</mah:MetroWindow.TitleTemplate>
 	<mah:MetroWindow.RightWindowCommands>
 		<mah:WindowCommands>
-			<Button x:Name="AboutBox">
+			<Button x:Name="AboutBox" IsTabStop="False">
 				<i:Interaction.Triggers>
 					<i:EventTrigger EventName="Click">
 						<ri:EventToReactiveCommand Command="{Binding AboutBoxCommand}" />
@@ -189,6 +189,7 @@
 					mah:TextBoxHelper.Watermark="改行:Alt+Enter　決定:Enter"
 					MaxLength="120"
 					PreviewKeyDown="StageName_PreviewKeyDown"
+					TabIndex="1"
 					Text="{Binding Stage.Value, UpdateSourceTrigger=PropertyChanged}"
 					TextWrapping="Wrap">
 					<TextBox.InputBindings>
@@ -207,6 +208,7 @@
 					VerticalAlignment="Stretch"
 					mah:TextBoxHelper.ButtonCommand="{Binding ClearScoreLabelCommand}"
 					mah:TextBoxHelper.Watermark="（なし）"
+					TabIndex="2"
 					Text="{Binding ScoreLabel.Value, UpdateSourceTrigger=PropertyChanged}"
 					TextWrapping="NoWrap">
 					<TextBox.InputBindings>
@@ -260,7 +262,10 @@
 				</Style>
 			</DockPanel.Resources>
 
-			<Button x:Name="EditPlayerListButton" Command="{Binding EditPlayersListCommand}">
+			<Button
+				x:Name="EditPlayerListButton"
+				Command="{Binding EditPlayersListCommand}"
+				TabIndex="10">
 				<StackPanel Orientation="Horizontal">
 					<md:PackIcon Kind="AccountMultiple" />
 					<TextBlock>
@@ -272,7 +277,10 @@
 					</TextBlock>
 				</StackPanel>
 			</Button>
-			<Button x:Name="PlayerSwap_Button" Command="{Binding PlayerExchangeCommand}">
+			<Button
+				x:Name="PlayerSwap_Button"
+				Command="{Binding PlayerExchangeCommand}"
+				TabIndex="11">
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="1P" />
 					<md:PackIcon Kind="SwapHorizontal" />
@@ -282,13 +290,15 @@
 			<Button
 				x:Name="Clear1P_Button"
 				Command="{Binding PlayerClearCommand}"
-				CommandParameter="Player1">
+				CommandParameter="Player1"
+				TabIndex="12">
 				<TextBlock Text="1P クリア" />
 			</Button>
 			<Button
 				x:Name="Clear2P_Button"
 				Command="{Binding PlayerClearCommand}"
-				CommandParameter="Player2">
+				CommandParameter="Player2"
+				TabIndex="13">
 				<TextBlock Text="2P クリア" />
 			</Button>
 			<Grid x:Name="SaveJsonGrid" DockPanel.Dock="Right">
@@ -296,6 +306,7 @@
 					x:Name="SaveJsonButton"
 					Padding="5,0"
 					Command="{Binding SaveJsonCommand}"
+					TabIndex="14"
 					ToolTip="設定を保存（手動）">
 					<md:PackIcon Kind="ContentSaveEditOutline" />
 				</Button>
@@ -309,7 +320,7 @@
 						<DropShadowEffect
 							BlurRadius="8"
 							ShadowDepth="0"
-							Color="#FFFFFEA9" />
+							Color="#FFFFFF30" />
 					</Rectangle.Effect>
 					<Rectangle.CacheMode>
 						<BitmapCache />
@@ -325,6 +336,7 @@
 			x:Name="PlayersListBox"
 			Grid.Row="2"
 			HorizontalContentAlignment="Stretch"
+			KeyboardNavigation.ControlTabNavigation="None"
 			VerticalContentAlignment="Center"
 			d:ItemsSource="{d:SampleData ItemCount=3}"
 			dd:DragDrop.DropScrollingMode="VerticalOnly"
@@ -336,6 +348,7 @@
 			AlternationCount="2"
 			BorderBrush="{StaticResource MahApps.Brushes.Accent4}"
 			BorderThickness="1"
+			IsTabStop="False"
 			ItemsSource="{Binding Players}"
 			ScrollViewer.CanContentScroll="True">
 			<i:Interaction.Behaviors>
@@ -577,6 +590,7 @@
 									x:Name="Score1"
 									CommandManager.PreviewExecuted="ScoreTextBox_PreviewExecuted"
 									GotKeyboardFocus="ScoreTextBox_GotKeyboardFocus"
+									IsTabStop="False"
 									PreviewTextInput="ScoreTextBox_PreviewTextInput"
 									Style="{StaticResource ScoreTextBoxStyle}"
 									Text="{Binding Score, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringEmptyToZeroConverter}}" />
@@ -708,7 +722,8 @@
 			Grid.RowSpan="4"
 			d:IsHidden="True"
 			CloseOnClickAway="False"
-			Identifier="MainWindowDialog" />
+			Identifier="MainWindowDialog"
+			KeyboardNavigation.ControlTabNavigation="None" />
 	</Grid>
 	<!--#endregion-->
 </mah:MetroWindow>
