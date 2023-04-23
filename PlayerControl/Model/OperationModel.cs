@@ -18,8 +18,7 @@ namespace PlayerControl.Model
 		private String _scoreLabel = String.Empty;
 		public String ScoreLabel { get => _scoreLabel; set => SetProperty(ref _scoreLabel, value); }
 
-		public ObservableCollection<PlayerModel> Players = new ObservableCollection<PlayerModel>();
-
+		private ObservableCollection<PlayerModel> _players = new ObservableCollection<PlayerModel>();
 		public OperationModel()
 		{
 			Clear();
@@ -28,7 +27,24 @@ namespace PlayerControl.Model
 		{
 			Stage = String.Empty;
 			ScoreLabel = String.Empty;
-			Players.Clear();
+			_players.Clear();
+		}
+
+		public ObservableCollection<PlayerModel> GetPlayers()
+		{
+			return _players;
+		}
+
+		public bool RemovePlayer(PlayerModel removeTarget)
+		{
+			return _players.Remove(removeTarget);
+		}
+		public void AddPlayer(PlayerModel addPlayer)
+		{
+			if( addPlayer != null)
+			{
+				_players.Add(addPlayer);
+			}
 		}
 	}
 }

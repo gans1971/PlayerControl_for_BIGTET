@@ -8,6 +8,7 @@ using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using Servicies;
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -25,8 +26,11 @@ namespace PlayerControl.ViewModels
 		private const String _jsonFileName = "streamcontrol.json";
 		private const String _backupJsonFileName = "LastOperationBackup.json";
 
-		// CurrentPlayerをクリアするためのインスタンス
+		// CurrentPlayerをクリアするための空PlayerModel インスタンス
 		private PlayerModel _emptyPlayer { get; } = new PlayerModel();
+
+		// ユーザー入力データ Model のインスタンス（バックアップ対象）▶コンストラクタで初期化
+		public OperationModel _operation { get; }
 
 		#region Viewと連携するUI用プロパティ
 		public IDialogCoordinator PlayerControlDialogCoordinator { get; set; } = new DialogCoordinator();
@@ -44,11 +48,13 @@ namespace PlayerControl.ViewModels
 		public ReactivePropertySlim<ScoreMode> CurrentScoreMode { get; } = new ReactivePropertySlim<ScoreMode>(ScoreMode.Single);
 		#endregion
 
-		#region バックアップ対象となる Property
-		private OperationModel _operation { get; } = new OperationModel();
-		public ReactiveProperty<String> Stage { get; } 
-		public ReactiveProperty<String> ScoreLabel { get; } 
-		public ReadOnlyReactiveCollection<PlayerModel> Players { get; } 
+		#region バックアップ対象となる Property (_operation モデルと連携する)
+		public ReactiveProperty<String> Stage { get; }
+		public ReactiveProperty<String> ScoreLabel { get; }
+
+		public ObservableCollection<PlayerModel> Players { get => _operation.GetPlayers(); }
+//		public ObservableCollection<PlayerModel> Players { get => _operation.GetPlayers(); set => SetProperty(ref _players, value); }
+		//		public ReadOnlyReactiveCollection<PlayerModel> Players { get; }
 		#endregion
 
 		#region ReactiveCommand
@@ -76,8 +82,18 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public MainViewModel()
 		{
+			// OperationModelを初期化
+			var restore = RestoreBackupPlayersData();	// バックアップファイルがある場合
+			if(restore!=null)
+			{
+				_operation = restore;
+			}
+			else
+			{
+				_operation=new OperationModel();
+			}
+
 			// Model-VM 連携
-			this.Players = _operation.Players.ToReadOnlyReactiveCollection().AddTo(Disposable);
 			this.Stage = _operation.ToReactivePropertyAsSynchronized(m => m.Stage).AddTo(Disposable);
 			this.ScoreLabel = _operation.ToReactivePropertyAsSynchronized(m => m.ScoreLabel).AddTo(Disposable);
 
@@ -122,7 +138,7 @@ namespace PlayerControl.ViewModels
 				// スコアボード用ViewSourceを設定
 				PlayersViewSource.Source = Players;
 				PlayersViewSource.SortDescriptions.Clear();
-				PlayersViewSource.SortDescriptions.Add(new SortDescription("Score.Value", ListSortDirection.Descending));
+				PlayersViewSource.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Descending));
 				PlayersViewSource.IsLiveSortingRequested = true;    // 自動ソートフラグ
 			}).AddTo(Disposable);
 
@@ -130,12 +146,25 @@ namespace PlayerControl.ViewModels
 			ClosingCommand = new ReactiveCommand();
 			ClosingCommand.Subscribe(_ =>
 			{
-				// StreamControl Jsonファイルを初期化（タイムスタンプも初期化）
-				CurrentPlayer1.Value = _emptyPlayer;
-				CurrentPlayer2.Value = _emptyPlayer;
-				_operation.Clear();
-				SaveStreamControlJson(true);
+				try
+				{
+					// StreamControl Jsonファイルを初期化（タイムスタンプも初期化）
+					CurrentPlayer1.Value = _emptyPlayer;
+					CurrentPlayer2.Value = _emptyPlayer;
+					_operation.Clear();
+					SaveStreamControlJson(true);
 
+					// バックアップファイルも消去
+					var backupFile = GetBackupFilePath();
+					if (File.Exists(backupFile))
+					{
+						File.Delete(backupFile);
+					}
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"ClosingCommand Exception:{ex.ToString()}");
+				}
 			}).AddTo(Disposable);
 
 			// プレイヤー編集コマンド
@@ -182,7 +211,7 @@ namespace PlayerControl.ViewModels
 				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe &&
 					fe.DataContext is PlayerModel player)
 				{
-					_operation.Players.Remove(player);
+					_operation.RemovePlayer(player);
 				}
 			}).AddTo(Disposable);
 
@@ -237,7 +266,7 @@ namespace PlayerControl.ViewModels
 						// ユーザーを追加
 						else
 						{
-							_operation.Players.Add(new PlayerModel(trimName, trimTwitter, 0, 0));
+							_operation.AddPlayer(new PlayerModel(trimName, trimTwitter, 0, 0));
 							SaveStreamControlJson();
 							textBox.Text = String.Empty;
 						}
@@ -464,8 +493,8 @@ namespace PlayerControl.ViewModels
 				{
 					var view = new PlayerSettingView()
 					{
-						EditName = player.Name.Value,
-						EditTwitter = player.Twitter.Value,
+						EditName = player.Name,
+						EditTwitter = player.Twitter,
 					};
 
 					var result = await DialogHost.Show(view, "PlayersEditDialog");
@@ -485,10 +514,10 @@ namespace PlayerControl.ViewModels
 						// ユーザー名を更新
 						else
 						{
-							player.Name.Value = trimName;
+							player.Name = trimName;
 						}
 						// twitterを更新（特にチェックなし）
-						player.Twitter.Value = view.EditTwitter;
+						player.Twitter = view.EditTwitter;
 
 						// JSON更新
 						SaveStreamControlJson();
@@ -510,7 +539,7 @@ namespace PlayerControl.ViewModels
 		{
 			foreach (var checkPlayer in Players)
 			{
-				if (checkPlayer.Name.Value == targetName)
+				if (checkPlayer.Name == targetName)
 				{
 					return checkPlayer;
 				}
@@ -535,21 +564,53 @@ namespace PlayerControl.ViewModels
 		{
 			try
 			{
-				// 実行ファイルのパス + Jsonファイル名 ※ .NET5以降では Assenmbly.Locationは空を返すので使用しないこと
-				var savepath = System.IO.Path.Combine(AppContext.BaseDirectory, _backupJsonFileName);
-
 				var jsonStr = JsonConvert.SerializeObject(_operation);
 
-				using (var sw = new StreamWriter(savepath, false, Encoding.UTF8))
+				var savepath = GetBackupFilePath();
+				if (!String.IsNullOrEmpty(savepath))
 				{
-					sw.Write(jsonStr);
+					using (var sw = new StreamWriter(savepath, false, Encoding.UTF8))
+					{
+						sw.Write(jsonStr);
+					}
 				}
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine($"[Initialize]Exception {ex.ToString()}");
+				Debug.WriteLine($"[BackupPlayersData]Exception {ex.ToString()}");
 			}
+		}
+		private OperationModel RestoreBackupPlayersData()
+		{
+			try
+			{
+				var loadpath = GetBackupFilePath();
+				if (!String.IsNullOrEmpty(loadpath) && File.Exists(loadpath))
+				{
+					var jsonStr = File.ReadAllText(loadpath);
+					var deserializedObjects = JsonConvert.DeserializeObject<OperationModel>(jsonStr);
+					if( deserializedObjects!=null)
+					{
+						return deserializedObjects;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"[RestoreBackupPlayersData]Exception {ex.ToString()}");
+			}
+			return null;
+		}
 
+
+		/// <summary>
+		/// ユーザー操作情報をバックアップするファイルのフルパスを取得する
+		/// </summary>
+		/// <returns>バックアップファイルパス</returns>
+		private String? GetBackupFilePath()
+		{
+			// 実行ファイルのパス + Jsonファイル名 ※ .NET5以降では Assenmbly.Locationは空を返すので使用しないこと
+			return System.IO.Path.Combine(AppContext.BaseDirectory, _backupJsonFileName);
 		}
 
 		/// <summary>
@@ -647,16 +708,16 @@ namespace PlayerControl.ViewModels
 				// プレイヤー１情報
 				if (CurrentPlayer1.Value != null)
 				{
-					StreamControlData.pName1 = CurrentPlayer1.Value.Name.Value;
-					StreamControlData.pTwitter1 = CurrentPlayer1.Value.Twitter.Value;
+					StreamControlData.pName1 = CurrentPlayer1.Value.Name;
+					StreamControlData.pTwitter1 = CurrentPlayer1.Value.Twitter;
 					StreamControlData.pScore1 = GetScoreText(CurrentPlayer1.Value);
 					StreamControlData.pCountry1 = DefaultCountry.Value;
 				}
 				// プレイヤー２情報
 				if (CurrentPlayer2.Value != null)
 				{
-					StreamControlData.pName2 = CurrentPlayer2.Value.Name.Value;
-					StreamControlData.pTwitter2 = CurrentPlayer2.Value.Twitter.Value;
+					StreamControlData.pName2 = CurrentPlayer2.Value.Name;
+					StreamControlData.pTwitter2 = CurrentPlayer2.Value.Twitter;
 					StreamControlData.pScore2 = GetScoreText(CurrentPlayer2.Value);
 					StreamControlData.pCountry2 = DefaultCountry.Value;
 				}
@@ -726,16 +787,16 @@ namespace PlayerControl.ViewModels
 		/// <returns></returns>
 		private String GetScoreText(PlayerModel player)
 		{
-			if (player == null || String.IsNullOrEmpty(player.Name.Value))
+			if (player == null || String.IsNullOrEmpty(player.Name))
 			{
 				return String.Empty;
 			}
 
 			// スコア値を計算（Mixtureモードなら２つのスコアの合計）
-			var score = player.Score.Value;
+			var score = player.Score;
 			if (CurrentScoreMode.Value == ScoreMode.Mixture)
 			{
-				score += player.Score_Second.Value;
+				score += player.Score_Second;
 			}
 			var scoreStr = String.Empty;
 			var labelStr = String.Empty;

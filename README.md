@@ -14,12 +14,13 @@
 - 対戦型ゲーム配信サポートツール <[**StreamControl**](http://streamcontroljapan.blog.jp/)> 互換 Windows アプリ
   - StreamControl との共存・同時使用が可能
 - テトリス ザ・グランドマスタービッグモード（通称ビグテト）配信サポート用
-- 対応テンプレート<[**SHIG : ウメブラSP向けテンプレート 数字版**](http://shigaming.com/2018/11/30/streamcontroltemplate2019/)> 
+- 対応テンプレート<[**SHIG : ウメブラSP向けテンプレート 数字版** (StreamControl-for-UMBR)](http://shigaming.com/2018/11/30/streamcontroltemplate2019/)> 
 - プレイヤーが頻繁に入れ替わるフリープレイイベントやローリングマッチを想定- 
   - プレイヤーを一覧に登録
   - カーソルキーだけで プレイヤー選択 と 1P/2Pセット が操作可能
   - スコアは4桁半角数字のみ入力可能
-  - 保存ボタン不要で変更後即反映
+  - 保存ボタンのクリック不要で即反映
+  - アプリケーション or OS 強制終了した場合、次回起動時に入力情報を自動復元
 
 ## ダウンロード
 
@@ -29,14 +30,14 @@
 
 - Windows10 / 11
   - 追加ランタイム不要（.NET6 自己完結型アプリ）
-  - StreamControl テンプレートおよびアプリがセットアップされている環境
+  - StreamControl 用 StreamControl-for-UMBR テンプレートがセットアップされている環境
 
 ## セットアップ方法
 
 - 詳細は [**セットアップ方法 PDF**](/Manual/PlayerControlForBIGTET_Setup.pdf) 参照
 - ZIPファイル展開 ⇨ *PlayerControl_for_BIGTET* フォルダ
-- StreamControl テンプレートフォルダ直下にフォルダごとコピー
-  - ※　StreamControl フォルダと同じ階層
+- テンプレートフォルダ直下に *PlayerControl_for_BIGTET* フォルダをそのままコピー
+  - ※　StreamControl アプリフォルダと同じ階層
 <img src="Images/Setup.png" width="400px">
 
 ## 削除方法

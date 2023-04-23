@@ -9,7 +9,6 @@
 	xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
 	xmlns:system="clr-namespace:System;assembly=mscorlib"
 	xmlns:v="clr-namespace:PlayerControl.View"
-	Loaded="UserControl_Loaded"
 	mc:Ignorable="d">
 	<UserControl.Resources>
 		<converters:Score_LavelConverter x:Key="Score_LavelConverter" />
@@ -73,7 +72,7 @@
 					FontWeight="Bold"
 					IsReadOnly="True"
 					Style="{StaticResource MahApps.Styles.TextBox}"
-					Text="{Binding Name.Value, FallbackValue=---}" />
+					Text="{Binding Name, FallbackValue=---}" />
 			</Grid>
 
 			<StackPanel Grid.Row="1" Orientation="Vertical">
@@ -98,7 +97,7 @@
 
 					<!--  スコアテキスト1  -->
 					<TextBox
-						x:Name="ScoreTextBox1"
+						x:Name="ScoreTextBox"
 						Grid.Column="1"
 						bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus="True"
 						md:HintAssist.Hint="{Binding ScoreLabelText1, Converter={StaticResource Score_LavelConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
@@ -110,7 +109,7 @@
 							<Style TargetType="TextBlock" />
 						</md:TextFieldAssist.CharacterCounterStyle>
 						<TextBox.Text>
-							<Binding Path="Score.Value" UpdateSourceTrigger="PropertyChanged">
+							<Binding Path="Score" UpdateSourceTrigger="PropertyChanged">
 								<Binding.ValidationRules>
 									<v:NotEmptyValidationRule ValidatesOnTargetUpdated="True" />
 								</Binding.ValidationRules>
@@ -131,7 +130,7 @@
 					md:HintAssist.Hint="サブ情報入力(任意)"
 					md:TextFieldAssist.HasClearButton="True"
 					Cursor="IBeam"
-					Text="{Binding Twitter.Value}" />
+					Text="{Binding Twitter}" />
 
 			</StackPanel>
 		</Grid>

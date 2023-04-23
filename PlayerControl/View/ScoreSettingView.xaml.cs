@@ -41,19 +41,7 @@ namespace PlayerControl.View
 			ScoreLabelText1 = _scoreLabel1;
 
 			InitializeComponent();
-
-			// スコアテキストボックスにフォーカスを当てる
-			if (ScoreTextBox1 != null)
-			{
-				ScoreTextBox1.Focus();
-				Dispatcher.BeginInvoke((Action)(() => ScoreTextBox1.SelectAll())); // TODO:選択状態にならない…？
-			}
-
-		}
-		private void UserControl_Loaded(object sender, RoutedEventArgs e)
-		{
-
-		}
+	}
 
 		/// <summary>
 		/// スコアテキストのキーボードフォーカス時にIMEをOFFにする

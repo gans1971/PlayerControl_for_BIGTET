@@ -221,7 +221,7 @@
                             FontSize="14"
                             FontWeight="Bold"
                             Foreground="{StaticResource MahApps.Brushes.Gray1}"
-                            Text="{Binding Name.Value}" />
+                            Text="{Binding Name}" />
 
                         <!--  サブ文字（twitter)  -->
                         <TextBlock
@@ -233,7 +233,7 @@
                             FontSize="13"
                             FontWeight="Bold"
                             Foreground="{StaticResource MahApps.Brushes.Accent}"
-                            Text="{Binding Twitter.Value}" />
+                            Text="{Binding Twitter}" />
 
                         <!--  プレイヤー削除コントロール  -->
                         <Button

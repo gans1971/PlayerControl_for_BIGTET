@@ -37,7 +37,6 @@ namespace PlayerControl.View
 			{
 				if( e.Key == Key.Enter)
 				{
-					player.IsPlayerNameInEditMode.Value = false;
 					e.Handled = true;
 				}
 			}
@@ -47,7 +46,6 @@ namespace PlayerControl.View
 		{
 			if (sender is FrameworkElement fe && fe.DataContext is PlayerModel player)
 			{
-				player.IsPlayerNameInEditMode.Value = false;
 				e.Handled = true;
 			}
 		}

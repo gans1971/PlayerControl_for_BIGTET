@@ -37,7 +37,8 @@ namespace PlayerControl.View
 		{
 			InitializeComponent();
 		}
-	}
+
+    }
 
 	public class NotEmptyPlayerNameValidationRule : ValidationRule
 	{

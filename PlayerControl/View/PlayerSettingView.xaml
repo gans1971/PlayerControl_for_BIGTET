@@ -1,109 +1,109 @@
 ﻿<UserControl
-    x:Class="PlayerControl.View.PlayerSettingView"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:bh="clr-namespace:Behavior"
-    xmlns:converters="clr-namespace:Converters"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-    xmlns:mdTheme="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
-    xmlns:system="clr-namespace:System;assembly=mscorlib"
-    xmlns:v="clr-namespace:PlayerControl.View"
-    mc:Ignorable="d">
-    <UserControl.Resources>
-        <converters:StringBoolConverter x:Key="StringBoolConverter" />
-    </UserControl.Resources>
+	x:Class="PlayerControl.View.PlayerSettingView"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:bh="clr-namespace:Behavior"
+	xmlns:converters="clr-namespace:Converters"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+	xmlns:mdTheme="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+	xmlns:system="clr-namespace:System;assembly=mscorlib"
+	xmlns:v="clr-namespace:PlayerControl.View"
+	mc:Ignorable="d">
+	<UserControl.Resources>
+		<converters:StringBoolConverter x:Key="StringBoolConverter" />
+	</UserControl.Resources>
 
-    <Grid
-        x:Name="LayoutRoot"
-        Width="250"
-        Margin="10"
-        HorizontalAlignment="Center"
-        FocusManager.FocusedElement="{Binding ElementName=PlayerNameTextBox}">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+	<Grid
+		x:Name="LayoutRoot"
+		Width="250"
+		Margin="10"
+		HorizontalAlignment="Center"
+		FocusManager.FocusedElement="{Binding ElementName=PlayerNameTextBox}">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
 
-            <StackPanel Orientation="Vertical">
-                <StackPanel.Resources>
-                    <Style BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}" TargetType="{x:Type TextBox}">
-                        <Setter Property="Width" Value="Auto" />
-                        <Setter Property="VerticalContentAlignment" Value="Bottom" />
-                        <Setter Property="bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus" Value="True" />
-                        <Setter Property="md:ValidationAssist.FontSize" Value="10" />
-                        <Setter Property="md:HintAssist.FloatingScale" Value="0.8" />
-                        <Setter Property="md:HintAssist.FloatingOffset" Value="0,-20" />
-                        <Setter Property="md:TextFieldAssist.HasClearButton" Value="True" />
-                        <Setter Property="Cursor" Value="IBeam" />
-                        <Setter Property="FontFamily" Value="Arial" />
-                        <Setter Property="FontSize" Value="14" />
-                        <Setter Property="Margin" Value="5,10" />
-                        <Setter Property="FontWeight" Value="Bold" />
-                    </Style>
+			<StackPanel Orientation="Vertical">
+				<StackPanel.Resources>
+					<Style BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}" TargetType="{x:Type TextBox}">
+						<Setter Property="Width" Value="Auto" />
+						<Setter Property="VerticalContentAlignment" Value="Bottom" />
+						<Setter Property="bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus" Value="True" />
+						<Setter Property="md:ValidationAssist.FontSize" Value="10" />
+						<Setter Property="md:HintAssist.FloatingScale" Value="0.8" />
+						<Setter Property="md:HintAssist.FloatingOffset" Value="0,-20" />
+						<Setter Property="md:TextFieldAssist.HasClearButton" Value="True" />
+						<Setter Property="Cursor" Value="IBeam" />
+						<Setter Property="FontFamily" Value="Arial" />
+						<Setter Property="FontSize" Value="14" />
+						<Setter Property="Margin" Value="5,10" />
+						<Setter Property="FontWeight" Value="Bold" />
+					</Style>
 
-                </StackPanel.Resources>
-                <TextBox x:Name="EditPlayerName" md:HintAssist.Hint="プレイヤー名入力">
-                    <TextBox.Text>
-                        <Binding
-                            Path="EditName"
-                            RelativeSource="{RelativeSource AncestorType=v:PlayerSettingView}"
-                            UpdateSourceTrigger="PropertyChanged">
-                            <Binding.ValidationRules>
-                                <v:NotEmptyPlayerNameValidationRule ValidatesOnTargetUpdated="True" />
-                            </Binding.ValidationRules>
-                        </Binding>
-                    </TextBox.Text>
-                </TextBox>
+				</StackPanel.Resources>
+				<TextBox x:Name="PlayerNameTextBox" md:HintAssist.Hint="プレイヤー名入力">
+					<TextBox.Text>
+						<Binding
+							Path="EditName"
+							RelativeSource="{RelativeSource AncestorType=v:PlayerSettingView}"
+							UpdateSourceTrigger="PropertyChanged">
+							<Binding.ValidationRules>
+								<v:NotEmptyPlayerNameValidationRule ValidatesOnTargetUpdated="True" />
+							</Binding.ValidationRules>
+						</Binding>
+					</TextBox.Text>
+				</TextBox>
 
-                <TextBox x:Name="EditTwitterStr" md:HintAssist.Hint="サブ情報入力(任意)">
-                    <TextBox.Text>
-                        <Binding
-                            Path="EditTwitter"
-                            RelativeSource="{RelativeSource AncestorType=v:PlayerSettingView}"
-                            UpdateSourceTrigger="PropertyChanged" />
-                    </TextBox.Text>
-                </TextBox>
-            </StackPanel>
+				<TextBox x:Name="EditTwitterStr" md:HintAssist.Hint="サブ情報入力(任意)">
+					<TextBox.Text>
+						<Binding
+							Path="EditTwitter"
+							RelativeSource="{RelativeSource AncestorType=v:PlayerSettingView}"
+							UpdateSourceTrigger="PropertyChanged" />
+					</TextBox.Text>
+				</TextBox>
+			</StackPanel>
 
-            <!--  ボタンエリア  -->
-            <Grid Grid.Row="2" HorizontalAlignment="Stretch">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" MinWidth="100" />
-                    <ColumnDefinition Width="*" MinWidth="100" />
-                </Grid.ColumnDefinitions>
-                <Grid.Resources>
-                    <Style BasedOn="{StaticResource MaterialDesignFlatLightBgButton}" TargetType="Button">
-                        <Setter Property="MinWidth" Value="100" />
-                    </Style>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="FontSize" Value="12" />
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                    </Style>
-                </Grid.Resources>
-                <Button
-                    x:Name="OkButton"
-                    Command="{x:Static md:DialogHost.CloseDialogCommand}"
-                    Content="OK(_O)"
-                    IsEnabled="{Binding Text, Converter={StaticResource StringBoolConverter}, ElementName=EditPlayerName}">
-                    <Button.CommandParameter>
-                        <system:Boolean>True</system:Boolean>
-                    </Button.CommandParameter>
-                </Button>
-                <Button
-                    x:Name="CancelButton"
-                    Grid.Column="1"
-                    Margin="10,0,0,0"
-                    Command="{x:Static md:DialogHost.CloseDialogCommand}"
-                    Content="キャンセル(_C)">
-                    <Button.CommandParameter>
-                        <system:Boolean>False</system:Boolean>
-                    </Button.CommandParameter>
-                </Button>
-            </Grid>
-        </Grid>
-    </Grid>
+			<!--  ボタンエリア  -->
+			<Grid Grid.Row="2" HorizontalAlignment="Stretch">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" MinWidth="100" />
+					<ColumnDefinition Width="*" MinWidth="100" />
+				</Grid.ColumnDefinitions>
+				<Grid.Resources>
+					<Style BasedOn="{StaticResource MaterialDesignFlatLightBgButton}" TargetType="Button">
+						<Setter Property="MinWidth" Value="100" />
+					</Style>
+					<Style TargetType="TextBlock">
+						<Setter Property="FontSize" Value="12" />
+						<Setter Property="VerticalAlignment" Value="Center" />
+					</Style>
+				</Grid.Resources>
+				<Button
+					x:Name="OkButton"
+					Command="{x:Static md:DialogHost.CloseDialogCommand}"
+					Content="OK(_O)"
+					IsEnabled="{Binding Text, Converter={StaticResource StringBoolConverter}, ElementName=PlayerNameTextBox}">
+					<Button.CommandParameter>
+						<system:Boolean>True</system:Boolean>
+					</Button.CommandParameter>
+				</Button>
+				<Button
+					x:Name="CancelButton"
+					Grid.Column="1"
+					Margin="10,0,0,0"
+					Command="{x:Static md:DialogHost.CloseDialogCommand}"
+					Content="キャンセル(_C)">
+					<Button.CommandParameter>
+						<system:Boolean>False</system:Boolean>
+					</Button.CommandParameter>
+				</Button>
+			</Grid>
+		</Grid>
+	</Grid>
 </UserControl>

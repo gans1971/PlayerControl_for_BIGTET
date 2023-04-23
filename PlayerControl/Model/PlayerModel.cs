@@ -10,15 +10,25 @@ namespace PlayerControl.Model
 {
 	public class PlayerModel : BindableBase, INotifyPropertyChanged
 	{
-		public ReactivePropertySlim<String> Name { get; } = new ReactivePropertySlim<string>(String.Empty);
-		public ReactivePropertySlim<String> Twitter { get; } = new ReactivePropertySlim<string>(String.Empty);
-		public ReactivePropertySlim<int> PersonalBest { get; } = new ReactivePropertySlim<int>(0);
-		public ReactivePropertySlim<int> Score { get; } = new ReactivePropertySlim<int>(0);
-		public ReactivePropertySlim<int> Score_Second { get; } = new ReactivePropertySlim<int>(0);
-		public ReactivePropertySlim<DateTime> LastAccess { get; } = new ReactivePropertySlim<DateTime>(DateTime.MinValue);
+		private String _name = String.Empty;
+		public String Name { get => _name; set => SetProperty(ref _name, value); }
 
+		private String _twitter = String.Empty;
+		public String Twitter { get => _twitter; set => SetProperty(ref _twitter, value); }
+
+		private int _score = 0;
+		public int Score { get => _score; set => SetProperty(ref _score, value); }
+
+		private int _score_Second = 0;
+		public int Score_Second { get => _score_Second; set => SetProperty(ref _score_Second, value); }
+
+		private DateTime _lastAccess = DateTime.MinValue;
+		public DateTime LastAccess { get => _lastAccess; set => SetProperty(ref _lastAccess, value); }
+
+
+		private bool _isSelectedUser = false;
 		[JsonIgnore]
-		public ReactivePropertySlim<bool> IsPlayerNameInEditMode { get; } = new ReactivePropertySlim<bool>(false);
+		public bool IsSelectedUser { get => _isSelectedUser; set => SetProperty(ref _isSelectedUser, value); }
 
 		public PlayerModel()
 		{
@@ -26,11 +36,10 @@ namespace PlayerControl.Model
 		}
 		public PlayerModel(String name, String twitter, int personalbest, int score)
 		{
-			Name.Value = name;
-			Twitter.Value = twitter;
-			PersonalBest.Value = personalbest;
-			Score.Value = score;
-			LastAccess.Value = DateTime.Now;
+			Name = name;
+			Twitter = twitter;
+			Score = score;
+			LastAccess = DateTime.Now;
 		}
 	}
 }
