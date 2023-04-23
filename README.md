@@ -19,8 +19,8 @@
 - テトリス ザ・グランドマスタービッグモード（通称ビグテト）配信サポート用
 - 対応テンプレート<[**SHIG : ウメブラSP向けテンプレート 数字版** (StreamControl-for-UMBR)](http://shigaming.com/2018/11/30/streamcontroltemplate2019/)> 
 - プレイヤーが頻繁に入れ替わるフリープレイイベントやローリングマッチを想定- 
-  - プレイヤーを一覧に登録
-  - カーソルキーだけで プレイヤー選択 と 1P/2Pセット が操作可能
+  - プレイヤーを一括登録
+  - カーソルキーで プレイヤー選択 と 1P/2Pセット を操作可能
   - スコアは4桁半角数字のみ入力可能
   - 保存ボタンのクリック不要で即反映
   - アプリケーション or OS 強制終了した場合、次回起動時に入力情報を自動復元
@@ -52,7 +52,8 @@
 
 - セットアップフォルダ内の **PlayerControl.exe** を直接実行
 - よく使う場合はデスクトップ等にショートカットを作成
-- 基本的な使用法は [**インストカード PDF (A5版)**](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf) を参照
+- 基本的な使用法は [**インストカード PDF (A5版)**](/Manual/PlayerControlForBIGTET_InstCard_v0.3.1.pdf) 
+- その他細かな使い方は wiki [**利用方法 補足**](https://github.com/gans1971/PlayerControl_for_BIGTET/wiki/%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95-%E8%A3%9C%E8%B6%B3) を参照
 
 ## アプリの挙動解説
 
