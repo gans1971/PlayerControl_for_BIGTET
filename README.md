@@ -33,8 +33,6 @@
 
 ## 🕹️セットアップ方法
 - [**セットアップ方法 PDF (A5版) ダウンロード**](/Manual/PlayerControlForBIGTET_Setup.pdf)
-
-- 詳細は [**セットアップ方法 PDF**](/Manual/PlayerControlForBIGTET_Setup.pdf) 参照
 - ZIPファイル展開 ⇨ *PlayerControl_for_BIGTET* フォルダ
 - テンプレートフォルダ直下に *PlayerControl_for_BIGTET* フォルダをそのままコピー
   - ※　StreamControl アプリフォルダと同じ階層
