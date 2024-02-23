@@ -28,17 +28,25 @@ namespace PlayerControl.View
 			get { return (String)GetValue(ScoreLabelText1Property); }
 			set { SetValue(ScoreLabelText1Property, value); }
 		}
+		public static readonly DependencyProperty ScoreLabelText2Property =
+			DependencyProperty.Register("ScoreLabelText2", typeof(String), typeof(ScoreSettingView), new PropertyMetadata(String.Empty));
+		public String ScoreLabelText2
+		{
+			get { return (String)GetValue(ScoreLabelText2Property); }
+			set { SetValue(ScoreLabelText2Property, value); }
+		}
 
 		/// <summary>
 		/// コンストラクタ
 		/// </summary>
 		/// <param name="_currentMode">スコアモード TODO:Ver0.3.x未実装</param>
 		/// <param name="_scoreLabel1">スコアラベルに表示する文字列</param>
-		public ScoreSettingView(ScoreMode _currentMode, String _scoreLabel1)
+		public ScoreSettingView(ScoreMode _currentMode, String _scoreLabel1, String _scoreLabel2)
 		{
 			// 引数で指定されたUI設定を反映
 			CurrentScoreMode = _currentMode;
 			ScoreLabelText1 = _scoreLabel1;
+			ScoreLabelText2 = _scoreLabel2;
 
 			InitializeComponent();
 	}

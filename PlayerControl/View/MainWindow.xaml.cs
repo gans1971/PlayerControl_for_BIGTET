@@ -2,8 +2,10 @@
 using PlayerControl.Model;
 using PlayerControl.ViewModels;
 using System;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -136,5 +138,6 @@ namespace PlayerControl.View
                 }
             }
         }
+
 	}
 }

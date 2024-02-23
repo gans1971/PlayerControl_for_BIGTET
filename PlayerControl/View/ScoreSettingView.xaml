@@ -11,6 +11,7 @@
 	xmlns:v="clr-namespace:PlayerControl.View"
 	mc:Ignorable="d">
 	<UserControl.Resources>
+		<converters:EnumMatchToVisibilityConverter x:Key="EnumMatchToVisibilityConverter" />
 		<converters:Score_LavelConverter x:Key="Score_LavelConverter" />
 	</UserControl.Resources>
 	<Grid
@@ -89,16 +90,11 @@
 					</Style>
 				</StackPanel.Resources>
 
-				<Grid x:Name="ScoreGrid">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
-
+				<StackPanel x:Name="ScorePanel" Orientation="Horizontal">
 					<!--  スコアテキスト1  -->
 					<TextBox
 						x:Name="ScoreTextBox"
-						Grid.Column="1"
+						MinWidth="90"
 						bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus="True"
 						md:HintAssist.Hint="{Binding ScoreLabelText1, Converter={StaticResource Score_LavelConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
 						CommandManager.PreviewExecuted="ScoreTextBox_PreviewExecuted"
@@ -123,7 +119,36 @@
 							</KeyBinding>
 						</TextBox.InputBindings>
 					</TextBox>
-				</Grid>
+					<!--  スコアテキスト2  -->
+					<TextBox
+						x:Name="Score_SecondTextBox"
+						MinWidth="90"
+						bh:TextBoxGotFocusBehaviors.SelectAllOnGotFocus="True"
+						md:HintAssist.Hint="{Binding ScoreLabelText2, Converter={StaticResource Score_LavelConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
+						CommandManager.PreviewExecuted="ScoreTextBox_PreviewExecuted"
+						GotKeyboardFocus="ScoreTextBox_GotKeyboardFocus"
+						MaxLength="4"
+						PreviewTextInput="ScoreTextBox_PreviewTextInput"
+						Visibility="{Binding CurrentScoreMode, ConverterParameter=Mixture, Converter={StaticResource EnumMatchToVisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
+						<md:TextFieldAssist.CharacterCounterStyle>
+							<Style TargetType="TextBlock" />
+						</md:TextFieldAssist.CharacterCounterStyle>
+						<TextBox.Text>
+							<Binding Path="Score_Second" UpdateSourceTrigger="PropertyChanged">
+								<Binding.ValidationRules>
+									<v:NotEmptyValidationRule ValidatesOnTargetUpdated="True" />
+								</Binding.ValidationRules>
+							</Binding>
+						</TextBox.Text>
+						<TextBox.InputBindings>
+							<KeyBinding Command="{x:Static md:DialogHost.CloseDialogCommand}" Gesture="Enter">
+								<KeyBinding.CommandParameter>
+									<system:Boolean>True</system:Boolean>
+								</KeyBinding.CommandParameter>
+							</KeyBinding>
+						</TextBox.InputBindings>
+					</TextBox>
+				</StackPanel>
 				<TextBox
 					x:Name="TwitterTextBox"
 					Margin="5,20,5,0"

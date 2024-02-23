@@ -38,21 +38,28 @@ namespace PlayerControl.ViewModels
 		public CollectionViewSource PlayersViewSource { get; set; } = new CollectionViewSource();
 		public ReactivePropertySlim<String> OutputJsonPath { get; } = new ReactivePropertySlim<String>();
 		public ReactivePropertySlim<DateTime> OutputJsonTime { get; } = new ReactivePropertySlim<DateTime>(DateTime.MinValue);
+		public ReactivePropertySlim<DateTime> SetClipboardTime { get; } = new ReactivePropertySlim<DateTime>(DateTime.MinValue);
 		public ReactivePropertySlim<PlayerModel> SelectedPlayer { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<String> AppTitle { get; } = new ReactivePropertySlim<String>("PlayerControl");
 		public ReactivePropertySlim<String> DefaultCountry { get; } = new ReactivePropertySlim<String>("blk");
-
-		// TODO: Ver0.3.x 未実装：スコアモード対応時に使用する
+		// Single/Mixture 対応(Ver0.3.5)
 		public ReactivePropertySlim<ScoreMode> CurrentScoreMode { get; } = new ReactivePropertySlim<ScoreMode>(ScoreMode.Single);
+
 		#endregion
 
 		#region バックアップ対象となる Property (_operation モデルと連携する)
 		public ReactiveProperty<String> Stage { get; }
+		// HTMLのスコアの上に表示する文字列
 		public ReactiveProperty<String> ScoreLabel { get; }
+
+		// PlayerControl の スコア入力枠に表示するラベル 複数スコア入力モードでのみ仕様（HTMLには影響しない）
+		public ReactivePropertySlim<String> UI_Score1Label { get; } = new ReactivePropertySlim<String>("Nor");
+		public ReactivePropertySlim<String> UI_Score2Label { get; } = new ReactivePropertySlim<String>("20G");
+
 		// ※ ReadOnlyReactivePropertyを使うと、gong-wpf-dragdrop を使った順番操作時に例外が発生する（ReadOnly非対応）
-		// ここでは OperationModel の _players プロパティのインスタンスを直接参照する
+		// OperationModel の _players プロパティのインスタンスを直接参照する
 		// _players()はPrivateなので、参照・追加・削除などのアクセスはOperationModelのメソッドを介して行う
 		public ObservableCollection<PlayerModel> Players { get => _operation.GetPlayers(); }
 		#endregion
@@ -124,6 +131,12 @@ namespace PlayerControl.ViewModels
 				Debug.WriteLine($"[GetScoreText]Exception {ex.ToString()}");
 				// アセンブリ情報（タイトルバー表示）が取れない場合はなにもせずデフォルト名を表示する
 			}
+
+			// ReactiveProperty更新時の処理
+			CurrentScoreMode.Subscribe(x =>
+			{
+				SaveStreamControlJson();
+			});
 
 			// アプリ開始コマンド
 			LoadedCommand = new ReactiveCommand();
@@ -312,6 +325,8 @@ namespace PlayerControl.ViewModels
 				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && fe.DataContext is PlayerModel player)
 				{
 					SetPlayerInfoToClipboard(player);
+					// 実行時刻を更新
+					SetClipboardTime.Value = DateTime.Now;
 				}
 			}).AddTo(Disposable);
 
@@ -358,8 +373,22 @@ namespace PlayerControl.ViewModels
 			{
 				try
 				{
-					var setText = $"{player.Name}\t{player.Score}";
-					Clipboard.SetText(setText);
+					// 名前の長さによるがタブは2個入れておく
+					var clipboardText = $"{player.Name}\t\t";
+
+					// モード別にスコアテキストを組む
+					switch(CurrentScoreMode.Value)
+					{
+						case ScoreMode.Mixture:
+							clipboardText += $"{UI_Score1Label}:{player.Score} {UI_Score2Label}:{player.Score_Second}";
+							break;
+						case ScoreMode.Single:
+						default:
+							clipboardText += player.Score.ToString();
+							break;
+					}
+
+					Clipboard.SetText(clipboardText);
 				}
 				catch (Exception ex)
 				{
@@ -423,8 +452,15 @@ namespace PlayerControl.ViewModels
 					// 下記行を入れないとアニメーション中にキー操作すると元ダイアログにフォーカスが移動してしまう
 					System.Windows.Input.Keyboard.ClearFocus();
 
-					// スコア設定Viewを表示
-					var view = new ScoreSettingView(CurrentScoreMode.Value, ScoreLabel.Value)
+					// スコア設定Viewを表示(モードによってラベルを設定)
+					var label1 = ScoreLabel.Value;
+					var label2 = String.Empty;
+					if ( CurrentScoreMode.Value == ScoreMode.Mixture)
+					{
+						label1 = UI_Score1Label.Value;
+						label2 = UI_Score2Label.Value;
+					}
+					var view = new ScoreSettingView(CurrentScoreMode.Value, label1,label2)
 					{
 						DataContext = player
 					};
@@ -580,7 +616,7 @@ namespace PlayerControl.ViewModels
 				Debug.WriteLine($"[BackupPlayersData]Exception {ex.ToString()}");
 			}
 		}
-		private OperationModel RestoreBackupPlayersData()
+		private OperationModel? RestoreBackupPlayersData()
 		{
 			try
 			{

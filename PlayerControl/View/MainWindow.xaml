@@ -9,6 +9,7 @@
 	xmlns:dd="urn:gong-wpf-dragdrop"
 	xmlns:ei="http://schemas.microsoft.com/xaml/behaviors"
 	xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+	xmlns:m="clr-namespace:PlayerControl.Model"
 	xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
 	xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -19,9 +20,9 @@
 	xmlns:vm="clr-namespace:PlayerControl.ViewModels"
 	x:Name="metroWindow"
 	Title="{Binding AppTitle.Value}"
-	Width="400"
+	Width="440"
 	Height="220"
-	MinWidth="400"
+	MinWidth="440"
 	MinHeight="180"
 	Dialog:DialogParticipation.Register="{Binding}"
 	BorderThickness="1"
@@ -95,11 +96,27 @@
 		<converters:Score_Second_LavelConverter x:Key="Score_Second_LavelConverter" />
 		<converters:Score_LavelConverter x:Key="Score_LavelConverter" />
 		<converters:EnumMatchToVisibilityConverter x:Key="EnumMatchToVisibilityConverter" />
+		<converters:ScoreAmountConverter x:Key="ScoreAmountConverter" />
 		<!--#endregion-->
 
 		<!--#region Storyboard-->
 		<Storyboard x:Key="SaveJsonAnimation">
 			<DoubleAnimationUsingKeyFrames Storyboard.TargetName="SaveJsonFlushRect" Storyboard.TargetProperty="(UIElement.Opacity)">
+				<EasingDoubleKeyFrame KeyTime="00:00:00.1500000" Value="0.6">
+					<EasingDoubleKeyFrame.EasingFunction>
+						<PowerEase EasingMode="EaseIn" />
+					</EasingDoubleKeyFrame.EasingFunction>
+				</EasingDoubleKeyFrame>
+				<EasingDoubleKeyFrame KeyTime="00:00:00.5000000" Value="0">
+					<EasingDoubleKeyFrame.EasingFunction>
+						<PowerEase EasingMode="EaseOut" />
+					</EasingDoubleKeyFrame.EasingFunction>
+				</EasingDoubleKeyFrame>
+			</DoubleAnimationUsingKeyFrames>
+		</Storyboard>
+
+		<Storyboard x:Key="SetClipboardAnimation">
+			<DoubleAnimationUsingKeyFrames Storyboard.TargetName="ClipboardAnimationRect" Storyboard.TargetProperty="(UIElement.Opacity)">
 				<EasingDoubleKeyFrame KeyTime="00:00:00.1500000" Value="0.6">
 					<EasingDoubleKeyFrame.EasingFunction>
 						<PowerEase EasingMode="EaseIn" />
@@ -133,6 +150,15 @@
 				<ei:ControlStoryboardAction ControlStoryboardOption="Play" Storyboard="{StaticResource SaveJsonAnimation}" />
 			</ei:DataTrigger.Actions>
 		</ei:DataTrigger>
+		<!--  クリップボード追加時のアニメーション  -->
+		<ei:DataTrigger
+			Binding="{Binding SetClipboardTime.Value, Mode=OneWay}"
+			Comparison="NotEqual"
+			Value="{x:Static sys:DateTime.MinValue}">
+			<ei:DataTrigger.Actions>
+				<ei:ControlStoryboardAction ControlStoryboardOption="Play" Storyboard="{StaticResource SetClipboardAnimation}" />
+			</ei:DataTrigger.Actions>
+		</ei:DataTrigger>
 	</i:Interaction.Triggers>
 	<!--#endregion-->
 
@@ -145,7 +171,7 @@
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
-			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" MinHeight="32" />
 		</Grid.RowDefinitions>
 
 		<!--#region ステージ設定-->
@@ -215,22 +241,7 @@
 						<KeyBinding Command="{Binding SetStageCommand}" Gesture="Enter" />
 					</TextBox.InputBindings>
 				</TextBox>
-
 			</StackPanel>
-
-			<!--  ↓ ダブルスコアモード実装検討 （Ver 0.3.x では無効化)
-			<ComboBox
-				x:Name="ScoreModeComboBox"
-				Grid.Column="1"
-				MinWidth="100"
-				Margin="5,0,0,0"
-				Padding="2,5"
-				materialDesign:HintAssist.Hint="スコアモード"
-				ItemsSource="{Binding Source={converters:EnumBindingSource {x:Type m:ScoreMode}}}"
-				SelectedValue="{Binding CurrentScoreMode.Value, Mode=TwoWay}"
-				Style="{StaticResource MaterialDesignFilledComboBox}"
-				Visibility="Collapsed" />
-			↑ (実装検討)-->
 		</Grid>
 		<!--#endregion-->
 
@@ -301,12 +312,35 @@
 				TabIndex="13">
 				<TextBlock Text="2P クリア" />
 			</Button>
+
+			<!--
+				TODO:便利ツール群
+				ToggleCheckedContentCommand="{Binding FloatingActionDemoCommand}"
+				ToggleCheckedContentCommandParameter="wowsers"
+			<materialDesign:PopupBox PlacementMode="BottomAndAlignCentres">
+				<materialDesign:PopupBox.ToggleCheckedContent>
+					<materialDesign:PackIcon
+						Width="20"
+						Height="20"
+						Kind="Pencil" />
+				</materialDesign:PopupBox.ToggleCheckedContent>
+				<StackPanel>
+					<Button Content="1" ToolTip="One" />
+					<Button
+						Content="2"
+						IsEnabled="False"
+						ToolTip="Two" />
+					<Button Content="3" ToolTip="Three" />
+				</StackPanel>
+			</materialDesign:PopupBox>
+			-->
+
 			<Grid x:Name="SaveJsonGrid" DockPanel.Dock="Right">
 				<Button
 					x:Name="SaveJsonButton"
 					Padding="5,0"
 					Command="{Binding SaveJsonCommand}"
-					TabIndex="14"
+					TabIndex="15"
 					ToolTip="設定を保存（手動）">
 					<md:PackIcon Kind="ContentSaveEditOutline" />
 				</Button>
@@ -336,7 +370,6 @@
 			x:Name="PlayersListBox"
 			Grid.Row="2"
 			HorizontalContentAlignment="Stretch"
-			KeyboardNavigation.ControlTabNavigation="None"
 			VerticalContentAlignment="Center"
 			d:ItemsSource="{d:SampleData ItemCount=3}"
 			dd:DragDrop.DropScrollingMode="VerticalOnly"
@@ -350,6 +383,7 @@
 			BorderThickness="1"
 			IsTabStop="False"
 			ItemsSource="{Binding Players}"
+			KeyboardNavigation.ControlTabNavigation="None"
 			ScrollViewer.CanContentScroll="True">
 			<i:Interaction.Behaviors>
 				<v:ScrollIntoViewForListBox />
@@ -488,12 +522,14 @@
 							<Style TargetType="{x:Type Label}">
 								<Setter Property="Foreground" Value="#101010" />
 								<Setter Property="FontSize" Value="11" />
+								<Setter Property="MinWidth" Value="35" />
 								<Setter Property="FontFamily" Value="Arial" />
-								<Setter Property="Padding" Value="0,0,2,0" />
+								<Setter Property="Padding" Value="5,0,2,0" />
 								<Setter Property="VerticalContentAlignment" Value="Center" />
+								<Setter Property="HorizontalContentAlignment" Value="Right" />
 							</Style>
-
 						</Grid.Resources>
+
 						<!--  プレイヤー名Grid  -->
 						<Grid x:Name="PlayerNameGrid">
 							<Grid.ColumnDefinitions>
@@ -579,23 +615,65 @@
 						</Grid>
 
 						<!--  表示スコア1  -->
-						<Border Grid.Column="1" Margin="5,0">
-							<StackPanel x:Name="Score1_Label" Orientation="Horizontal">
-								<Label
-									x:Name="ScoreLabel"
-									Margin="2,0"
-									Content="{Binding DataContext.ScoreLabel.Value, Converter={StaticResource Score_LavelConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"
-									Foreground="{StaticResource MahApps.Brushes.Gray2}" />
-								<TextBox
-									x:Name="Score1"
-									CommandManager.PreviewExecuted="ScoreTextBox_PreviewExecuted"
-									GotKeyboardFocus="ScoreTextBox_GotKeyboardFocus"
-									IsTabStop="False"
-									PreviewTextInput="ScoreTextBox_PreviewTextInput"
-									Style="{StaticResource ScoreTextBoxStyle}"
-									Text="{Binding Score, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringEmptyToZeroConverter}}" />
-							</StackPanel>
-						</Border>
+						<StackPanel
+							x:Name="Score1Panel"
+							Grid.Column="1"
+							Orientation="Horizontal">
+							<Label
+								x:Name="Score1Label"
+								Content="{Binding DataContext.ScoreLabel.Value, Converter={StaticResource Score_LavelConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"
+								Foreground="{StaticResource MahApps.Brushes.Gray2}" />
+							<TextBox
+								x:Name="Score1"
+								CommandManager.PreviewExecuted="ScoreTextBox_PreviewExecuted"
+								GotKeyboardFocus="ScoreTextBox_GotKeyboardFocus"
+								IsTabStop="False"
+								PreviewTextInput="ScoreTextBox_PreviewTextInput"
+								Style="{StaticResource ScoreTextBoxStyle}"
+								Text="{Binding Score, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringEmptyToZeroConverter}}" />
+						</StackPanel>
+						<!--  表示スコア2  -->
+						<StackPanel
+							x:Name="Score2Panel"
+							Grid.Column="2"
+							Orientation="Horizontal">
+							<Label
+								x:Name="Score2Label"
+								Content="{Binding DataContext.UI_Score2Label.Value, Converter={StaticResource Score_LavelConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"
+								Foreground="{StaticResource MahApps.Brushes.Gray2}" />
+							<TextBox
+								x:Name="Score2"
+								CommandManager.PreviewExecuted="ScoreTextBox_PreviewExecuted"
+								GotKeyboardFocus="ScoreTextBox_GotKeyboardFocus"
+								IsTabStop="False"
+								PreviewTextInput="ScoreTextBox_PreviewTextInput"
+								Style="{StaticResource ScoreTextBoxStyle}"
+								Text="{Binding Score_Second, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringEmptyToZeroConverter}}" />
+							<Label
+								x:Name="AmountLabel"
+								Content="Total:"
+								Foreground="{StaticResource MahApps.Brushes.Gray2}"
+								IsTabStop="False" />
+							<TextBox
+								x:Name="AmountText"
+								MinWidth="35"
+								VerticalAlignment="Center"
+								VerticalContentAlignment="Center"
+								BorderThickness="0"
+								FontFamily="Arial"
+								FontSize="12"
+								FontWeight="Bold"
+								IsReadOnly="True"
+								IsTabStop="False"
+								TextAlignment="Center">
+								<TextBox.Text>
+									<MultiBinding Converter="{StaticResource ScoreAmountConverter}">
+										<Binding Path="Score" />
+										<Binding Path="Score_Second" />
+									</MultiBinding>
+								</TextBox.Text>
+							</TextBox>
+						</StackPanel>
 
 						<!--  1P/2P 設定ボタン  -->
 						<StackPanel
@@ -640,9 +718,23 @@
 						</StackPanel>
 					</Grid>
 					<DataTemplate.Triggers>
+						<!--  ユーザー選択時の色調整など  -->
 						<DataTrigger Binding="{Binding IsSelectedUser}" Value="True">
-							<Setter TargetName="ScoreLabel" Property="Foreground" Value="{StaticResource MahApps.Brushes.DataGrid.Selection.Text}" />
+							<Setter TargetName="Score1Label" Property="Foreground" Value="{StaticResource MahApps.Brushes.DataGrid.Selection.Text}" />
+							<Setter TargetName="Score2Label" Property="Foreground" Value="{StaticResource MahApps.Brushes.DataGrid.Selection.Text}" />
+							<Setter TargetName="AmountLabel" Property="Foreground" Value="{StaticResource MahApps.Brushes.DataGrid.Selection.Text}" />
+							<Setter TargetName="AmountText" Property="Foreground" Value="{StaticResource MahApps.Brushes.DataGrid.Selection.Text}" />
 							<Setter TargetName="PlayerTwitterLabel" Property="Foreground" Value="{StaticResource MahApps.Brushes.DataGrid.Selection.Text}" />
+						</DataTrigger>
+
+						<!--  スコアモードによる表示切り替え  -->
+						<DataTrigger Binding="{Binding DataContext.CurrentScoreMode.Value, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" Value="{x:Static m:ScoreMode.Single}">
+							<Setter TargetName="Score2Panel" Property="Visibility" Value="Collapsed" />
+						</DataTrigger>
+						<DataTrigger Binding="{Binding DataContext.CurrentScoreMode.Value, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" Value="{x:Static m:ScoreMode.Mixture}">
+							<Setter TargetName="Score2Panel" Property="Visibility" Value="Visible" />
+							<Setter TargetName="Score1Label" Property="Content" Value="{Binding DataContext.UI_Score1Label.Value, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
+							<Setter TargetName="Score2Label" Property="Content" Value="{Binding DataContext.UI_Score2Label.Value, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
 						</DataTrigger>
 					</DataTemplate.Triggers>
 				</DataTemplate>
@@ -661,14 +753,14 @@
 				<Label
 					HorizontalContentAlignment="Center"
 					VerticalContentAlignment="Center"
-					Content="👆　プレイヤーを追加してください"
+					Content="👆 プレイヤーを追加してください"
 					FontFamily="Yu Gothic UI Semibold"
 					FontSize="16" />
 			</Grid>
 		</Border>
 		<!--#endregion-->
 
-		<!--#region ヒントバー-->
+		<!--#region 下端に表示するバー（スコアモード設定など）-->
 		<DockPanel
 			x:Name="StatusBar"
 			Grid.Row="3"
@@ -689,11 +781,79 @@
 					<Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.Gray3}" />
 				</Style>
 			</DockPanel.Resources>
+			<StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+				<StackPanel.Resources>
+					<Style TargetType="{x:Type Label}">
+						<Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.Gray2}" />
+						<Setter Property="Margin" Value="0" />
+						<Setter Property="Padding" Value="0" />
+						<Setter Property="FontSize" Value="12" />
+						<Setter Property="FontWeight" Value="Bold" />
+						<Setter Property="VerticalContentAlignment" Value="Center" />
+					</Style>
+					<Style TargetType="{x:Type TextBox}">
+						<Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.Gray2}" />
+						<Setter Property="Margin" Value="5,0" />
+						<Setter Property="Padding" Value="0" />
+						<Setter Property="FontSize" Value="12" />
+						<Setter Property="FontWeight" Value="Bold" />
+						<Setter Property="VerticalContentAlignment" Value="Center" />
+					</Style>
+				</StackPanel.Resources>
 
+				<Label Content="スコアモード：" />
+				<!--  スコアモード  -->
+				<ComboBox
+					x:Name="ScoreModeComboBox"
+					MinWidth="80"
+					Margin="5,5,15,5"
+					Padding="2,1,0,1"
+					VerticalAlignment="Center"
+					VerticalContentAlignment="Center"
+					BorderThickness="0"
+					IsReadOnly="True"
+					ItemsSource="{Binding Source={converters:EnumBindingSource {x:Type m:ScoreMode}}}"
+					SelectedItem="{Binding CurrentScoreMode.Value}"
+					Style="{StaticResource MaterialDesignOutlinedComboBox}"
+					TabIndex="20" />
+
+				<!--  MixtureMode時のみ表示するスコアラベル設定コントロール  -->
+				<StackPanel
+					x:Name="MixtureModeScoreLabelPanel"
+					Orientation="Horizontal"
+					Visibility="{Binding CurrentScoreMode.Value, ConverterParameter=Mixture, Converter={StaticResource EnumMatchToVisibilityConverter}}">
+					<Label Content="1：" />
+					<TextBox
+						x:Name="Score1Label"
+						Width="50"
+						Padding="2,0"
+						VerticalAlignment="Center"
+						VerticalContentAlignment="Center"
+						mah:TextBoxHelper.Watermark="ラベルを入力"
+						TabIndex="22"
+						Text="{Binding UI_Score1Label.Value, UpdateSourceTrigger=PropertyChanged}"
+						TextWrapping="NoWrap" />
+
+					<Label Content="2：" />
+					<TextBox
+						x:Name="Score2Label"
+						Width="50"
+						Padding="2,0"
+						VerticalAlignment="Center"
+						VerticalContentAlignment="Center"
+						mah:TextBoxHelper.Watermark="ラベルを入力"
+						TabIndex="24"
+						Text="{Binding UI_Score2Label.Value, UpdateSourceTrigger=PropertyChanged}"
+						TextWrapping="NoWrap" />
+				</StackPanel>
+
+			</StackPanel>
+			<!--  簡単な使い方を表示するパネル：面積が足りなくなってきたので非表示  -->
 			<StackPanel
 				x:Name="HintPanel"
 				DockPanel.Dock="Left"
-				Orientation="Horizontal">
+				Orientation="Horizontal"
+				Visibility="Collapsed">
 				<md:PackIcon Kind="ArrowUpBox" />
 				<md:PackIcon Kind="ArrowDownBox" />
 				<Label Content="プレイヤー選択" />
@@ -714,6 +874,20 @@
 				<TextBlock VerticalAlignment="Center" Text="{Binding OutputJsonTime.Value, StringFormat={}{0:HH時mm分ss.f秒}}" />
 			</StackPanel>
 		</DockPanel>
+		<!--#endregion-->
+
+		<!--#region クリップボード登録アニメーション-->
+		<Rectangle
+			x:Name="ClipboardAnimationRect"
+			Grid.RowSpan="4"
+			Width="Auto"
+			Height="Auto"
+			d:IsLocked="True"
+			Fill="#70FFFFFF"
+			IsHitTestVisible="False"
+			Opacity="0"
+			Stroke="{StaticResource MahApps.Brushes.Accent2}"
+			StrokeThickness="3" />
 		<!--#endregion-->
 
 		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->

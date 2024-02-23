@@ -11,9 +11,9 @@ namespace PlayerControl.Model
 	[TypeConverter(typeof(EnumDisplayTypeConverter))]
 	public enum ScoreMode
 	{
-		[Display(Name = "シングルスコア")]
+		[Display(Name = "シングル")]
 		Single = 0,
-		[Display(Name = "合計スコア")]
+		[Display(Name = "2スコア合計")]
 		Mixture = 2,
 	}
 }
