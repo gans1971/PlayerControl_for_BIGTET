@@ -29,7 +29,7 @@
 - セットアップフォルダ内の **PlayerControl.exe** を直接実行
 - よく使う場合はデスクトップ等にショートカットを作成
 - 基本的な使用法は [**インストカード PDF (A5版)**](/Manual/PlayerControlForBIGTET_InstCard_v0.3.4.pdf) 
-- その他細かな使い方は [**wiki 使い方補足**](https://github.com/gans1971/PlayerControl_for_BIGTET/wiki/%E4%BD%BF%E3%81%84%E6%96%B9-%E8%A3%9C%E8%B6%B3)を御覧ください
+- その他細かな使い方は [**wiki**](https://github.com/gans1971/PlayerControl_for_BIGTET/wiki)を御覧ください
 
 ## 🕹️セットアップ方法
 - [**セットアップ方法 PDF (A5版) ダウンロード**](/Manual/PlayerControlForBIGTET_Setup.pdf)
