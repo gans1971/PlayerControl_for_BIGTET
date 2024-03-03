@@ -1,6 +1,6 @@
-﻿using MahApps.Metro.Controls.Dialogs;
+﻿using EastAsianWidthDotNet;
+using MahApps.Metro.Controls.Dialogs;
 using MaterialDesignThemes.Wpf;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using PlayerControl.Model;
 using PlayerControl.View;
@@ -10,10 +10,14 @@ using Servicies;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -29,8 +33,14 @@ namespace PlayerControl.ViewModels
 		// CurrentPlayerをクリアするための空PlayerModel インスタンス
 		private PlayerModel _emptyPlayer { get; } = new PlayerModel();
 
+		private SemaphoreSlim _semaphoreSlimSelialize = new(1, 1);
+
+
 		// ユーザー入力データ Model のインスタンス（バックアップ対象）▶コンストラクタで初期化
 		public OperationModel _operation { get; }
+
+		// app.config から取得した設定値
+		public int _notepadTabCount { get; } = 8;
 
 		#region Viewと連携するUI用プロパティ
 		public IDialogCoordinator PlayerControlDialogCoordinator { get; set; } = new DialogCoordinator();
@@ -55,7 +65,7 @@ namespace PlayerControl.ViewModels
 		public ReactiveProperty<String> ScoreLabel { get; }
 
 		// PlayerControl の スコア入力枠に表示するラベル 複数スコア入力モードでのみ仕様（HTMLには影響しない）
-		public ReactivePropertySlim<String> UI_Score1Label { get; } = new ReactivePropertySlim<String>("Nor");
+		public ReactivePropertySlim<String> UI_Score1Label { get; } = new ReactivePropertySlim<String>("NOR");
 		public ReactivePropertySlim<String> UI_Score2Label { get; } = new ReactivePropertySlim<String>("20G");
 
 		// ※ ReadOnlyReactivePropertyを使うと、gong-wpf-dragdrop を使った順番操作時に例外が発生する（ReadOnly非対応）
@@ -80,7 +90,12 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand SetStageCommand { get; }
 		public ReactiveCommand ClearStageCommand { get; }
 		public ReactiveCommand ClearScoreLabelCommand { get; }
-		public ReactiveCommand ToClipboardCommand { get; }
+		public ReactiveCommand ClearAllPlayersScoreCommand { get; }
+		public ReactiveCommand ShufflePlayersCommand { get; }
+		public ReactiveCommand ListItemToClipboardCommand { get; }
+		public ReactiveCommand SelectedPlayerToClipboardCommand { get; }
+		public ReactiveCommand CurrentPlayersToClipboardCommand { get; }
+		public ReactiveCommand AllPlayersToClipboardCommand { get; }
 		public ReactiveCommand CloseModalWindowCommand { get; }
 		#endregion
 
@@ -89,8 +104,15 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public MainViewModel()
 		{
+			// app.config の値を格納
+			var param = ConfigurationManager.AppSettings["NotePadTabCount"];
+			if (int.TryParse(param, out var tabCount))
+			{
+				_notepadTabCount = tabCount;
+			}
+
 			// OperationModelを初期化
-			var restore = RestoreBackupPlayersData();   // バックアップファイルがある場合
+			OperationModel? restore = RestoreBackupPlayersData();   // バックアップファイルがある場合
 			if (restore != null)
 			{
 				_operation = restore;
@@ -105,19 +127,19 @@ namespace PlayerControl.ViewModels
 			this.ScoreLabel = _operation.ToReactivePropertyAsSynchronized(m => m.ScoreLabel).AddTo(Disposable);
 
 			// アプリタイトルを設定
-			var assmAttr = new AssemblyAttribute();
-			var asm = Assembly.GetExecutingAssembly();
+			AssemblyAttribute assmAttr = new();
+			Assembly asm = Assembly.GetExecutingAssembly();
 			try
 			{
 				if (asm != null)
 				{
-					var asmName = asm.GetName();
+					AssemblyName asmName = asm.GetName();
 					if (asmName != null)
 					{
 						var AppName = asmName.Name;
 
 						// 属性から製品名が取得できたらそちらを使う
-						object[] productarray = asm.GetCustomAttributes(typeof(AssemblyProductAttribute), false);
+						var productarray = asm.GetCustomAttributes(typeof(AssemblyProductAttribute), false);
 						if (productarray != null && productarray.Length > 0)
 						{
 							AppName = ((AssemblyProductAttribute)productarray[0]).Product;
@@ -232,7 +254,7 @@ namespace PlayerControl.ViewModels
 			PlayerExchangeCommand = new ReactiveCommand();
 			PlayerExchangeCommand.Subscribe(x =>
 			{
-				var temp = CurrentPlayer1.Value;
+				PlayerModel temp = CurrentPlayer1.Value;
 				CurrentPlayer1.Value = CurrentPlayer2.Value;
 				CurrentPlayer2.Value = temp;
 				SaveStreamControlJson();
@@ -268,7 +290,7 @@ namespace PlayerControl.ViewModels
 					if (!String.IsNullOrEmpty(trimName))
 					{
 						// 同じ名前のユーザーがいないかチェック
-						var sameNamePlayer = SearchPlayer(trimName);
+						PlayerModel? sameNamePlayer = SearchPlayer(trimName);
 
 						// 同じ名前がすでに存在した場合
 						if (sameNamePlayer != null)
@@ -317,17 +339,48 @@ namespace PlayerControl.ViewModels
 				SaveStreamControlJson();
 			}).AddTo(Disposable);
 
+			ShufflePlayersCommand = new ReactiveCommand();
+			ShufflePlayersCommand.Subscribe(_ =>
+			{
+				ShufflePlayers();
+			}).AddTo(Disposable);
 
-			// クリップボードにユーザー名とスコアを貼り付けるコマンド
-			ToClipboardCommand = new ReactiveCommand();
-			ToClipboardCommand.Subscribe(x =>
+			// 指定されたListBoxItemのユーザー名とスコアをクリップボードに貼り付けるコマンド（コンテキストメニュー用）
+			ListItemToClipboardCommand = new ReactiveCommand();
+			ListItemToClipboardCommand.Subscribe(x =>
 			{
 				if (x is RoutedEventArgs args && args.Source is FrameworkElement fe && fe.DataContext is PlayerModel player)
 				{
-					SetPlayerInfoToClipboard(player);
-					// 実行時刻を更新
-					SetClipboardTime.Value = DateTime.Now;
+					SetPlayerModelNameAndScoreToClipboard(player);
 				}
+			}).AddTo(Disposable);
+			// 選択中のプレイヤーのユーザー名とスコアをクリップボードに貼り付けるコマンド
+			SelectedPlayerToClipboardCommand = new ReactiveCommand();
+			SelectedPlayerToClipboardCommand.Subscribe(x =>
+			{
+				if (SelectedPlayer.Value != null)
+				{
+					SetSelectedPlayerNameAndScoreToClipboard();
+				}
+			}).AddTo(Disposable);
+			// カレントプレイヤー(1P/2P)のユーザー名とスコアをクリップボードに貼り付けるコマンド
+			CurrentPlayersToClipboardCommand = new ReactiveCommand();
+			CurrentPlayersToClipboardCommand.Subscribe(x =>
+			{
+				SetCurrentPlayerNameAndScoreToClipboard();
+			}).AddTo(Disposable);
+			// 全プレイヤーのユーザー名とスコアをクリップボードに貼り付けるコマンド
+			AllPlayersToClipboardCommand = new ReactiveCommand();
+			AllPlayersToClipboardCommand.Subscribe(x =>
+			{
+				SetAllPlayerNameAndScoreToClipboard();
+			}).AddTo(Disposable);
+
+			// 全プレイヤーのスコアをクリアするコマンド
+			ClearAllPlayersScoreCommand = new ReactiveCommand();
+			ClearAllPlayersScoreCommand.Subscribe(x =>
+			{
+				ClearAllPlayersScore();
 			}).AddTo(Disposable);
 
 			// モーダルウィンドウを閉じる
@@ -344,12 +397,12 @@ namespace PlayerControl.ViewModels
 			AboutBoxCommand = new ReactiveCommand();
 			AboutBoxCommand.Subscribe(async _ =>
 			{
-				var _envInfo = new Servicies.EnvironmentInfo();
+				EnvironmentInfo _envInfo = new();
 
 				try
 				{
 					// イベント発火元コントロールのDataContextからVMを取得して更新
-					var view = new AboutView()
+					AboutView view = new()
 					{
 						DataContext = this
 					};
@@ -363,38 +416,171 @@ namespace PlayerControl.ViewModels
 			});
 		}
 
+
+		/// <summary>
+		/// 指定された文字列をクリップボードに積む
+		/// 空文字はなにもしない
+		/// </summary>
+		/// <param name="text"></param>
+		private void SetTextToClipboard(String text)
+		{
+			try
+			{
+				if (!String.IsNullOrEmpty(text))
+				{
+					Clipboard.SetText(text);
+					// 実行時刻を更新
+					SetClipboardTime.Value = DateTime.Now;
+				}
+			}
+			catch (Exception ex)
+			{
+				// ※SetText()を呼ぶと例外が発生することが頻繁にあるが、実際にはクリップボードには正常にコピーされている
+				Debug.WriteLine($"Exception SetTextToClipboard:{ex.ToString()}");
+			}
+		}
+
+		/// <summary>
+		/// 指定されたPlayerModelオブジェクトのプレイヤー名とスコアをクリップボードに積む
+		/// </summary>
+		/// <param name="datacontext"></param>
+		/// <summary>
+		public void SetPlayerModelNameAndScoreToClipboard(object datacontext)
+		{
+			if (datacontext is PlayerModel player)
+			{
+				SetTextToClipboard(GetNameAndScoreText(player));
+			}
+		}
+
+		/// 指定されたPlayerModelオブジェクトのプレイヤー名とスコアをクリップボードに積む
+		/// </summary>
+		public void SetSelectedPlayerNameAndScoreToClipboard()
+		{
+			if (SelectedPlayer.Value != null)
+			{
+				SetTextToClipboard(GetNameAndScoreText(SelectedPlayer.Value));
+			}
+		}
+		/// <summary>
+		/// 1P/2P カレントプレイヤー名とスコアをクリップボードに積む
+		/// </summary>
+		public void SetCurrentPlayerNameAndScoreToClipboard()
+		{
+			var clipboardText = String.Empty;
+			if (CurrentPlayer1.Value != null && CurrentPlayer1.Value != _emptyPlayer)
+			{
+				clipboardText += GetNameAndScoreText(CurrentPlayer1.Value) + "\n";
+			}
+			if (CurrentPlayer2.Value != null && CurrentPlayer2.Value != _emptyPlayer)
+			{
+				clipboardText += GetNameAndScoreText(CurrentPlayer2.Value) + "\n";
+			}
+			Clipboard.SetText(clipboardText);
+		}
+
+		/// <summary>
+		/// リストに追加されているすべてのプレイヤーの名前とスコアをクリップボードに積む
+		/// </summary>
+		public void SetAllPlayerNameAndScoreToClipboard()
+		{
+			try
+			{
+				var clipboardText = String.Empty;
+				foreach (PlayerModel player in Players)
+				{
+					clipboardText += GetNameAndScoreText(player) + "\n";
+				}
+				Clipboard.SetText(clipboardText);
+
+				// 実行時刻を更新
+				SetClipboardTime.Value = DateTime.Now;
+			}
+			catch (Exception ex)
+			{
+				// ※SetText()を呼ぶと例外が発生することが頻繁にあるが、実際にはクリップボードには正常にコピーされている
+				Debug.WriteLine($"Exception GetNameAndScoreText:{ex.ToString()}");
+			}
+		}
+
+		/// <summary>
+		/// 全プレイヤーのスコアをクリア（0）する
+		/// </summary>
+		public void ClearAllPlayersScore()
+		{
+			foreach (PlayerModel player in Players)
+			{
+				player.Score = 0;
+				player.Score_Second = 0;
+			}
+			SaveStreamControlJson();
+		}
+
+
+		private int MaxPlayerNameWidth()
+		{
+			var maxwidth = 0;
+			foreach (PlayerModel checkPlayer in Players)
+			{
+				var w = checkPlayer.Name.GetWidth();
+
+				if (maxwidth < w)
+				{
+					maxwidth = w;
+				}
+			}
+			return maxwidth;
+		}
+
+		public String GetNameAndScoreText(PlayerModel player)
+		{
+			return GetNameAndScoreText(player, MaxPlayerNameWidth());
+		}
+
 		/// <summary>
 		/// プレイヤー情報（名前＋スコア）をクリップボードに積む
 		/// </summary>
 		/// <param name="datacontext"></param>
-		public void SetPlayerInfoToClipboard(object datacontext)
+		public String GetNameAndScoreText(PlayerModel player, int maxWidth)
 		{
-			if (datacontext is PlayerModel player)
+			try
 			{
-				try
-				{
-					// 名前の長さによるがタブは2個入れておく
-					var clipboardText = $"{player.Name}\t\t";
+				// 名前の幅を取得
+				var nameWidth = player.Name.GetWidth();
 
-					// モード別にスコアテキストを組む
-					switch(CurrentScoreMode.Value)
-					{
-						case ScoreMode.Mixture:
-							clipboardText += $"{UI_Score1Label}:{player.Score} {UI_Score2Label}:{player.Score_Second}";
-							break;
-						case ScoreMode.Single:
-						default:
-							clipboardText += player.Score.ToString();
-							break;
-					}
-
-					Clipboard.SetText(clipboardText);
-				}
-				catch (Exception ex)
+				// 名前の後に挿入するタブの数を計算(メモ帳を想定)
+				var padding = (maxWidth - nameWidth);
+				var tabCount = (padding / _notepadTabCount) + 1;
+				if (padding % _notepadTabCount > 0)
 				{
-					Debug.WriteLine($"Exception SetPlayerInfoToClipboard:{ex.ToString()}");
+					tabCount++;
 				}
+				Debug.WriteLine($"Name:{player.Name} Padding:{padding} TabCount:{tabCount}\n ");
+
+				var tabString = new StringBuilder().Insert(0, "\t", tabCount).ToString();
+
+
+				// 名前+タブ
+				var clipboardText = $"{player.Name}{tabString}";
+
+				// モード別にスコアテキストを組む
+				switch (CurrentScoreMode.Value)
+				{
+					case ScoreMode.Mixture:
+						clipboardText += $"{UI_Score1Label}:{player.Score.ToString().PadLeft(4, ' ')}  {UI_Score2Label}:{player.Score_Second.ToString().PadLeft(4, ' ')}  合計:{(player.Score + player.Score_Second).ToString().PadLeft(4, ' ')}";
+						break;
+					case ScoreMode.Single:
+					default:
+						clipboardText += player.Score.ToString();
+						break;
+				}
+				return clipboardText;
 			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Exception GetNameAndScoreText:{ex.ToString()}");
+			}
+			return String.Empty;
 		}
 
 		/// <summary>
@@ -402,7 +588,7 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public void EditPlayersList()
 		{
-			var playerEditWindow = new PlayersEditWindow();
+			PlayersEditWindow playerEditWindow = new();
 			playerEditWindow.DataContext = this;
 			playerEditWindow.ShowDialog();
 		}
@@ -455,12 +641,12 @@ namespace PlayerControl.ViewModels
 					// スコア設定Viewを表示(モードによってラベルを設定)
 					var label1 = ScoreLabel.Value;
 					var label2 = String.Empty;
-					if ( CurrentScoreMode.Value == ScoreMode.Mixture)
+					if (CurrentScoreMode.Value == ScoreMode.Mixture)
 					{
 						label1 = UI_Score1Label.Value;
 						label2 = UI_Score2Label.Value;
 					}
-					var view = new ScoreSettingView(CurrentScoreMode.Value, label1,label2)
+					ScoreSettingView view = new(CurrentScoreMode.Value, label1, label2)
 					{
 						DataContext = player
 					};
@@ -497,7 +683,7 @@ namespace PlayerControl.ViewModels
 					System.Windows.Input.Keyboard.ClearFocus();
 
 					// スコア設定Viewを表示
-					var view = new TwitterSettingView()
+					TwitterSettingView view = new()
 					{
 						DataContext = player
 					};
@@ -527,7 +713,7 @@ namespace PlayerControl.ViewModels
 				// イベント発火元コントロールのDataContextからVMを取得して更新
 				if (datacontext is PlayerModel player)
 				{
-					var view = new PlayerSettingView()
+					PlayerSettingView view = new()
 					{
 						EditName = player.Name,
 						EditTwitter = player.Twitter,
@@ -539,7 +725,7 @@ namespace PlayerControl.ViewModels
 						var trimName = view.EditName;
 
 						// 同じ名前のユーザーがいないかチェック
-						var sameNamePlayer = SearchPlayer(trimName);
+						PlayerModel? sameNamePlayer = SearchPlayer(trimName);
 
 						// 自分自身以外で!、同じ名前が存在した場合
 						if (sameNamePlayer != null && sameNamePlayer != player)
@@ -573,7 +759,7 @@ namespace PlayerControl.ViewModels
 		/// <returns></returns>
 		PlayerModel? SearchPlayer(String targetName)
 		{
-			foreach (var checkPlayer in Players)
+			foreach (PlayerModel checkPlayer in Players)
 			{
 				if (checkPlayer.Name == targetName)
 				{
@@ -605,10 +791,8 @@ namespace PlayerControl.ViewModels
 				var savepath = GetBackupFilePath();
 				if (!String.IsNullOrEmpty(savepath))
 				{
-					using (var sw = new StreamWriter(savepath, false, Encoding.UTF8))
-					{
-						sw.Write(jsonStr);
-					}
+					using StreamWriter sw = new(savepath, false, Encoding.UTF8);
+					sw.Write(jsonStr);
 				}
 			}
 			catch (Exception ex)
@@ -624,7 +808,7 @@ namespace PlayerControl.ViewModels
 				if (!String.IsNullOrEmpty(loadpath) && File.Exists(loadpath))
 				{
 					var jsonStr = File.ReadAllText(loadpath);
-					var deserializedObjects = JsonConvert.DeserializeObject<OperationModel>(jsonStr);
+					OperationModel? deserializedObjects = JsonConvert.DeserializeObject<OperationModel>(jsonStr);
 					if (deserializedObjects != null)
 					{
 						return deserializedObjects;
@@ -653,12 +837,12 @@ namespace PlayerControl.ViewModels
 		/// StreamControl互換JSONを保存する
 		/// </summary>
 		/// <returns></returns>
-		public bool SaveStreamControlJson(bool InitTimeStump = false)
+		public async void SaveStreamControlJson(bool InitTimeStump = false)
 		{
 			try
 			{
 				// Stage名とScoreLabel文字列を正規化
-				if(!String.IsNullOrEmpty(ScoreLabel.Value))
+				if (!String.IsNullOrEmpty(ScoreLabel.Value))
 				{
 					ScoreLabel.Value = ScoreLabel.Value.Trim();
 				}
@@ -678,9 +862,10 @@ namespace PlayerControl.ViewModels
 					{
 						OutputJsonPath.Value = scoreboardHtmlPath;
 					}
-					// 親を辿ってみつからなかったら手動で設定させる
+					// 親を辿ってみつからなかったら手動で設定させる(デバッグ中はキャンセル)
 					else
 					{
+#if !DEBUG
 						MessageBox.Show($"アプリの上位フォルダにStreamControl用 [scoreboard.html] 保存フォルダが見つかりません\n\n[scoreboard.html]が保存されているフォルダを指定してください");
 						var openDlg = new CommonOpenFileDialog()
 						{
@@ -691,27 +876,29 @@ namespace PlayerControl.ViewModels
 						};
 						if (openDlg.ShowDialog() != CommonFileDialogResult.Ok)
 						{
-							return false;
+							return ;
 						}
 						else
 						{
 							OutputJsonPath.Value = openDlg.FileName;
 						}
+#endif
 					}
 				}
 
-				// 念のためチェック
+				// 出力先がなかった場合はメッセージを表示
 				if (!Directory.Exists(OutputJsonPath.Value))
 				{
+#if !DEBUG
 					MessageBox.Show($"[streamcontrol.json] 保存先が設定できませんでした");
-					return false;
+#endif
 				}
 
 				// Path + Jsonファイル名
 				var savepath = System.IO.Path.Combine(OutputJsonPath.Value, _jsonFileName);
 
 				// Jsonクラスに値をセット(CurrentPlayerがnullの場合は初期値のまま保存）
-				var StreamControlData = new StreamControlParam();
+				StreamControlParam StreamControlData = new();
 
 				// イベント名をセット（改行コードを</br> に置換）
 				var stagestr = Stage.Value;
@@ -757,7 +944,15 @@ namespace PlayerControl.ViewModels
 					StreamControlData.pName1 = CurrentPlayer1.Value.Name;
 					StreamControlData.pTwitter1 = CurrentPlayer1.Value.Twitter;
 					StreamControlData.pScore1 = GetScoreText(CurrentPlayer1.Value);
-					StreamControlData.pCountry1 = DefaultCountry.Value;
+					// 国文字が指定されていないはデフォルト文字列をセット
+					if (!String.IsNullOrEmpty(CurrentPlayer1.Value.Country))
+					{
+						StreamControlData.pCountry1 = CurrentPlayer1.Value.Country;
+					}
+					else
+					{
+						StreamControlData.pCountry1 = DefaultCountry.Value;
+					}
 				}
 				// プレイヤー２情報
 				if (CurrentPlayer2.Value != null)
@@ -765,120 +960,182 @@ namespace PlayerControl.ViewModels
 					StreamControlData.pName2 = CurrentPlayer2.Value.Name;
 					StreamControlData.pTwitter2 = CurrentPlayer2.Value.Twitter;
 					StreamControlData.pScore2 = GetScoreText(CurrentPlayer2.Value);
-					StreamControlData.pCountry2 = DefaultCountry.Value;
+					// 国文字が指定されていないはデフォルト文字列をセット
+					if (!String.IsNullOrEmpty(CurrentPlayer2.Value.Country))
+					{
+						StreamControlData.pCountry2 = CurrentPlayer2.Value.Country;
+					}
+					else
+					{
+						StreamControlData.pCountry2 = DefaultCountry.Value;
+					}
 				}
 				// タイムスタンプを初期化する場合
 				if (InitTimeStump)
 				{
 					StreamControlData.timestamp = "0";
 				}
-				var json = JsonConvert.SerializeObject(StreamControlData);
-				using (var sw = new StreamWriter(savepath, false, Encoding.UTF8))
+				// ※ 短時間に連続して保存するとscoreboard.htmlが取りこぼすことがあるので、保存時刻が1秒以内なら待機する
+				// 直前に保存した時間から1秒以内の場合は待機
+
+				await _semaphoreSlimSelialize.WaitAsync();
+				try
 				{
-					sw.Write(json);
+					var diff = (DateTime.Now - OutputJsonTime.Value).TotalMilliseconds;
+					if (diff < 1000)
+					{
+						Debug.WriteLine($"diff:{diff}");
+						await Task.Delay(1000);
+					}
+					using StreamWriter sw = new(savepath, false, Encoding.UTF8);
+					using (TextWriter writerSync = TextWriter.Synchronized(sw))
+					{
+						// 保存時刻を更新
+						OutputJsonTime.Value = DateTime.Now;
+						var json = JsonConvert.SerializeObject(StreamControlData);
+						await writerSync.WriteAsync(json);
+						await writerSync.FlushAsync();
+#if DEBUG
+						var debugText = $"Flush>>[{StreamControlData.timestamp} 1P:{StreamControlData.pName1} 2P:{StreamControlData.pName2}]";
+						Debug.WriteLine(debugText);
+#endif
+					}
+					// 保存情報をバックアップ（強制終了時の復元用）
+					BackupPlayersData();
 				}
-				// 保存時刻を更新
-				OutputJsonTime.Value = DateTime.Now;
-
-				// 保存情報をバックアップ（強制終了時の復元用）
-				BackupPlayersData();
-
-				return true;
+				finally
+				{
+					_semaphoreSlimSelialize.Release();
+				}
 			}
 			catch (Exception ex)
 			{
 				Debug.WriteLine($"[SaveStreamControlJson]Exception {ex.ToString()}");
 			}
-			return false;
-		}
+}
 
-		/// <summary>
-		/// ソースHTMLファイルが存在するパスを取得
-		/// 実行ファイルの親フォルダをたどる
-		/// </summary>
-		/// <returns></returns>
-		private String GetStreamControlPath()
+/// <summary>
+/// ソースHTMLファイルが存在するパスを取得
+/// 実行ファイルの親フォルダをたどる
+/// </summary>
+/// <returns></returns>
+private String GetStreamControlPath()
+{
+	// 実行ファイルのパスを取得 ※ .NET5以降では Assenmbly.Locationは空を返すので使用しないこと
+	DirectoryInfo? di = new(AppContext.BaseDirectory);
+	while (true)
+	{
+		if (di == null)
 		{
-			// 実行ファイルのパスを取得 ※ .NET5以降では Assenmbly.Locationは空を返すので使用しないこと
-			var di = new DirectoryInfo(AppContext.BaseDirectory);
-			while (true)
-			{
-				if (di == null)
-				{
-					break;
-				}
-				var parent = di.Parent;
-				if (parent == null)
-				{
-					break;
-				}
-
-				var checkPath = Path.Combine(parent.FullName, _htmlSourceFile);
-
-				if (System.IO.File.Exists(checkPath))
-				{
-					// ソースHTMLが存在するパスがみつかった
-					return parent.FullName;
-				}
-				// 親をたどる
-				di = di.Parent;
-			}
-			return String.Empty;
+			break;
 		}
-
-		/// <summary>
-		/// スコア値（int）からJSONに保存する文字列を生成する
-		/// </summary>
-		/// <param name="score"></param>
-		/// <returns></returns>
-		private String GetScoreText(PlayerModel player)
+		DirectoryInfo? parent = di.Parent;
+		if (parent == null)
 		{
-			if (player == null || String.IsNullOrEmpty(player.Name))
-			{
-				return String.Empty;
-			}
-
-			// スコア値を計算（Mixtureモードなら２つのスコアの合計）
-			var score = player.Score;
-			if (CurrentScoreMode.Value == ScoreMode.Mixture)
-			{
-				score += player.Score_Second;
-			}
-			var scoreStr = String.Empty;
-			var labelStr = String.Empty;
-
-			try
-			{
-				var scoreLabelTrim = ScoreLabel.Value.Trim();
-
-				// スコアラベルが存在する場合はサイズを調整
-				if (!String.IsNullOrEmpty(scoreLabelTrim))
-				{
-					labelStr = $"<font size=-1 color=\"white\">{scoreLabelTrim}</font></br>";
-				}
-				// 桁数に合わせてスコアのフォントサイズ調整
-				// 3桁は"5" 4桁は"4"
-				int scoreSize = 5;
-				if (score > 999 || !String.IsNullOrEmpty(labelStr))
-				{
-					scoreSize--;
-				}
-				scoreStr = $"{labelStr}<font size={scoreSize}>{score.ToString()}</font>";
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine($"[GetScoreText]Exception {ex.ToString()}");
-				// 例外発生時は空文字を返す
-			}
-			return scoreStr;
+			break;
 		}
 
-		/// <summary>
-		/// プレイヤー履歴リストを初期化する
-		/// TODO: 直前のリストを復元 or CSVから読込み or 履歴から選択
-		/// </summary>
-		public void InitPlayersHistory()
+		var checkPath = Path.Combine(parent.FullName, _htmlSourceFile);
+
+		if (System.IO.File.Exists(checkPath))
 		{
+			// ソースHTMLが存在するパスがみつかった
+			return parent.FullName;
 		}
+		// 親をたどる
+		di = di.Parent;
+	}
+	return String.Empty;
+}
+
+/// <summary>
+/// スコア値（int）からJSONに保存する文字列を生成する
+/// </summary>
+/// <param name="score"></param>
+/// <returns></returns>
+private String GetScoreText(PlayerModel player)
+{
+	if (player == null || String.IsNullOrEmpty(player.Name))
+	{
+		return String.Empty;
+	}
+
+	// スコア値を計算（Mixtureモードなら２つのスコアの合計）
+	var score = player.Score;
+	if (CurrentScoreMode.Value == ScoreMode.Mixture)
+	{
+		score += player.Score_Second;
+	}
+	var scoreStr = String.Empty;
+	var labelStr = String.Empty;
+
+	try
+	{
+		var scoreLabelTrim = ScoreLabel.Value.Trim();
+
+		// スコアラベルが存在する場合はサイズを調整
+		if (!String.IsNullOrEmpty(scoreLabelTrim))
+		{
+			labelStr = $"<font size=-1 color=\"white\">{scoreLabelTrim}</font></br>";
+		}
+		// 桁数に合わせてスコアのフォントサイズ調整
+		// 標準"5" 5桁以上は"4"
+		var scoreSize = 5;
+		if (score > 9999 || !String.IsNullOrEmpty(labelStr))
+		{
+			scoreSize--;
+		}
+		scoreStr = $"{labelStr}<font size={scoreSize}>{score.ToString()}</font>";
+	}
+	catch (Exception ex)
+	{
+		Debug.WriteLine($"[GetScoreText]Exception {ex.ToString()}");
+		// 例外発生時は空文字を返す
+	}
+	return scoreStr;
+}
+
+/// <summary>
+/// プレイヤーの順番をシャッフルする
+/// </summary>
+private void ShufflePlayers()
+{
+	if (Players.Count > 1)
+	{
+		// コレクションをシャッフルする（念の為ユーザー数分繰り返す）
+		PlayerModel[] shuffle = Players.OrderBy(i => Guid.NewGuid()).ToArray();
+		for (var cnt = 0; cnt < Players.Count; cnt++)
+		{
+			shuffle = shuffle.OrderBy(i => Guid.NewGuid()).ToArray();
+		}
+
+		Players.Clear();
+		foreach (PlayerModel? p in shuffle)
+		{
+			Players.Add(p);
+		}
+	}
+}
+
+/// <summary>
+/// プレイヤー履歴リストを初期化する
+/// TODO: 直前のリストを復元 or CSVから読込み or 履歴から選択
+/// </summary>
+public void InitPlayersHistory()
+{
+#if DEBUG // デバッグ用ダミーデータ
+	Players.Add(new PlayerModel("0", $"", 250, 500));
+	Players.Add(new PlayerModel("012", $"", 250, 500));
+	Players.Add(new PlayerModel("0123", $"", 250, 500));
+	Players.Add(new PlayerModel("01234", $"", 994, 200));
+	Players.Add(new PlayerModel("012345", $"", 994, 200));
+	Players.Add(new PlayerModel("01234678", $"", 994, 200));
+	Players.Add(new PlayerModel("0123467890123", $"", 994, 200));
+	Players.Add(new PlayerModel("01234678901234", $"", 994, 200));
+	Players.Add(new PlayerModel("012346789012345", $"", 994, 200));
+	Players.Add(new PlayerModel("いにゅうえんどう", $"", 0, 300));
+	Players.Add(new PlayerModel("ふるしちょふ。", $"", 0, 300));
+#endif
+}
 	}
 }

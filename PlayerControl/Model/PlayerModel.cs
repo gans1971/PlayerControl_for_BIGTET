@@ -1,10 +1,8 @@
-﻿using Converters;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Prism.Mvvm;
-using Reactive.Bindings;
 using System;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace PlayerControl.Model
 {
@@ -25,6 +23,8 @@ namespace PlayerControl.Model
 		private DateTime _lastAccess = DateTime.MinValue;
 		public DateTime LastAccess { get => _lastAccess; set => SetProperty(ref _lastAccess, value); }
 
+		private String _country = String.Empty;
+		public String Country { get => _country; set => SetProperty(ref _country, value); }
 
 		private bool _isSelectedUser = false;
 		[JsonIgnore]
@@ -34,12 +34,14 @@ namespace PlayerControl.Model
 		{
 			// ※ 引数なしの場合、LastAccess は初期値（MinValue）のままにしておく
 		}
-		public PlayerModel(String name, String twitter, int personalbest, int score)
+		public PlayerModel(String name, String twitter, int score, int score_second, String country = "")
 		{
 			Name = name;
 			Twitter = twitter;
 			Score = score;
+			Score_Second = score_second;
 			LastAccess = DateTime.Now;
+			Country = country;
 		}
 	}
 }

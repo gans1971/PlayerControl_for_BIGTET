@@ -69,7 +69,7 @@ namespace PlayerControl.View
                     case Key.C:
                         if (Keyboard.Modifiers == ModifierKeys.Control)
                         {
-                            vm.SetPlayerInfoToClipboard(item.DataContext);
+                            vm.SetPlayerModelNameAndScoreToClipboard(item.DataContext);
                             e.Handled = true;
                         }
                         break;
@@ -138,6 +138,5 @@ namespace PlayerControl.View
                 }
             }
         }
-
-	}
+    }
 }

@@ -57,16 +57,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CsvHelper" Version="31.0.0" />
+		<PackageReference Include="CsvHelper" Version="31.0.2" />
+		<PackageReference Include="EastAsianWidthDotNet" Version="1.0.1" />
 		<PackageReference Include="gong-wpf-dragdrop" Version="3.2.1" />
 		<PackageReference Include="MahApps.Metro" Version="2.4.10" />
 		<PackageReference Include="MaterialDesignColors" Version="2.1.4" />
-		<PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.8" />
+		<PackageReference Include="MaterialDesignThemes.MahApps" Version="0.3.0" />
 		<PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Prism.Core" Version="8.1.97" />
-		<PackageReference Include="ReactiveProperty.WPF" Version="9.4.1" />
+		<PackageReference Include="ReactiveProperty.WPF" Version="9.5.0" />
 		<PackageReference Include="System.Management" Version="7.0.0" />
 	</ItemGroup>
 

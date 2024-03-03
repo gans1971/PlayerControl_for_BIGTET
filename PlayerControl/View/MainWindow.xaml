@@ -22,7 +22,7 @@
 	Title="{Binding AppTitle.Value}"
 	Width="440"
 	Height="220"
-	MinWidth="440"
+	MinWidth="460"
 	MinHeight="180"
 	Dialog:DialogParticipation.Register="{Binding}"
 	BorderThickness="1"
@@ -97,6 +97,10 @@
 		<converters:Score_LavelConverter x:Key="Score_LavelConverter" />
 		<converters:EnumMatchToVisibilityConverter x:Key="EnumMatchToVisibilityConverter" />
 		<converters:ScoreAmountConverter x:Key="ScoreAmountConverter" />
+		<converters:AddLabelConverter x:Key="AddLabelConverter" />
+		<converters:EnablePlayerNamesVisibilityConverter x:Key="EnablePlayerNamesVisibilityConverter" />
+		<converters:CountBoolConverter x:Key="CountBoolConverter" />
+
 		<!--#endregion-->
 
 		<!--#region Storyboard-->
@@ -129,6 +133,7 @@
 				</EasingDoubleKeyFrame>
 			</DoubleAnimationUsingKeyFrames>
 		</Storyboard>
+		<materialDesign:BrushRoundConverter x:Key="BrushRoundConverter" />
 		<!--#endregion-->
 	</mah:MetroWindow.Resources>
 	<!--#endregion-->
@@ -162,7 +167,6 @@
 	</i:Interaction.Triggers>
 	<!--#endregion-->
 
-	<!--#region LayoutRoot-->
 	<Grid
 		x:Name="LayoutRoot"
 		Background="White"
@@ -245,7 +249,7 @@
 		</Grid>
 		<!--#endregion-->
 
-		<!--#region ツールグリッド-->
+		<!--#region ツールグリッド（Header）-->
 		<DockPanel
 			x:Name="ToolDockPanel"
 			Grid.Row="1"
@@ -313,35 +317,13 @@
 				<TextBlock Text="2P クリア" />
 			</Button>
 
-			<!--
-				TODO:便利ツール群
-				ToggleCheckedContentCommand="{Binding FloatingActionDemoCommand}"
-				ToggleCheckedContentCommandParameter="wowsers"
-			<materialDesign:PopupBox PlacementMode="BottomAndAlignCentres">
-				<materialDesign:PopupBox.ToggleCheckedContent>
-					<materialDesign:PackIcon
-						Width="20"
-						Height="20"
-						Kind="Pencil" />
-				</materialDesign:PopupBox.ToggleCheckedContent>
-				<StackPanel>
-					<Button Content="1" ToolTip="One" />
-					<Button
-						Content="2"
-						IsEnabled="False"
-						ToolTip="Two" />
-					<Button Content="3" ToolTip="Three" />
-				</StackPanel>
-			</materialDesign:PopupBox>
-			-->
-
 			<Grid x:Name="SaveJsonGrid" DockPanel.Dock="Right">
 				<Button
 					x:Name="SaveJsonButton"
 					Padding="5,0"
 					Command="{Binding SaveJsonCommand}"
 					TabIndex="15"
-					ToolTip="設定を保存（手動）">
+					ToolTip="手動保存">
 					<md:PackIcon Kind="ContentSaveEditOutline" />
 				</Button>
 				<Rectangle
@@ -364,8 +346,8 @@
 		</DockPanel>
 		<!--#endregion-->
 
-		<!--#region プレイヤーコントロールグループ-->
-		<!--  ※覚書： https://mvrck.jp/documents/dotnet/wpf/itemscontrol-template/  -->
+		<!--#region プレイヤーコントロール（ListBox）-->
+		<!--  ※ListBox覚書： https://mvrck.jp/documents/dotnet/wpf/itemscontrol-template/  -->
 		<ListBox
 			x:Name="PlayersListBox"
 			Grid.Row="2"
@@ -384,7 +366,8 @@
 			IsTabStop="False"
 			ItemsSource="{Binding Players}"
 			KeyboardNavigation.ControlTabNavigation="None"
-			ScrollViewer.CanContentScroll="True">
+			ScrollViewer.CanContentScroll="True"
+			SelectedValue="{Binding SelectedPlayer.Value}">
 			<i:Interaction.Behaviors>
 				<v:ScrollIntoViewForListBox />
 			</i:Interaction.Behaviors>
@@ -423,7 +406,7 @@
 										<Setter Property="Margin" Value="5,5" />
 									</Style>
 								</ContextMenu.Resources>
-								<MenuItem Header="スコア・サブ情報入力">
+								<MenuItem Header="スコア/サブ情報入力">
 									<i:Interaction.Triggers>
 										<i:EventTrigger EventName="Click">
 											<ri:EventToReactiveCommand Command="{Binding PlacementTarget.Tag.ScoreSettingCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
@@ -433,10 +416,10 @@
 										<md:PackIcon Kind="Counter" />
 									</MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Header="コピー（名前 スコア)">
+								<MenuItem Header="名前・スコアコピー">
 									<i:Interaction.Triggers>
 										<i:EventTrigger EventName="Click">
-											<ri:EventToReactiveCommand Command="{Binding PlacementTarget.Tag.ToClipboardCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+											<ri:EventToReactiveCommand Command="{Binding PlacementTarget.Tag.ListItemToClipboardCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
 										</i:EventTrigger>
 									</i:Interaction.Triggers>
 									<MenuItem.Icon>
@@ -522,7 +505,6 @@
 							<Style TargetType="{x:Type Label}">
 								<Setter Property="Foreground" Value="#101010" />
 								<Setter Property="FontSize" Value="11" />
-								<Setter Property="MinWidth" Value="35" />
 								<Setter Property="FontFamily" Value="Arial" />
 								<Setter Property="Padding" Value="5,0,2,0" />
 								<Setter Property="VerticalContentAlignment" Value="Center" />
@@ -621,6 +603,7 @@
 							Orientation="Horizontal">
 							<Label
 								x:Name="Score1Label"
+								MinWidth="35"
 								Content="{Binding DataContext.ScoreLabel.Value, Converter={StaticResource Score_LavelConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"
 								Foreground="{StaticResource MahApps.Brushes.Gray2}" />
 							<TextBox
@@ -638,7 +621,13 @@
 							Grid.Column="2"
 							Orientation="Horizontal">
 							<Label
+								x:Name="AddLabel"
+								MinWidth="0"
+								Content="+"
+								Foreground="{StaticResource MahApps.Brushes.Gray2}" />
+							<Label
 								x:Name="Score2Label"
+								MinWidth="35"
 								Content="{Binding DataContext.UI_Score2Label.Value, Converter={StaticResource Score_LavelConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"
 								Foreground="{StaticResource MahApps.Brushes.Gray2}" />
 							<TextBox
@@ -651,7 +640,8 @@
 								Text="{Binding Score_Second, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringEmptyToZeroConverter}}" />
 							<Label
 								x:Name="AmountLabel"
-								Content="Total:"
+								MinWidth="0"
+								Content="="
 								Foreground="{StaticResource MahApps.Brushes.Gray2}"
 								IsTabStop="False" />
 							<TextBox
@@ -665,7 +655,7 @@
 								FontWeight="Bold"
 								IsReadOnly="True"
 								IsTabStop="False"
-								TextAlignment="Center">
+								TextAlignment="Right">
 								<TextBox.Text>
 									<MultiBinding Converter="{StaticResource ScoreAmountConverter}">
 										<Binding Path="Score" />
@@ -723,6 +713,7 @@
 							<Setter TargetName="Score1Label" Property="Foreground" Value="{StaticResource MahApps.Brushes.DataGrid.Selection.Text}" />
 							<Setter TargetName="Score2Label" Property="Foreground" Value="{StaticResource MahApps.Brushes.DataGrid.Selection.Text}" />
 							<Setter TargetName="AmountLabel" Property="Foreground" Value="{StaticResource MahApps.Brushes.DataGrid.Selection.Text}" />
+							<Setter TargetName="AddLabel" Property="Foreground" Value="{StaticResource MahApps.Brushes.DataGrid.Selection.Text}" />
 							<Setter TargetName="AmountText" Property="Foreground" Value="{StaticResource MahApps.Brushes.DataGrid.Selection.Text}" />
 							<Setter TargetName="PlayerTwitterLabel" Property="Foreground" Value="{StaticResource MahApps.Brushes.DataGrid.Selection.Text}" />
 						</DataTrigger>
@@ -742,25 +733,7 @@
 		</ListBox>
 		<!--#endregion-->
 
-		<!--#region ユーザー０名時に表示するヘルプ-->
-		<Border
-			x:Name="InitHelpGrid"
-			Grid.Row="2"
-			d:IsHidden="True"
-			Background="#F0F0F0F0"
-			Visibility="{Binding Players.Count, Converter={StaticResource Int0VisibilityConverter}, ConverterParameter=Invert}">
-			<Grid HorizontalAlignment="Center" VerticalAlignment="Center">
-				<Label
-					HorizontalContentAlignment="Center"
-					VerticalContentAlignment="Center"
-					Content="👆 プレイヤーを追加してください"
-					FontFamily="Yu Gothic UI Semibold"
-					FontSize="16" />
-			</Grid>
-		</Border>
-		<!--#endregion-->
-
-		<!--#region 下端に表示するバー（スコアモード設定など）-->
+		<!--#region 下端に表示するバー（スコアモード、Toolメニューなど）-->
 		<DockPanel
 			x:Name="StatusBar"
 			Grid.Row="3"
@@ -781,6 +754,8 @@
 					<Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.Gray3}" />
 				</Style>
 			</DockPanel.Resources>
+
+			<!--  スコアモード設定パネル  -->
 			<StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
 				<StackPanel.Resources>
 					<Style TargetType="{x:Type Label}">
@@ -800,13 +775,12 @@
 						<Setter Property="VerticalContentAlignment" Value="Center" />
 					</Style>
 				</StackPanel.Resources>
-
-				<Label Content="スコアモード：" />
+				<Label Content="スコアモード｜" />
 				<!--  スコアモード  -->
 				<ComboBox
 					x:Name="ScoreModeComboBox"
 					MinWidth="80"
-					Margin="5,5,15,5"
+					Margin="5,5,10,5"
 					Padding="2,1,0,1"
 					VerticalAlignment="Center"
 					VerticalContentAlignment="Center"
@@ -822,10 +796,10 @@
 					x:Name="MixtureModeScoreLabelPanel"
 					Orientation="Horizontal"
 					Visibility="{Binding CurrentScoreMode.Value, ConverterParameter=Mixture, Converter={StaticResource EnumMatchToVisibilityConverter}}">
-					<Label Content="1：" />
+					<Label Content="1" />
 					<TextBox
 						x:Name="Score1Label"
-						Width="50"
+						Width="40"
 						Padding="2,0"
 						VerticalAlignment="Center"
 						VerticalContentAlignment="Center"
@@ -834,10 +808,10 @@
 						Text="{Binding UI_Score1Label.Value, UpdateSourceTrigger=PropertyChanged}"
 						TextWrapping="NoWrap" />
 
-					<Label Content="2：" />
+					<Label Content="2" />
 					<TextBox
 						x:Name="Score2Label"
-						Width="50"
+						Width="40"
 						Padding="2,0"
 						VerticalAlignment="Center"
 						VerticalContentAlignment="Center"
@@ -846,8 +820,85 @@
 						Text="{Binding UI_Score2Label.Value, UpdateSourceTrigger=PropertyChanged}"
 						TextWrapping="NoWrap" />
 				</StackPanel>
-
 			</StackPanel>
+
+			<!--  名前・スコアコピーパネル  -->
+			<Grid DockPanel.Dock="Right">
+				<Menu
+					VerticalAlignment="Center"
+					materialDesign:MenuAssist.TopLevelMenuItemHeight="22"
+					TabIndex="25">
+					<MenuItem Padding="5,0" IsEnabled="{Binding Players.Count, Converter={StaticResource CountBoolConverter}}">
+						<MenuItem.Header>
+							<StackPanel Orientation="Horizontal">
+								<md:PackIcon Width="14" Kind="ClipboardTextOutline" />
+								<Label
+									Margin="2,0"
+									Padding="0"
+									VerticalContentAlignment="Center"
+									Content="コピー" />
+							</StackPanel>
+						</MenuItem.Header>
+						<MenuItem
+							Header="{Binding SelectedPlayer.Value.Name}"
+							Icon="{md:PackIcon Kind=ClipboardListOutline}"
+							Visibility="{Binding SelectedPlayer.Value, Converter={StaticResource NullableToVisibilityConverter}}">
+							<i:Interaction.Triggers>
+								<i:EventTrigger EventName="Click">
+									<ri:EventToReactiveCommand Command="{Binding SelectedPlayerToClipboardCommand}" />
+								</i:EventTrigger>
+							</i:Interaction.Triggers>
+						</MenuItem>
+						<MenuItem Header="1P &amp; 2P" Icon="{md:PackIcon Kind=ClipboardListOutline}">
+							<MenuItem.Visibility>
+								<MultiBinding Converter="{StaticResource EnablePlayerNamesVisibilityConverter}">
+									<Binding Path="CurrentPlayer1.Value.Name" />
+									<Binding Path="CurrentPlayer2.Value.Name" />
+								</MultiBinding>
+							</MenuItem.Visibility>
+							<i:Interaction.Triggers>
+								<i:EventTrigger EventName="Click">
+									<ri:EventToReactiveCommand Command="{Binding CurrentPlayersToClipboardCommand}" />
+								</i:EventTrigger>
+							</i:Interaction.Triggers>
+						</MenuItem>
+						<MenuItem Header="全プレイヤー" Icon="{md:PackIcon Kind=ClipboardListOutline}">
+							<i:Interaction.Triggers>
+								<i:EventTrigger EventName="Click">
+									<ri:EventToReactiveCommand Command="{Binding AllPlayersToClipboardCommand}" />
+								</i:EventTrigger>
+							</i:Interaction.Triggers>
+						</MenuItem>
+					</MenuItem>
+					<MenuItem Padding="5,0" IsEnabled="{Binding Players.Count, Converter={StaticResource CountBoolConverter}}">
+						<MenuItem.Header>
+							<StackPanel Orientation="Horizontal">
+								<md:PackIcon Width="14" Kind="Tools" />
+								<Label
+									Margin="2,0"
+									Padding="0"
+									VerticalContentAlignment="Center"
+									Content="Tools" />
+							</StackPanel>
+						</MenuItem.Header>
+						<MenuItem Header="全スコア リセット" Icon="{md:PackIcon Kind=Numeric0BoxOutline}">
+							<i:Interaction.Triggers>
+								<i:EventTrigger EventName="Click">
+									<ri:EventToReactiveCommand Command="{Binding ClearAllPlayersScoreCommand}" />
+								</i:EventTrigger>
+							</i:Interaction.Triggers>
+						</MenuItem>
+						<MenuItem Header="プレイヤー順シャッフル" Icon="{md:PackIcon Kind=ShuffleVariant}">
+							<i:Interaction.Triggers>
+								<i:EventTrigger EventName="Click">
+									<ri:EventToReactiveCommand Command="{Binding ShufflePlayersCommand}" />
+								</i:EventTrigger>
+							</i:Interaction.Triggers>
+						</MenuItem>
+					</MenuItem>
+				</Menu>
+			</Grid>
+
 			<!--  簡単な使い方を表示するパネル：面積が足りなくなってきたので非表示  -->
 			<StackPanel
 				x:Name="HintPanel"
@@ -864,7 +915,6 @@
 				<md:PackIcon Kind="KeyboardSpace" />
 				<Label Content="スコア/サブ情報入力" />
 			</StackPanel>
-
 			<!--  DEBUG用：JSON出力時刻  -->
 			<StackPanel
 				Margin="5,0,0,0"
@@ -876,7 +926,7 @@
 		</DockPanel>
 		<!--#endregion-->
 
-		<!--#region クリップボード登録アニメーション-->
+		<!--#region クリップボード設定時に表示するアニメーション用矩形-->
 		<Rectangle
 			x:Name="ClipboardAnimationRect"
 			Grid.RowSpan="4"
@@ -890,6 +940,24 @@
 			StrokeThickness="3" />
 		<!--#endregion-->
 
+		<!--#region ユーザー０名時に表示するヘルプ-->
+		<Border
+			x:Name="InitHelpGrid"
+			Grid.Row="2"
+			d:IsHidden="True"
+			Background="#F0F0F0F0"
+			Visibility="{Binding Players.Count, Converter={StaticResource Int0VisibilityConverter}, ConverterParameter=Invert}">
+			<Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+				<Label
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"
+					Content="👆 プレイヤーを追加してください"
+					FontFamily="Yu Gothic UI Semibold"
+					FontSize="16" />
+			</Grid>
+		</Border>
+		<!--#endregion-->
+
 		<!--  各種設定ダイアログ（種類の数だけIdentifierを変えて列挙:Viewはコマンド実行元で設定する）  -->
 		<!--  参考：http://nineworks2.blog.fc2.com/blog-entry-117.html  -->
 		<materialDesign:DialogHost
@@ -899,5 +967,4 @@
 			Identifier="MainWindowDialog"
 			KeyboardNavigation.ControlTabNavigation="None" />
 	</Grid>
-	<!--#endregion-->
 </mah:MetroWindow>
