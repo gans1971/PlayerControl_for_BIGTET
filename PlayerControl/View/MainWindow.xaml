@@ -36,6 +36,8 @@
 	TitleBarHeight="25"
 	TitleCharacterCasing="Normal"
 	mc:Ignorable="d">
+
+	<!--#region タイトルバーテンプレート-->
 	<mah:MetroWindow.TitleTemplate>
 		<DataTemplate>
 			<TextBlock
@@ -48,6 +50,9 @@
 				TextTrimming="CharacterEllipsis" />
 		</DataTemplate>
 	</mah:MetroWindow.TitleTemplate>
+	<!--#endregion-->
+
+	<!--#region タイトルバー右サイドメニュー-->
 	<mah:MetroWindow.RightWindowCommands>
 		<mah:WindowCommands>
 			<Button x:Name="AboutBox" IsTabStop="False">
@@ -63,6 +68,7 @@
 			</Button>
 		</mah:WindowCommands>
 	</mah:MetroWindow.RightWindowCommands>
+	<!--#endregion-->
 
 	<!--#region ショートカット-->
 	<mah:MetroWindow.InputBindings>
@@ -396,7 +402,7 @@
 					<!--  フォーカス時の点線を解除  -->
 					<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 
-					<!--  コンテキストメニュー  -->
+					<!--  ListBoxItem コンテキストメニュー  -->
 					<Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
 					<Setter Property="ContextMenu">
 						<Setter.Value>
@@ -824,14 +830,17 @@
 
 			<!--  名前・スコアコピーパネル  -->
 			<Grid DockPanel.Dock="Right">
+				<Grid.Resources>
+					<Style TargetType="{x:Type MenuItem}">
+						<Setter Property="Margin" Value="5,5" />
+						<Setter Property="Padding" Value="5,0" />
+					</Style>
+				</Grid.Resources>
 				<Menu
 					VerticalAlignment="Center"
 					materialDesign:MenuAssist.TopLevelMenuItemHeight="22"
 					TabIndex="25">
-					<MenuItem
-						Padding="5,0"
-						IsEnabled="{Binding Players.Count, Converter={StaticResource CountBoolConverter}}"
-						MouseEnter="BottomMenuItem_MouseEnter">
+					<MenuItem IsEnabled="{Binding Players.Count, Converter={StaticResource CountBoolConverter}}">
 						<MenuItem.Header>
 							<StackPanel Orientation="Horizontal">
 								<md:PackIcon Width="14" Kind="ClipboardTextOutline" />

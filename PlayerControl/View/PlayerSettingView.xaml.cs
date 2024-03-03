@@ -31,7 +31,14 @@ namespace PlayerControl.View
 			get { return (String)GetValue(EditTwitterProperty); }
 			set { SetValue(EditTwitterProperty, value); }
 		}
-
+		public static readonly DependencyProperty EditCountryProperty =
+			DependencyProperty.Register("EditCountry", typeof(String),
+			typeof(PlayerSettingView), new PropertyMetadata(String.Empty));
+		public String EditCountry
+		{
+			get { return (String)GetValue(EditCountryProperty); }
+			set { SetValue(EditCountryProperty, value); }
+		}
 
 		public PlayerSettingView()
 		{

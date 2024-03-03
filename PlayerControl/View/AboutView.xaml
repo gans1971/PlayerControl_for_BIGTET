@@ -142,7 +142,8 @@
 			<Grid x:Name="FooterGrid" Grid.Row="3">
 				<Button
 					Margin="0,10,0,0"
-					HorizontalAlignment="Center"
+					Padding="20,0"
+					HorizontalAlignment="Right"
 					VerticalAlignment="Center"
 					Command="{x:Static md:DialogHost.CloseDialogCommand}"
 					Content="閉じる" />

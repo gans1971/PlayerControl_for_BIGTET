@@ -273,15 +273,15 @@
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="Auto" />
 					</Grid.ColumnDefinitions>
-					<TextBlock
+					<Label
 						Margin="5,0"
 						VerticalAlignment="Center"
+						Content="Default Country :"
 						FontSize="12"
 						Foreground="{StaticResource MahApps.Brushes.Gray3}"
-						IsHitTestVisible="False"
-						Text="Default Country :" />
+						IsHitTestVisible="False" />
 					<TextBox
-						x:Name="StageName"
+						x:Name="DefaultCountryTextBox"
 						Grid.Column="1"
 						MinWidth="80"
 						MinHeight="20"

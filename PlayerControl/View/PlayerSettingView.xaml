@@ -5,7 +5,6 @@
 	xmlns:bh="clr-namespace:Behavior"
 	xmlns:converters="clr-namespace:Converters"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
 	xmlns:mdTheme="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
@@ -18,7 +17,7 @@
 
 	<Grid
 		x:Name="LayoutRoot"
-		Width="250"
+		Width="300"
 		Margin="10"
 		HorizontalAlignment="Center"
 		FocusManager.FocusedElement="{Binding ElementName=PlayerNameTextBox}">
@@ -46,7 +45,7 @@
 					</Style>
 
 				</StackPanel.Resources>
-				<TextBox x:Name="PlayerNameTextBox" md:HintAssist.Hint="プレイヤー名入力">
+				<TextBox x:Name="PlayerNameTextBox" md:HintAssist.Hint="プレイヤー名">
 					<TextBox.Text>
 						<Binding
 							Path="EditName"
@@ -59,10 +58,18 @@
 					</TextBox.Text>
 				</TextBox>
 
-				<TextBox x:Name="EditTwitterStr" md:HintAssist.Hint="サブ情報入力(任意)">
+				<TextBox x:Name="EditTwitterStr" md:HintAssist.Hint="サブ情報（任意）">
 					<TextBox.Text>
 						<Binding
 							Path="EditTwitter"
+							RelativeSource="{RelativeSource AncestorType=v:PlayerSettingView}"
+							UpdateSourceTrigger="PropertyChanged" />
+					</TextBox.Text>
+				</TextBox>
+				<TextBox x:Name="CountryStr" md:HintAssist.Hint="Country 文字（任意）">
+					<TextBox.Text>
+						<Binding
+							Path="EditCountry"
 							RelativeSource="{RelativeSource AncestorType=v:PlayerSettingView}"
 							UpdateSourceTrigger="PropertyChanged" />
 					</TextBox.Text>

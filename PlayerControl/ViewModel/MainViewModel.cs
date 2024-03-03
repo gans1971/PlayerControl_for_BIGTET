@@ -41,6 +41,7 @@ namespace PlayerControl.ViewModels
 
 		// app.config から取得した設定値
 		public int _notepadTabCount { get; } = 8;
+		public String _defaultCountry { get; } = "blk";
 
 		#region Viewと連携するUI用プロパティ
 		public IDialogCoordinator PlayerControlDialogCoordinator { get; set; } = new DialogCoordinator();
@@ -53,7 +54,7 @@ namespace PlayerControl.ViewModels
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer1 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<PlayerModel> CurrentPlayer2 { get; } = new ReactivePropertySlim<PlayerModel>();
 		public ReactivePropertySlim<String> AppTitle { get; } = new ReactivePropertySlim<String>("PlayerControl");
-		public ReactivePropertySlim<String> DefaultCountry { get; } = new ReactivePropertySlim<String>("blk");
+		public ReactivePropertySlim<String> DefaultCountry { get; } = new ReactivePropertySlim<String>();
 		// Single/Mixture 対応(Ver0.3.5)
 		public ReactivePropertySlim<ScoreMode> CurrentScoreMode { get; } = new ReactivePropertySlim<ScoreMode>(ScoreMode.Single);
 
@@ -110,6 +111,12 @@ namespace PlayerControl.ViewModels
 			if (int.TryParse(param, out var tabCount))
 			{
 				_notepadTabCount = tabCount;
+			}
+
+			var paramDC = ConfigurationManager.AppSettings["DefaultCountry"];
+			if (!String.IsNullOrEmpty(paramDC))
+			{
+				DefaultCountry.Value = paramDC;
 			}
 
 			// OperationModelを初期化
@@ -302,7 +309,7 @@ namespace PlayerControl.ViewModels
 						// ユーザーを追加
 						else
 						{
-							_operation.AddPlayer(new PlayerModel(trimName, trimTwitter, 0, 0));
+							_operation.AddPlayer(new PlayerModel(trimName, trimTwitter, 0, 0, _defaultCountry));
 							SaveStreamControlJson();
 							textBox.Text = String.Empty;
 						}
@@ -553,7 +560,7 @@ namespace PlayerControl.ViewModels
 		{
 			try
 			{
-				StreamControlParam _scParam = new();
+				StreamControlParam _scParam = new(_defaultCountry);
 
 				// Stage名とScoreLabel文字列を正規化
 				if (!String.IsNullOrEmpty(ScoreLabel.Value))
@@ -774,21 +781,29 @@ namespace PlayerControl.ViewModels
 		/// <param name="datacontext"></param>
 		public String GetNameAndScoreText(PlayerModel player, int maxWidth)
 		{
+			var _tabCount = _notepadTabCount;
+			if (_tabCount == 0)
+			{
+				_tabCount = 8; // ゼロ除算回避
+			}
 			try
 			{
+				// 最大幅をタブ数の倍数(整数丸め)に設定
+				maxWidth = (maxWidth/_tabCount)* _tabCount;
+
 				// 名前の幅を取得
 				var nameWidth = player.Name.GetWidth();
 
 				// 名前の後に挿入するタブの数を計算(メモ帳を想定)
 				var padding = (maxWidth - nameWidth);
-				var tabCount = (padding / _notepadTabCount) + 1;
-				if (padding % _notepadTabCount > 0)
+				var tabPadding = (padding / _tabCount) + 1;
+				if (nameWidth % _tabCount != 0 && nameWidth < maxWidth)
 				{
-					tabCount++;
+					tabPadding++;
 				}
-				Debug.WriteLine($"Name:{player.Name} Padding:{padding} TabCount:{tabCount}\n ");
+				Debug.WriteLine($"Name:{player.Name} nameWidth:{nameWidth} Padding:{padding} TabPadding:{tabPadding}");
 
-				var tabString = new StringBuilder().Insert(0, "\t", tabCount).ToString();
+				var tabString = new StringBuilder().Insert(0, "\t", tabPadding).ToString();
 
 
 				// 名前+タブ
@@ -913,33 +928,6 @@ namespace PlayerControl.ViewModels
 		/// ※ MainWindow専用
 		/// </summary>
 		/// <param name="datacontext"></param>
-		async public void EditTwitter(object datacontext)
-		{
-			try
-			{
-				// イベント発火元コントロールのDataContextからVMを取得して更新
-				if (datacontext is PlayerModel player)
-				{
-					// 下記行を入れないとアニメーション中にキー操作すると元ダイアログにフォーカスが移動してしまう
-					System.Windows.Input.Keyboard.ClearFocus();
-
-					// スコア設定Viewを表示
-					TwitterSettingView view = new()
-					{
-						DataContext = player
-					};
-					var result = await DialogHost.Show(view, "MainWindowDialog");
-					if (result is bool dlgResult && dlgResult)
-					{
-						SaveStreamControlJson();
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine($"Exception EditTwitter:{ex.ToString()}");
-			}
-		}
 
 		/// <summary>
 		/// プレイヤー名ダイアログでプレイヤー名を入力する
@@ -957,7 +945,14 @@ namespace PlayerControl.ViewModels
 					{
 						EditName = player.Name,
 						EditTwitter = player.Twitter,
+						EditCountry = player.Country
 					};
+					// 国名が空のときはデフォルトをセット
+					if (String.IsNullOrEmpty(player.Country))
+					{
+						view.EditCountry = DefaultCountry.Value;
+					}
+
 
 					var result = await DialogHost.Show(view, "PlayersEditDialog");
 					if (result is bool dlgResult && dlgResult)
@@ -980,7 +975,15 @@ namespace PlayerControl.ViewModels
 						}
 						// twitterを更新（特にチェックなし）
 						player.Twitter = view.EditTwitter;
-
+						// countryを更新
+						if (!String.IsNullOrEmpty(view.EditCountry))
+						{
+							player.Country = view.EditCountry;
+						}
+						else
+						{
+							player.Country = DefaultCountry.Value;
+						}
 						// JSON更新
 						SaveStreamControlJson();
 					}
@@ -1173,17 +1176,19 @@ namespace PlayerControl.ViewModels
 		public void InitPlayersHistory()
 		{
 #if DEBUG // デバッグ用ダミーデータ
-			Players.Add(new PlayerModel("A", $"", 250, 500));
-			Players.Add(new PlayerModel("B1", $"", 250, 500));
-			Players.Add(new PlayerModel("E123456", $"", 994, 200));
-			Players.Add(new PlayerModel("F1234567", $"", 994, 200));
-			Players.Add(new PlayerModel("G12345678", $"", 994, 200));
-			Players.Add(new PlayerModel("H123456789", $"", 994, 200));
-			Players.Add(new PlayerModel("J1234567890", $"", 994, 200));
-			Players.Add(new PlayerModel("K12345678901", $"", 994, 200));
-			Players.Add(new PlayerModel("L1234567890123", $"", 994, 200));
-			Players.Add(new PlayerModel("M12345678901234", $"", 994, 200));
-			Players.Add(new PlayerModel("N123456789012345", $"", 994, 200));
+#if true
+			Players.Add(new PlayerModel("あいうえ", $"", 250, 500, _defaultCountry));
+			Players.Add(new PlayerModel("かきく", $"", 250, 500, _defaultCountry));
+			Players.Add(new PlayerModel("かきくけこさし", $"", 777, 200, _defaultCountry));
+			Players.Add(new PlayerModel("たちつてとなに(G)", $"", 888, 200, _defaultCountry));
+			Players.Add(new PlayerModel("G12345678", $"", 999, 200, _defaultCountry));
+			Players.Add(new PlayerModel("H123456789", $"", 1010, 200, _defaultCountry));
+			Players.Add(new PlayerModel("J1234567890", $"", 1111, 200, _defaultCountry));
+			Players.Add(new PlayerModel("K12345678901", $"", 1212, 200, _defaultCountry));
+			Players.Add(new PlayerModel("L1234567890123", $"", 1414, 200, _defaultCountry));
+			Players.Add(new PlayerModel("M12345678901234", $"", 1515, 200, _defaultCountry));
+			Players.Add(new PlayerModel("N123456789012345", $"", 16, 200, _defaultCountry));
+#endif
 #endif
 		}
 	}

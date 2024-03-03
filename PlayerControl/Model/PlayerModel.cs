@@ -34,7 +34,7 @@ namespace PlayerControl.Model
 		{
 			// ※ 引数なしの場合、LastAccess は初期値（MinValue）のままにしておく
 		}
-		public PlayerModel(String name, String twitter, int score, int score_second, String country = "")
+		public PlayerModel(String name, String twitter, int score, int score_second, String country)
 		{
 			Name = name;
 			Twitter = twitter;
