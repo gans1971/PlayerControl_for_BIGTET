@@ -138,5 +138,13 @@ namespace PlayerControl.View
                 }
             }
         }
-    }
+
+		private void BottomMenuItem_MouseEnter(object sender, MouseEventArgs e)
+		{
+			if (sender is MenuItem menuItem)
+			{
+				menuItem.IsSubmenuOpen = true;
+			}
+		}
+	}
 }

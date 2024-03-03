@@ -96,6 +96,7 @@ namespace PlayerControl.ViewModels
 		public ReactiveCommand SelectedPlayerToClipboardCommand { get; }
 		public ReactiveCommand CurrentPlayersToClipboardCommand { get; }
 		public ReactiveCommand AllPlayersToClipboardCommand { get; }
+		public ReactiveCommand OpenOutputFolderCommand { get; }
 		public ReactiveCommand CloseModalWindowCommand { get; }
 		#endregion
 
@@ -339,6 +340,7 @@ namespace PlayerControl.ViewModels
 				SaveStreamControlJson();
 			}).AddTo(Disposable);
 
+			// プレイヤーの並びをシャッフルするコマンド
 			ShufflePlayersCommand = new ReactiveCommand();
 			ShufflePlayersCommand.Subscribe(_ =>
 			{
@@ -354,6 +356,7 @@ namespace PlayerControl.ViewModels
 					SetPlayerModelNameAndScoreToClipboard(player);
 				}
 			}).AddTo(Disposable);
+
 			// 選択中のプレイヤーのユーザー名とスコアをクリップボードに貼り付けるコマンド
 			SelectedPlayerToClipboardCommand = new ReactiveCommand();
 			SelectedPlayerToClipboardCommand.Subscribe(x =>
@@ -363,12 +366,14 @@ namespace PlayerControl.ViewModels
 					SetSelectedPlayerNameAndScoreToClipboard();
 				}
 			}).AddTo(Disposable);
+
 			// カレントプレイヤー(1P/2P)のユーザー名とスコアをクリップボードに貼り付けるコマンド
 			CurrentPlayersToClipboardCommand = new ReactiveCommand();
 			CurrentPlayersToClipboardCommand.Subscribe(x =>
 			{
 				SetCurrentPlayerNameAndScoreToClipboard();
 			}).AddTo(Disposable);
+
 			// 全プレイヤーのユーザー名とスコアをクリップボードに貼り付けるコマンド
 			AllPlayersToClipboardCommand = new ReactiveCommand();
 			AllPlayersToClipboardCommand.Subscribe(x =>
@@ -381,6 +386,25 @@ namespace PlayerControl.ViewModels
 			ClearAllPlayersScoreCommand.Subscribe(x =>
 			{
 				ClearAllPlayersScore();
+			}).AddTo(Disposable);
+
+			OpenOutputFolderCommand = new ReactiveCommand();
+			OpenOutputFolderCommand.Subscribe(x =>
+			{
+				try
+				{
+					// JSON保存フォルダを開く
+					var jsonPath = GetStreamControlJsonPath();
+					var jsonFolder = System.IO.Path.GetDirectoryName(jsonPath);
+					if (Directory.Exists(jsonFolder))
+					{
+						System.Diagnostics.Process.Start("EXPLORER.EXE", jsonFolder);
+					}
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"OpenOutputFolderCommand Exception:{ex.ToString()}");
+				}
 			}).AddTo(Disposable);
 
 			// モーダルウィンドウを閉じる
@@ -416,6 +440,214 @@ namespace PlayerControl.ViewModels
 			});
 		}
 
+		/// <summary>
+		/// MainWindow 初期化時にコールされる初期化処理
+		/// </summary>
+		public void Initialize()
+		{
+			// プレイヤー履歴を読み込む（ver 0.3.5 未実装）
+			InitPlayersHistory();
+		}
+
+		/// <summary>
+		/// JSONファイルの保存先フルパスを取得する
+		/// 
+		/// </summary>
+		/// <returns></returns>
+		private String GetStreamControlJsonPath()
+		{
+			// 出力先が未設定の場合
+			if (!Directory.Exists(OutputJsonPath.Value))
+			{
+				// 実行ファイルの親フォルダを辿って scoreboard.html が存在するフォルダを探す
+				var scoreboardHtmlPath = SearchStreamControlPath();
+
+				// 見つかったらJSON保存先として設定
+				if (Directory.Exists(scoreboardHtmlPath))
+				{
+					OutputJsonPath.Value = scoreboardHtmlPath;
+				}
+				// 親を辿ってみつからなかったら手動で設定させる(デバッグ中はキャンセル)
+				else
+				{
+#if !DEBUG
+					MessageBox.Show($"アプリの上位フォルダにStreamControl用 [scoreboard.html] 保存フォルダが見つかりません\n\n[scoreboard.html]が保存されているフォルダを指定してください");
+					var openDlg = new Microsoft.WindowsAPICodePack.Dialogs.CommonOpenFileDialog()
+					{
+						Title = "[scoreboard.html] が存在するフォルダを選択してください",
+						InitialDirectory = AppContext.BaseDirectory,
+						IsFolderPicker = true,	// フォルダ選択モード
+					};
+					if (openDlg.ShowDialog() == Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogResult.Ok)
+					{
+						OutputJsonPath.Value = openDlg.FileName;
+					}
+#endif
+				}
+			}
+
+			// Path + Jsonファイル名
+			return System.IO.Path.Combine(OutputJsonPath.Value, _jsonFileName);
+		}
+
+		/// <summary>
+		/// StreamControl互換JSONを保存する
+		/// </summary>
+		/// <returns></returns>
+		public async void SaveStreamControlJson(bool InitTimeStump = false)
+		{
+			try
+			{
+				// Path + Jsonファイル名
+				var savepath = GetStreamControlJsonPath();
+				// 保存先が存在するかチェック
+				if (!Directory.Exists(System.IO.Path.GetDirectoryName(savepath)))
+				{
+					return;
+				}
+				// シリアライズするStreamControlParamを作成
+				StreamControlParam StreamControlData = CreateStreamControlParam(InitTimeStump);
+
+				// ※ 短時間に連続して保存するとscoreboard.htmlが取りこぼすことがある
+				// 前回保存時間から0.5秒以内なら最大1秒待機する
+				await _semaphoreSlimSelialize.WaitAsync();
+				try
+				{
+					var diff = (DateTime.Now - OutputJsonTime.Value).TotalMilliseconds;
+					if (diff < 500)
+					{
+						Debug.WriteLine($"diff:{diff}");
+						await Task.Delay(1000 - (int)diff);
+					}
+					using StreamWriter sw = new(savepath, false, Encoding.UTF8);
+					using TextWriter writerSync = TextWriter.Synchronized(sw);
+					// JSONにシリアライズして保存
+					var json = JsonConvert.SerializeObject(StreamControlData);
+					await writerSync.WriteAsync(json);
+					await writerSync.FlushAsync();
+					// 保存時間を記録
+					OutputJsonTime.Value = DateTime.Now;
+#if DEBUG
+					var debugText = $"Flush >> [{StreamControlData.timestamp} 1P:{StreamControlData.pName1} 2P:{StreamControlData.pName2}]";
+					Debug.WriteLine(debugText);
+#endif
+					// 保存情報をバックアップ（強制終了時の復元用）
+					// BackupPlayersData();
+				}
+				finally
+				{
+					_semaphoreSlimSelialize.Release();
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"[SaveStreamControlJson]Exception {ex.ToString()}");
+			}
+		}
+
+		/// <summary>
+		/// クラスのプロパティからシリアライズするデータ（StreamControlParam）を作成する
+		/// </summary>
+		/// <returns></returns>
+		private StreamControlParam CreateStreamControlParam(bool InitTimeStump = false)
+		{
+			try
+			{
+				StreamControlParam _scParam = new();
+
+				// Stage名とScoreLabel文字列を正規化
+				if (!String.IsNullOrEmpty(ScoreLabel.Value))
+				{
+					ScoreLabel.Value = ScoreLabel.Value.Trim();
+				}
+				if (!String.IsNullOrEmpty(Stage.Value))
+				{
+					Stage.Value = Stage.Value.Trim();
+				}
+				// Stage名をセット（改行コードを</br> に置換）
+				var stagestr = Stage.Value;
+				var StageLineCount = 0;   // 改行の数
+				if (!String.IsNullOrEmpty(Stage.Value))
+				{
+					try
+					{
+						var temp = stagestr;
+						StageLineCount = temp.Split(Environment.NewLine).Length;
+						// 改行コードを</br>に置換
+						stagestr = Stage.Value.Replace(Environment.NewLine, "</br>");
+
+						// 改行が存在する場合はフォントサイズを調整
+						if (StageLineCount > 1)
+						{
+							// 行数に応じて文字サイズを調整
+							var adjustSize = 0;
+							// 2行
+							if (StageLineCount == 2)
+							{
+								adjustSize = -1;
+							}
+							// 3行以上
+							else
+							{
+								adjustSize = -2;
+							}
+							stagestr = $"<font size={adjustSize}>" + stagestr + "</font>";
+						}
+					}
+					catch (Exception ex)
+					{
+						Debug.WriteLine($"[Stage NewLine Replace + FontSize Adjust]Exception {ex.ToString()}");
+						// 例外発生時はスルー
+					}
+				}
+				_scParam.stage = stagestr;
+
+				// プレイヤー１情報
+				if (CurrentPlayer1.Value != null)
+				{
+					_scParam.pName1 = CurrentPlayer1.Value.Name;
+					_scParam.pTwitter1 = CurrentPlayer1.Value.Twitter;
+					_scParam.pScore1 = GetScoreText(CurrentPlayer1.Value);
+					// 国文字が指定されていないはデフォルト文字列をセット
+					if (!String.IsNullOrEmpty(CurrentPlayer1.Value.Country))
+					{
+						_scParam.pCountry1 = CurrentPlayer1.Value.Country;
+					}
+					else
+					{
+						_scParam.pCountry1 = DefaultCountry.Value;
+					}
+				}
+				// プレイヤー２情報
+				if (CurrentPlayer2.Value != null)
+				{
+					_scParam.pName2 = CurrentPlayer2.Value.Name;
+					_scParam.pTwitter2 = CurrentPlayer2.Value.Twitter;
+					_scParam.pScore2 = GetScoreText(CurrentPlayer2.Value);
+					// 国文字が指定されていないはデフォルト文字列をセット
+					if (!String.IsNullOrEmpty(CurrentPlayer2.Value.Country))
+					{
+						_scParam.pCountry2 = CurrentPlayer2.Value.Country;
+					}
+					else
+					{
+						_scParam.pCountry2 = DefaultCountry.Value;
+					}
+				}
+
+				// タイムスタンプを初期化する場合
+				if (InitTimeStump)
+				{
+					_scParam.timestamp = "0";
+				}
+				return _scParam;
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Exception CreateStreamControlParam:{ex.ToString()}");
+				throw;
+			}
+		}
 
 		/// <summary>
 		/// 指定された文字列をクリップボードに積む
@@ -516,7 +748,10 @@ namespace PlayerControl.ViewModels
 			SaveStreamControlJson();
 		}
 
-
+		/// <summary>
+		/// リスト中のプレイヤー名の中で一番文字列幅が大きな名前の文字列幅を取得する
+		/// </summary>
+		/// <returns></returns>
 		private int MaxPlayerNameWidth()
 		{
 			var maxwidth = 0;
@@ -532,13 +767,9 @@ namespace PlayerControl.ViewModels
 			return maxwidth;
 		}
 
-		public String GetNameAndScoreText(PlayerModel player)
-		{
-			return GetNameAndScoreText(player, MaxPlayerNameWidth());
-		}
-
 		/// <summary>
-		/// プレイヤー情報（名前＋スコア）をクリップボードに積む
+		/// プレイヤー情報（名前＋スコア）文字列を組む
+		/// コピー時にクリップボードへ積む文字として使う
 		/// </summary>
 		/// <param name="datacontext"></param>
 		public String GetNameAndScoreText(PlayerModel player, int maxWidth)
@@ -581,6 +812,16 @@ namespace PlayerControl.ViewModels
 				Debug.WriteLine($"Exception GetNameAndScoreText:{ex.ToString()}");
 			}
 			return String.Empty;
+		}
+
+		/// <summary>
+		/// GetNameAndScoreText()のmaxWidth省略オーバーロード
+		/// </summary>
+		/// <param name="player"></param>
+		/// <returns></returns>
+		public String GetNameAndScoreText(PlayerModel player)
+		{
+			return GetNameAndScoreText(player, MaxPlayerNameWidth());
 		}
 
 		/// <summary>
@@ -700,7 +941,6 @@ namespace PlayerControl.ViewModels
 			}
 		}
 
-
 		/// <summary>
 		/// プレイヤー名ダイアログでプレイヤー名を入力する
 		/// ※ PlayersEdit専用
@@ -770,15 +1010,6 @@ namespace PlayerControl.ViewModels
 		}
 
 		/// <summary>
-		/// MainWindow 初期化時にコールされる初期化処理
-		/// </summary>
-		public void Initialize()
-		{
-			// TODO:プレイヤー履歴を読み込む
-			InitPlayersHistory();
-		}
-
-		/// <summary>
 		/// プレイヤーリストやステージ名などをバックアップする
 		/// OperationModel 内のプロパティをJSONに保存する
 		/// </summary>
@@ -822,7 +1053,6 @@ namespace PlayerControl.ViewModels
 			return null;
 		}
 
-
 		/// <summary>
 		/// ユーザー操作情報をバックアップするファイルのフルパスを取得する
 		/// </summary>
@@ -834,308 +1064,127 @@ namespace PlayerControl.ViewModels
 		}
 
 		/// <summary>
-		/// StreamControl互換JSONを保存する
+		/// ソースHTMLファイルが存在するパスを取得
+		/// 実行ファイルの親フォルダをたどる
 		/// </summary>
 		/// <returns></returns>
-		public async void SaveStreamControlJson(bool InitTimeStump = false)
+		private String SearchStreamControlPath()
 		{
+			// 実行ファイルのパスを取得 ※ .NET5以降では Assenmbly.Locationは空を返すので使用しないこと
+			DirectoryInfo? di = new(AppContext.BaseDirectory);
+			while (true)
+			{
+				if (di == null)
+				{
+					break;
+				}
+				DirectoryInfo? parent = di.Parent;
+				if (parent == null)
+				{
+					break;
+				}
+
+				var checkPath = Path.Combine(parent.FullName, _htmlSourceFile);
+
+				if (System.IO.File.Exists(checkPath))
+				{
+					// ソースHTMLが存在するパスがみつかった
+					return parent.FullName;
+				}
+				// 親をたどる
+				di = di.Parent;
+			}
+			return String.Empty;
+		}
+
+		/// <summary>
+		/// スコア値（int）からJSONに保存する文字列を生成する
+		/// </summary>
+		/// <param name="score"></param>
+		/// <returns></returns>
+		private String GetScoreText(PlayerModel player)
+		{
+			if (player == null || String.IsNullOrEmpty(player.Name))
+			{
+				return String.Empty;
+			}
+
+			// スコア値を計算（Mixtureモードなら２つのスコアの合計）
+			var score = player.Score;
+			if (CurrentScoreMode.Value == ScoreMode.Mixture)
+			{
+				score += player.Score_Second;
+			}
+			var scoreStr = String.Empty;
+			var labelStr = String.Empty;
+
 			try
 			{
-				// Stage名とScoreLabel文字列を正規化
-				if (!String.IsNullOrEmpty(ScoreLabel.Value))
-				{
-					ScoreLabel.Value = ScoreLabel.Value.Trim();
-				}
-				if (!String.IsNullOrEmpty(Stage.Value))
-				{
-					Stage.Value = Stage.Value.Trim();
-				}
+				var scoreLabelTrim = ScoreLabel.Value.Trim();
 
-				// StreamControlのHTMLテンプレートパスを初期化
-				if (!Directory.Exists(OutputJsonPath.Value))
+				// スコアラベルが存在する場合はサイズを調整
+				if (!String.IsNullOrEmpty(scoreLabelTrim))
 				{
-					// 実行ファイルの親フォルダを辿って scoreboard.html が存在するフォルダを探す
-					var scoreboardHtmlPath = GetStreamControlPath();
-
-					// 見つかったらJSON保存先として設定
-					if (Directory.Exists(scoreboardHtmlPath))
-					{
-						OutputJsonPath.Value = scoreboardHtmlPath;
-					}
-					// 親を辿ってみつからなかったら手動で設定させる(デバッグ中はキャンセル)
-					else
-					{
-#if !DEBUG
-						MessageBox.Show($"アプリの上位フォルダにStreamControl用 [scoreboard.html] 保存フォルダが見つかりません\n\n[scoreboard.html]が保存されているフォルダを指定してください");
-						var openDlg = new CommonOpenFileDialog()
-						{
-							Title = "[scoreboard.html] 保存フォルダを選択してください",
-							InitialDirectory = AppContext.BaseDirectory,
-							// フォルダ選択モードにする
-							IsFolderPicker = true,
-						};
-						if (openDlg.ShowDialog() != CommonFileDialogResult.Ok)
-						{
-							return ;
-						}
-						else
-						{
-							OutputJsonPath.Value = openDlg.FileName;
-						}
-#endif
-					}
+					labelStr = $"<font size=-1 color=\"white\">{scoreLabelTrim}</font></br>";
 				}
-
-				// 出力先がなかった場合はメッセージを表示
-				if (!Directory.Exists(OutputJsonPath.Value))
+				// 桁数に合わせてスコアのフォントサイズ調整
+				// 標準"5" 5桁以上は"4"
+				var scoreSize = 5;
+				if (score > 9999 || !String.IsNullOrEmpty(labelStr))
 				{
-#if !DEBUG
-					MessageBox.Show($"[streamcontrol.json] 保存先が設定できませんでした");
-#endif
+					scoreSize--;
 				}
-
-				// Path + Jsonファイル名
-				var savepath = System.IO.Path.Combine(OutputJsonPath.Value, _jsonFileName);
-
-				// Jsonクラスに値をセット(CurrentPlayerがnullの場合は初期値のまま保存）
-				StreamControlParam StreamControlData = new();
-
-				// イベント名をセット（改行コードを</br> に置換）
-				var stagestr = Stage.Value;
-				var StageLineCount = 0;   // 改行の数
-				if (!String.IsNullOrEmpty(Stage.Value))
-				{
-					try
-					{
-						var temp = stagestr;
-						StageLineCount = temp.Split(Environment.NewLine).Length;
-						// 改行コードを</br>に置換
-						stagestr = Stage.Value.Replace(Environment.NewLine, "</br>");
-
-						// 改行が存在する場合はフォントサイズを調整
-						if (StageLineCount > 1)
-						{
-							// 行数に応じて文字サイズを調整
-							var adjustSize = 0;
-							// 2行
-							if (StageLineCount == 2)
-							{
-								adjustSize = -1;
-							}
-							// 3行以上
-							else
-							{
-								adjustSize = -2;
-							}
-							stagestr = $"<font size={adjustSize}>" + stagestr + "</font>";
-						}
-					}
-					catch (Exception ex)
-					{
-						Debug.WriteLine($"[Stage NewLine Replace + FontSize Adjust]Exception {ex.ToString()}");
-						// 例外発生時はスルー
-					}
-				}
-				StreamControlData.stage = stagestr;
-
-				// プレイヤー１情報
-				if (CurrentPlayer1.Value != null)
-				{
-					StreamControlData.pName1 = CurrentPlayer1.Value.Name;
-					StreamControlData.pTwitter1 = CurrentPlayer1.Value.Twitter;
-					StreamControlData.pScore1 = GetScoreText(CurrentPlayer1.Value);
-					// 国文字が指定されていないはデフォルト文字列をセット
-					if (!String.IsNullOrEmpty(CurrentPlayer1.Value.Country))
-					{
-						StreamControlData.pCountry1 = CurrentPlayer1.Value.Country;
-					}
-					else
-					{
-						StreamControlData.pCountry1 = DefaultCountry.Value;
-					}
-				}
-				// プレイヤー２情報
-				if (CurrentPlayer2.Value != null)
-				{
-					StreamControlData.pName2 = CurrentPlayer2.Value.Name;
-					StreamControlData.pTwitter2 = CurrentPlayer2.Value.Twitter;
-					StreamControlData.pScore2 = GetScoreText(CurrentPlayer2.Value);
-					// 国文字が指定されていないはデフォルト文字列をセット
-					if (!String.IsNullOrEmpty(CurrentPlayer2.Value.Country))
-					{
-						StreamControlData.pCountry2 = CurrentPlayer2.Value.Country;
-					}
-					else
-					{
-						StreamControlData.pCountry2 = DefaultCountry.Value;
-					}
-				}
-				// タイムスタンプを初期化する場合
-				if (InitTimeStump)
-				{
-					StreamControlData.timestamp = "0";
-				}
-				// ※ 短時間に連続して保存するとscoreboard.htmlが取りこぼすことがあるので、保存時刻が1秒以内なら待機する
-				// 直前に保存した時間から1秒以内の場合は待機
-
-				await _semaphoreSlimSelialize.WaitAsync();
-				try
-				{
-					var diff = (DateTime.Now - OutputJsonTime.Value).TotalMilliseconds;
-					if (diff < 1000)
-					{
-						Debug.WriteLine($"diff:{diff}");
-						await Task.Delay(1000);
-					}
-					using StreamWriter sw = new(savepath, false, Encoding.UTF8);
-					using (TextWriter writerSync = TextWriter.Synchronized(sw))
-					{
-						// 保存時刻を更新
-						OutputJsonTime.Value = DateTime.Now;
-						var json = JsonConvert.SerializeObject(StreamControlData);
-						await writerSync.WriteAsync(json);
-						await writerSync.FlushAsync();
-#if DEBUG
-						var debugText = $"Flush>>[{StreamControlData.timestamp} 1P:{StreamControlData.pName1} 2P:{StreamControlData.pName2}]";
-						Debug.WriteLine(debugText);
-#endif
-					}
-					// 保存情報をバックアップ（強制終了時の復元用）
-					BackupPlayersData();
-				}
-				finally
-				{
-					_semaphoreSlimSelialize.Release();
-				}
+				scoreStr = $"{labelStr}<font size={scoreSize}>{score.ToString()}</font>";
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine($"[SaveStreamControlJson]Exception {ex.ToString()}");
+				Debug.WriteLine($"[GetScoreText]Exception {ex.ToString()}");
+				// 例外発生時は空文字を返す
 			}
-}
-
-/// <summary>
-/// ソースHTMLファイルが存在するパスを取得
-/// 実行ファイルの親フォルダをたどる
-/// </summary>
-/// <returns></returns>
-private String GetStreamControlPath()
-{
-	// 実行ファイルのパスを取得 ※ .NET5以降では Assenmbly.Locationは空を返すので使用しないこと
-	DirectoryInfo? di = new(AppContext.BaseDirectory);
-	while (true)
-	{
-		if (di == null)
-		{
-			break;
-		}
-		DirectoryInfo? parent = di.Parent;
-		if (parent == null)
-		{
-			break;
+			return scoreStr;
 		}
 
-		var checkPath = Path.Combine(parent.FullName, _htmlSourceFile);
-
-		if (System.IO.File.Exists(checkPath))
+		/// <summary>
+		/// プレイヤーの順番をシャッフルする
+		/// </summary>
+		private void ShufflePlayers()
 		{
-			// ソースHTMLが存在するパスがみつかった
-			return parent.FullName;
-		}
-		// 親をたどる
-		di = di.Parent;
-	}
-	return String.Empty;
-}
+			if (Players.Count > 1)
+			{
+				// コレクションをシャッフルする（念の為ユーザー数分繰り返す）
+				PlayerModel[] shuffle = Players.OrderBy(i => Guid.NewGuid()).ToArray();
+				for (var cnt = 0; cnt < Players.Count; cnt++)
+				{
+					shuffle = shuffle.OrderBy(i => Guid.NewGuid()).ToArray();
+				}
 
-/// <summary>
-/// スコア値（int）からJSONに保存する文字列を生成する
-/// </summary>
-/// <param name="score"></param>
-/// <returns></returns>
-private String GetScoreText(PlayerModel player)
-{
-	if (player == null || String.IsNullOrEmpty(player.Name))
-	{
-		return String.Empty;
-	}
-
-	// スコア値を計算（Mixtureモードなら２つのスコアの合計）
-	var score = player.Score;
-	if (CurrentScoreMode.Value == ScoreMode.Mixture)
-	{
-		score += player.Score_Second;
-	}
-	var scoreStr = String.Empty;
-	var labelStr = String.Empty;
-
-	try
-	{
-		var scoreLabelTrim = ScoreLabel.Value.Trim();
-
-		// スコアラベルが存在する場合はサイズを調整
-		if (!String.IsNullOrEmpty(scoreLabelTrim))
-		{
-			labelStr = $"<font size=-1 color=\"white\">{scoreLabelTrim}</font></br>";
-		}
-		// 桁数に合わせてスコアのフォントサイズ調整
-		// 標準"5" 5桁以上は"4"
-		var scoreSize = 5;
-		if (score > 9999 || !String.IsNullOrEmpty(labelStr))
-		{
-			scoreSize--;
-		}
-		scoreStr = $"{labelStr}<font size={scoreSize}>{score.ToString()}</font>";
-	}
-	catch (Exception ex)
-	{
-		Debug.WriteLine($"[GetScoreText]Exception {ex.ToString()}");
-		// 例外発生時は空文字を返す
-	}
-	return scoreStr;
-}
-
-/// <summary>
-/// プレイヤーの順番をシャッフルする
-/// </summary>
-private void ShufflePlayers()
-{
-	if (Players.Count > 1)
-	{
-		// コレクションをシャッフルする（念の為ユーザー数分繰り返す）
-		PlayerModel[] shuffle = Players.OrderBy(i => Guid.NewGuid()).ToArray();
-		for (var cnt = 0; cnt < Players.Count; cnt++)
-		{
-			shuffle = shuffle.OrderBy(i => Guid.NewGuid()).ToArray();
+				Players.Clear();
+				foreach (PlayerModel? p in shuffle)
+				{
+					Players.Add(p);
+				}
+			}
 		}
 
-		Players.Clear();
-		foreach (PlayerModel? p in shuffle)
+		/// <summary>
+		/// プレイヤー履歴リストを初期化する
+		/// TODO: 直前のリストを復元 or CSVから読込み or 履歴から選択
+		/// </summary>
+		public void InitPlayersHistory()
 		{
-			Players.Add(p);
-		}
-	}
-}
-
-/// <summary>
-/// プレイヤー履歴リストを初期化する
-/// TODO: 直前のリストを復元 or CSVから読込み or 履歴から選択
-/// </summary>
-public void InitPlayersHistory()
-{
 #if DEBUG // デバッグ用ダミーデータ
-	Players.Add(new PlayerModel("0", $"", 250, 500));
-	Players.Add(new PlayerModel("012", $"", 250, 500));
-	Players.Add(new PlayerModel("0123", $"", 250, 500));
-	Players.Add(new PlayerModel("01234", $"", 994, 200));
-	Players.Add(new PlayerModel("012345", $"", 994, 200));
-	Players.Add(new PlayerModel("01234678", $"", 994, 200));
-	Players.Add(new PlayerModel("0123467890123", $"", 994, 200));
-	Players.Add(new PlayerModel("01234678901234", $"", 994, 200));
-	Players.Add(new PlayerModel("012346789012345", $"", 994, 200));
-	Players.Add(new PlayerModel("いにゅうえんどう", $"", 0, 300));
-	Players.Add(new PlayerModel("ふるしちょふ。", $"", 0, 300));
+			Players.Add(new PlayerModel("A", $"", 250, 500));
+			Players.Add(new PlayerModel("B1", $"", 250, 500));
+			Players.Add(new PlayerModel("E123456", $"", 994, 200));
+			Players.Add(new PlayerModel("F1234567", $"", 994, 200));
+			Players.Add(new PlayerModel("G12345678", $"", 994, 200));
+			Players.Add(new PlayerModel("H123456789", $"", 994, 200));
+			Players.Add(new PlayerModel("J1234567890", $"", 994, 200));
+			Players.Add(new PlayerModel("K12345678901", $"", 994, 200));
+			Players.Add(new PlayerModel("L1234567890123", $"", 994, 200));
+			Players.Add(new PlayerModel("M12345678901234", $"", 994, 200));
+			Players.Add(new PlayerModel("N123456789012345", $"", 994, 200));
 #endif
-}
+		}
 	}
 }

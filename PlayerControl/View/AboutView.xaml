@@ -102,26 +102,41 @@
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="*" />
 				</Grid.RowDefinitions>
-				<TextBlock
-					Margin="0,0,0,3"
-					FontSize="11"
-					Foreground="{StaticResource MahApps.Brushes.Gray3}"
-					Text="streamcontrol.json 保存先" />
-				<TextBox
-					x:Name="JsonPathTextBox"
-					Grid.Row="1"
-					MaxWidth="380"
-					HorizontalContentAlignment="Stretch"
-					VerticalContentAlignment="Stretch"
-					BorderBrush="{StaticResource MahApps.Brushes.Gray3}"
-					Cursor="Arrow"
-					FontSize="11"
-					Foreground="{StaticResource MahApps.Brushes.Gray2}"
-					IsReadOnly="True"
-					IsReadOnlyCaretVisible="True"
-					Style="{StaticResource MahApps.Styles.TextBox}"
-					Text="{Binding OutputJsonPath.Value}"
-					TextWrapping="Wrap" />
+				<StackPanel Orientation="Horizontal">
+					<Label
+						VerticalContentAlignment="Center"
+						Content="streamcontrol.json 保存先"
+						FontSize="11"
+						Foreground="{StaticResource MahApps.Brushes.Gray3}" />
+				</StackPanel>
+				<Grid Grid.Row="1">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<TextBox
+						x:Name="JsonPathTextBox"
+						MaxWidth="380"
+						HorizontalContentAlignment="Stretch"
+						VerticalContentAlignment="Stretch"
+						BorderBrush="{StaticResource MahApps.Brushes.Gray3}"
+						Cursor="Arrow"
+						FontSize="11"
+						Foreground="{StaticResource MahApps.Brushes.Gray2}"
+						IsReadOnly="True"
+						IsReadOnlyCaretVisible="True"
+						Style="{StaticResource MahApps.Styles.TextBox}"
+						Text="{Binding OutputJsonPath.Value}"
+						TextWrapping="Wrap" />
+					<Button
+						Grid.Column="1"
+						Margin="5,0,0,0"
+						Padding="10,0"
+						Command="{Binding OpenOutputFolderCommand}"
+						Content="{md:PackIcon FolderOpenOutline}"
+						Style="{StaticResource MaterialDesignOutlinedDarkButton}" />
+
+				</Grid>
 			</Grid>
 
 			<Grid x:Name="FooterGrid" Grid.Row="3">

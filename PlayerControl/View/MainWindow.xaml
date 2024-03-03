@@ -828,7 +828,10 @@
 					VerticalAlignment="Center"
 					materialDesign:MenuAssist.TopLevelMenuItemHeight="22"
 					TabIndex="25">
-					<MenuItem Padding="5,0" IsEnabled="{Binding Players.Count, Converter={StaticResource CountBoolConverter}}">
+					<MenuItem
+						Padding="5,0"
+						IsEnabled="{Binding Players.Count, Converter={StaticResource CountBoolConverter}}"
+						MouseEnter="BottomMenuItem_MouseEnter">
 						<MenuItem.Header>
 							<StackPanel Orientation="Horizontal">
 								<md:PackIcon Width="14" Kind="ClipboardTextOutline" />
@@ -840,7 +843,7 @@
 							</StackPanel>
 						</MenuItem.Header>
 						<MenuItem
-							Header="{Binding SelectedPlayer.Value.Name}"
+							Header="{Binding SelectedPlayer.Value.Name, Converter={StaticResource AddLabelConverter}, ConverterParameter=選択中プレイヤー:}"
 							Icon="{md:PackIcon Kind=ClipboardListOutline}"
 							Visibility="{Binding SelectedPlayer.Value, Converter={StaticResource NullableToVisibilityConverter}}">
 							<i:Interaction.Triggers>
