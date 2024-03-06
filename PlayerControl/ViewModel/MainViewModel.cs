@@ -688,7 +688,7 @@ namespace PlayerControl.ViewModels
 		{
 			if (datacontext is PlayerModel player)
 			{
-				SetTextToClipboard(GetNameAndScoreText(player));
+				SetTextToClipboard(GetNameAndScoreText(player) + "\n");
 			}
 		}
 
@@ -698,7 +698,7 @@ namespace PlayerControl.ViewModels
 		{
 			if (SelectedPlayer.Value != null)
 			{
-				SetTextToClipboard(GetNameAndScoreText(SelectedPlayer.Value));
+				SetTextToClipboard(GetNameAndScoreText(SelectedPlayer.Value) + "\n");
 			}
 		}
 		/// <summary>
@@ -707,13 +707,28 @@ namespace PlayerControl.ViewModels
 		public void SetCurrentPlayerNameAndScoreToClipboard()
 		{
 			var clipboardText = String.Empty;
+
+			// 名前の最大幅を取得
+			var maxNameWidth = 0;
+			if(CurrentPlayer1.Value != null && CurrentPlayer1.Value != _emptyPlayer)
+			{
+				maxNameWidth = CurrentPlayer1.Value.Name.GetWidth();
+			}
+			if( CurrentPlayer2.Value != null && CurrentPlayer2.Value != _emptyPlayer)
+			{
+				if (maxNameWidth < CurrentPlayer2.Value.Name.GetWidth())
+				{
+					maxNameWidth = CurrentPlayer2.Value.Name.GetWidth();
+				}
+			}	
+
 			if (CurrentPlayer1.Value != null && CurrentPlayer1.Value != _emptyPlayer)
 			{
-				clipboardText += GetNameAndScoreText(CurrentPlayer1.Value) + "\n";
+				clipboardText += GetNameAndScoreText(CurrentPlayer1.Value, maxNameWidth) + "\n";
 			}
 			if (CurrentPlayer2.Value != null && CurrentPlayer2.Value != _emptyPlayer)
 			{
-				clipboardText += GetNameAndScoreText(CurrentPlayer2.Value) + "\n";
+				clipboardText += GetNameAndScoreText(CurrentPlayer2.Value, maxNameWidth) + "\n";
 			}
 			Clipboard.SetText(clipboardText);
 		}
@@ -726,9 +741,10 @@ namespace PlayerControl.ViewModels
 			try
 			{
 				var clipboardText = String.Empty;
+				var maxNameWidth = MaxPlayerNameWidth();
 				foreach (PlayerModel player in Players)
 				{
-					clipboardText += GetNameAndScoreText(player) + "\n";
+					clipboardText += GetNameAndScoreText(player, maxNameWidth) + "\n";
 				}
 				Clipboard.SetText(clipboardText);
 
@@ -788,13 +804,36 @@ namespace PlayerControl.ViewModels
 			}
 			try
 			{
-				// 最大幅をタブ数の倍数(整数丸め)に設定
-				maxWidth = (maxWidth/_tabCount)* _tabCount;
-
 				// 名前の幅を取得
 				var nameWidth = player.Name.GetWidth();
 
-				// 名前の後に挿入するタブの数を計算(メモ帳を想定)
+#if true		// Ver 0.3.6 タブの挿入数をシンプルに（最小1個,最大3個）
+				var tabPadding = 1;
+				if(maxWidth < _tabCount)
+				{
+					tabPadding = 1;
+				}
+				else if (maxWidth < _tabCount * 2)
+				{
+					if (nameWidth < _tabCount)
+					{
+						tabPadding = 2;
+					}
+				}
+				else
+				{
+					if (nameWidth < _tabCount)
+					{
+						tabPadding = 3;
+					}
+					else if (nameWidth < _tabCount * 2)
+					{
+						tabPadding = 2;
+					}
+				}
+#else         // ちゃんと計算しようとした場合（下記の計算ではタブがずれるのでさらに調整が必要）                                                     			                                                                                                                   
+				// 最大幅をタブ数の倍数(整数丸め)に設定
+				maxWidth = (maxWidth/_tabCount)* _tabCount;
 				var padding = (maxWidth - nameWidth);
 				var tabPadding = (padding / _tabCount) + 1;
 				if (nameWidth % _tabCount != 0 && nameWidth < maxWidth)
@@ -802,9 +841,8 @@ namespace PlayerControl.ViewModels
 					tabPadding++;
 				}
 				Debug.WriteLine($"Name:{player.Name} nameWidth:{nameWidth} Padding:{padding} TabPadding:{tabPadding}");
-
+#endif
 				var tabString = new StringBuilder().Insert(0, "\t", tabPadding).ToString();
-
 
 				// 名前+タブ
 				var clipboardText = $"{player.Name}{tabString}";
@@ -820,7 +858,12 @@ namespace PlayerControl.ViewModels
 						clipboardText += player.Score.ToString();
 						break;
 				}
-				return clipboardText;
+
+				// 文字列が空でなければ、末尾にスペースを追加して戻す
+				if( !String.IsNullOrEmpty(clipboardText))
+				{
+					return clipboardText + " ";
+				}
 			}
 			catch (Exception ex)
 			{
@@ -836,7 +879,11 @@ namespace PlayerControl.ViewModels
 		/// <returns></returns>
 		public String GetNameAndScoreText(PlayerModel player)
 		{
-			return GetNameAndScoreText(player, MaxPlayerNameWidth());
+			if (player != null)
+			{
+				return GetNameAndScoreText(player, player.Name.GetWidth());
+			}
+			return String.Empty;
 		}
 
 		/// <summary>
@@ -1131,7 +1178,7 @@ namespace PlayerControl.ViewModels
 					labelStr = $"<font size=-1 color=\"white\">{scoreLabelTrim}</font></br>";
 				}
 				// 桁数に合わせてスコアのフォントサイズ調整
-				// 標準"5" 5桁以上は"4"
+				// 標準"5" 4桁以上は"4"
 				var scoreSize = 5;
 				if (score > 9999 || !String.IsNullOrEmpty(labelStr))
 				{
