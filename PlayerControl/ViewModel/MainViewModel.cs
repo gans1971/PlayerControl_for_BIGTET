@@ -1202,9 +1202,10 @@ namespace PlayerControl.ViewModels
 			if (Players.Count > 1)
 			{
 				// コレクションをシャッフルする（念の為ユーザー数分繰り返す）
-				PlayerModel[] shuffle = Players.OrderBy(i => Guid.NewGuid()).ToArray();
+				var shuffle = Players.ToArray();
 				for (var cnt = 0; cnt < Players.Count; cnt++)
 				{
+					// ListアイテムそれぞれにGUID(128ビット値）を割り振ってソート
 					shuffle = shuffle.OrderBy(i => Guid.NewGuid()).ToArray();
 				}
 
