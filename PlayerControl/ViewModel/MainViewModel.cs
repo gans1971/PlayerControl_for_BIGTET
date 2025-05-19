@@ -120,7 +120,7 @@ namespace PlayerControl.ViewModels
 			}
 
 			// OperationModelを初期化
-			OperationModel? restore = RestoreBackupPlayersData();   // バックアップファイルがある場合
+			var restore = RestoreBackupPlayersData();   // バックアップファイルがある場合
 			if (restore != null)
 			{
 				_operation = restore;
@@ -136,12 +136,12 @@ namespace PlayerControl.ViewModels
 
 			// アプリタイトルを設定
 			AssemblyAttribute assmAttr = new();
-			Assembly asm = Assembly.GetExecutingAssembly();
+			var asm = Assembly.GetExecutingAssembly();
 			try
 			{
 				if (asm != null)
 				{
-					AssemblyName asmName = asm.GetName();
+					var asmName = asm.GetName();
 					if (asmName != null)
 					{
 						var AppName = asmName.Name;
@@ -262,7 +262,7 @@ namespace PlayerControl.ViewModels
 			PlayerExchangeCommand = new ReactiveCommand();
 			PlayerExchangeCommand.Subscribe(x =>
 			{
-				PlayerModel temp = CurrentPlayer1.Value;
+				var temp = CurrentPlayer1.Value;
 				CurrentPlayer1.Value = CurrentPlayer2.Value;
 				CurrentPlayer2.Value = temp;
 				SaveStreamControlJson();
@@ -298,7 +298,7 @@ namespace PlayerControl.ViewModels
 					if (!String.IsNullOrEmpty(trimName))
 					{
 						// 同じ名前のユーザーがいないかチェック
-						PlayerModel? sameNamePlayer = SearchPlayer(trimName);
+						var sameNamePlayer = SearchPlayer(trimName);
 
 						// 同じ名前がすでに存在した場合
 						if (sameNamePlayer != null)
@@ -513,7 +513,7 @@ namespace PlayerControl.ViewModels
 					return;
 				}
 				// シリアライズするStreamControlParamを作成
-				StreamControlParam StreamControlData = CreateStreamControlParam(InitTimeStump);
+				var StreamControlData = CreateStreamControlParam(InitTimeStump);
 
 				// ※ 短時間に連続して保存するとscoreboard.htmlが取りこぼすことがある
 				// 前回保存時間から0.5秒以内なら最大1秒待機する
@@ -527,7 +527,7 @@ namespace PlayerControl.ViewModels
 						await Task.Delay(1000 - (int)diff);
 					}
 					using StreamWriter sw = new(savepath, false, Encoding.UTF8);
-					using TextWriter writerSync = TextWriter.Synchronized(sw);
+					using var writerSync = TextWriter.Synchronized(sw);
 					// JSONにシリアライズして保存
 					var json = JsonConvert.SerializeObject(StreamControlData);
 					await writerSync.WriteAsync(json);
@@ -710,17 +710,17 @@ namespace PlayerControl.ViewModels
 
 			// 名前の最大幅を取得
 			var maxNameWidth = 0;
-			if(CurrentPlayer1.Value != null && CurrentPlayer1.Value != _emptyPlayer)
+			if (CurrentPlayer1.Value != null && CurrentPlayer1.Value != _emptyPlayer)
 			{
 				maxNameWidth = CurrentPlayer1.Value.Name.GetWidth();
 			}
-			if( CurrentPlayer2.Value != null && CurrentPlayer2.Value != _emptyPlayer)
+			if (CurrentPlayer2.Value != null && CurrentPlayer2.Value != _emptyPlayer)
 			{
 				if (maxNameWidth < CurrentPlayer2.Value.Name.GetWidth())
 				{
 					maxNameWidth = CurrentPlayer2.Value.Name.GetWidth();
 				}
-			}	
+			}
 
 			if (CurrentPlayer1.Value != null && CurrentPlayer1.Value != _emptyPlayer)
 			{
@@ -742,7 +742,7 @@ namespace PlayerControl.ViewModels
 			{
 				var clipboardText = String.Empty;
 				var maxNameWidth = MaxPlayerNameWidth();
-				foreach (PlayerModel player in Players)
+				foreach (var player in Players)
 				{
 					clipboardText += GetNameAndScoreText(player, maxNameWidth) + "\n";
 				}
@@ -763,7 +763,7 @@ namespace PlayerControl.ViewModels
 		/// </summary>
 		public void ClearAllPlayersScore()
 		{
-			foreach (PlayerModel player in Players)
+			foreach (var player in Players)
 			{
 				player.Score = 0;
 				player.Score_Second = 0;
@@ -778,7 +778,7 @@ namespace PlayerControl.ViewModels
 		private int MaxPlayerNameWidth()
 		{
 			var maxwidth = 0;
-			foreach (PlayerModel checkPlayer in Players)
+			foreach (var checkPlayer in Players)
 			{
 				var w = checkPlayer.Name.GetWidth();
 
@@ -807,9 +807,9 @@ namespace PlayerControl.ViewModels
 				// 名前の幅を取得
 				var nameWidth = player.Name.GetWidth();
 
-#if true		// Ver 0.3.6 タブの挿入数をシンプルに（最小1個,最大3個）
+#if true     // Ver 0.3.6 タブの挿入数をシンプルに（最小1個,最大3個）                                            
 				var tabPadding = 1;
-				if(maxWidth < _tabCount)
+				if (maxWidth < _tabCount)
 				{
 					tabPadding = 1;
 				}
@@ -860,7 +860,7 @@ namespace PlayerControl.ViewModels
 				}
 
 				// 文字列が空でなければ、末尾にスペースを追加して戻す
-				if( !String.IsNullOrEmpty(clipboardText))
+				if (!String.IsNullOrEmpty(clipboardText))
 				{
 					return clipboardText + " ";
 				}
@@ -1007,7 +1007,7 @@ namespace PlayerControl.ViewModels
 						var trimName = view.EditName;
 
 						// 同じ名前のユーザーがいないかチェック
-						PlayerModel? sameNamePlayer = SearchPlayer(trimName);
+						var sameNamePlayer = SearchPlayer(trimName);
 
 						// 自分自身以外で!、同じ名前が存在した場合
 						if (sameNamePlayer != null && sameNamePlayer != player)
@@ -1049,7 +1049,7 @@ namespace PlayerControl.ViewModels
 		/// <returns></returns>
 		PlayerModel? SearchPlayer(String targetName)
 		{
-			foreach (PlayerModel checkPlayer in Players)
+			foreach (var checkPlayer in Players)
 			{
 				if (checkPlayer.Name == targetName)
 				{
@@ -1089,7 +1089,7 @@ namespace PlayerControl.ViewModels
 				if (!String.IsNullOrEmpty(loadpath) && File.Exists(loadpath))
 				{
 					var jsonStr = File.ReadAllText(loadpath);
-					OperationModel? deserializedObjects = JsonConvert.DeserializeObject<OperationModel>(jsonStr);
+					var deserializedObjects = JsonConvert.DeserializeObject<OperationModel>(jsonStr);
 					if (deserializedObjects != null)
 					{
 						return deserializedObjects;
@@ -1128,7 +1128,7 @@ namespace PlayerControl.ViewModels
 				{
 					break;
 				}
-				DirectoryInfo? parent = di.Parent;
+				var parent = di.Parent;
 				if (parent == null)
 				{
 					break;
@@ -1210,7 +1210,7 @@ namespace PlayerControl.ViewModels
 				}
 
 				Players.Clear();
-				foreach (PlayerModel? p in shuffle)
+				foreach (var p in shuffle)
 				{
 					Players.Add(p);
 				}

@@ -41,7 +41,7 @@ namespace PlayerControl.Model
 		}
 		public void AddPlayer(PlayerModel addPlayer)
 		{
-			if( addPlayer != null)
+			if (addPlayer != null)
 			{
 				_players.Add(addPlayer);
 			}
